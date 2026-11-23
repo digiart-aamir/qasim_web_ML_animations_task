@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f7fb">
+    <title>Linear Regression Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Linear Regression Visualizer home">
+        <span class="brand-mark" aria-hidden="true">∿</span>
+        <span>Linear Regression Visualizer</span>
+      </a>
+      <p>Explore how a line learns from data, one point at a time.</p>
+    </header>
+
+    <main class="workspace">
+      <section class="card chart-card" aria-labelledby="chart-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">YOUR DATASET</p>
+            <h1 id="chart-title">Plot your points</h1>
+          </div>
+          <span class="point-count"><span id="point-count">0</span> points</span>
+        </div>
+        <p class="chart-help">Click anywhere in the chart to add a data point.</p>
+        <div class="chart-wrap">
+          <canvas id="chart" width="600" height="400" aria-label="Scatter plot. Click to add data points." role="img"></canvas>
+        </div>
+        <div class="chart-legend" aria-label="Chart legend">
+          <span><i class="legend-dot" aria-hidden="true"></i> Data points</span>
+          <span><i class="legend-line" aria-hidden="true"></i> Regression line</span>
+          <span class="legend-residual"><i class="legend-dash" aria-hidden="true"></i> Residuals</span>
+        </div>
+        <div class="chart-actions">
+          <button class="button button-primary" id="generate-button" type="button">
+            <span aria-hidden="true">✦</span> Generate Sample Data
+          </button>
+          <button class="button button-secondary" id="clear-button" type="button">Clear Points</button>
+          <button class="button button-secondary" id="residuals-button" type="button" aria-pressed="false">Show Residuals</button>
+        </div>
+      </section>
+
+      <aside class="side-panel" aria-label="Prediction and regression controls">
+        <section class="card prediction-card" aria-labelledby="prediction-title">
+          <p class="eyebrow">TRY A PREDICTION</p>
+          <h2 id="prediction-title">Prediction &amp; Controls</h2>
+          <p class="card-description">Enter an X value to see what your model predicts.</p>
+          <form id="prediction-form">
+            <label for="x-input">X value</label>
+            <div class="input-row">
+              <input id="x-input" name="x" type="number" step="any" value="5" required>
+              <button class="button button-primary predict-button" type="submit">Predict Y <span aria-hidden="true">→</span></button>
+            </div>
+          </form>
+          <div class="prediction-result" aria-live="polite">
+            <span class="result-label">PREDICTED Y</span>
+            <output id="prediction-output" for="x-input">—</output>
+          </div>
+          <p class="prediction-note" id="prediction-note">Add at least two points to fit a line.</p>
+        </section>
+
+        <section class="card metrics-card" aria-labelledby="metrics-title">
+          <div class="section-heading metrics-heading">
+            <div>
+              <p class="eyebrow">MODEL SUMMARY</p>
+              <h2 id="metrics-title">Metrics &amp; Equation</h2>
+            </div>
+            <span class="model-badge"><span aria-hidden="true">●</span> <span id="model-status">Waiting for data</span></span>
+          </div>
+          <div class="equation-box">
+            <span class="result-label">LINEAR MODEL</span>
+            <p id="equation">y = —x + —</p>
+          </div>
+          <dl class="metrics-list">
+            <div class="metric-row">
+              <dt><span class="metric-symbol">m</span> Slope</dt>
+              <dd id="slope-value">—</dd>
+            </div>
+            <div class="metric-row">
+              <dt><span class="metric-symbol">b</span> Intercept</dt>
+              <dd id="intercept-value">—</dd>
+            </div>
+            <div class="metric-row">
+              <dt><span class="metric-symbol metric-symbol-blue">R²</span> R-squared</dt>
+              <dd id="r2-value">—</dd>
+            </div>
+            <div class="metric-row">
+              <dt><span class="metric-symbol metric-symbol-blue">ε</span> Mean squared error</dt>
+              <dd id="mse-value">—</dd>
+            </div>
+          </dl>
+          <p class="metrics-footnote">The model updates automatically as you add or remove points.</p>
+        </section>
+      </aside>
+    </main>
+    <footer>Built for learning · Ordinary least squares regression</footer>
+  </body>
+</html>
