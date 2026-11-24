@@ -4,1543 +4,2170 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0d11">
-  <title>Polynomial Regression Analyzer</title>
+  <title>Polynomial Regression Analyzer &amp; Lab</title>
   <style>
     :root {
       color-scheme: dark;
-      --background:#0b0d11;
-      --surface:#141925;
-      --surface-raised:#191f2d;
-      --surface-inset:#0e121b;
-      --text:#edf0f8;
-      --text-soft:#c1c8d8;
-      --muted:#8993a8;
-      --border:#282f40;
-      --border-strong:#384259;
-      --accent:#9a8cff;
-      --accent-strong:#806cf2;
-      --accent-subtle:#24203d;
-      --accent-glow:rgba(154,140,255,.25);
-      --pink:#f087a2;
-      --pink-subtle:rgba(240,135,162,.15);
-      --green:#6bd2a7;
-      --green-subtle:rgba(107,210,167,.15);
-      --amber:#ffd166;
-      --amber-subtle:rgba(255,209,102,.15);
-      --blue:#70a5ff;
-      --font-sans:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
-      --font-mono:"Cascadia Code","Fira Code",Consolas,monospace;
-      --bg:var(--background);
-      --panel:var(--surface);
-      --panel2:var(--surface-raised);
-      --inset:var(--surface-inset);
-      --border2:var(--border-strong);
-      --violet:var(--accent);
-      --violet2:var(--accent-strong);
-      --danger:#ff8b9b;
-      --sans:var(--font-sans);
-      --mono:var(--font-mono);
-      font-family:var(--font-sans);
-      font-synthesis:none;
-      text-rendering:optimizeLegibility;
+      --background: #0b0d11;
+      --surface: #141925;
+      --surface-raised: #191f2d;
+      --surface-inset: #0e121b;
+      --text: #edf0f8;
+      --text-soft: #c1c8d8;
+      --muted: #8993a8;
+      --border: #282f40;
+      --border-strong: #384259;
+      --accent: #9a8cff;
+      --accent-strong: #806cf2;
+      --accent-subtle: #24203d;
+      --accent-glow: rgba(154, 140, 255, 0.25);
+      --pink: #f087a2;
+      --pink-subtle: rgba(240, 135, 162, 0.15);
+      --green: #6bd2a7;
+      --green-subtle: rgba(107, 210, 167, 0.15);
+      --amber: #ffd166;
+      --amber-subtle: rgba(255, 209, 102, 0.15);
+      --blue: #70a5ff;
+      --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      --font-mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+      font-family: var(--font-sans);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
     }
-    *{box-sizing:border-box}
-    body{margin:0;min-width:320px;min-height:100vh;font-family:var(--sans);color:var(--text);
-      background:radial-gradient(circle at 8% 0%,rgba(154,140,255,.12),transparent 36rem),radial-gradient(circle at 100% 100%,rgba(112,165,255,.08),transparent 32rem),var(--bg)}
-    button,input,select,textarea{font:inherit}
-    button,input,select{outline:none}
-    button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
-    header{position:sticky;top:0;z-index:10;max-width:1460px;margin:auto;padding:16px 32px;border-bottom:1px solid var(--border);background:rgba(20,25,37,.94);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-    .brand{display:flex;align-items:center;gap:12px}
-    .mark{display:grid;width:38px;height:38px;place-items:center;border-radius:11px;background:linear-gradient(135deg,var(--violet2),var(--accent));box-shadow:0 5px 18px var(--accent-glow);font-size:24px}
-    .brand h1{margin:0;font-size:20px;letter-spacing:-.5px}
-    .brand p{margin:3px 0 0;color:var(--muted);font-size:11.5px}
-    .actions,.row,.toolbar,.tabs,.tab-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .workspace{max-width:1460px;margin:24px auto 36px;padding:0 32px;display:grid;grid-template-columns:minmax(0,1.68fr) minmax(350px,.72fr);gap:22px;align-items:start}
-    .card{border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.24);transition:box-shadow .2s ease,border-color .2s ease}
-    .card:hover{border-color:var(--border2);box-shadow:0 14px 36px rgba(0,0,0,.32)}
-    .dashboard-summary{grid-column:1/-1;padding:22px 24px}
-    .dashboard-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
-    .dashboard-heading h2{font-size:20px;letter-spacing:-.4px}
-    .dashboard-description{max-width:760px;margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
-    .quick-links{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:16px}
-    .quick-links .eyebrow{margin:0 4px 0 0}
-    .quick-link{min-height:30px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--panel2);color:var(--text-soft);font-size:10.5px;font-weight:750;cursor:pointer;transition:all .16s ease}
-    .quick-link:hover{border-color:var(--accent);background:var(--accent-subtle);color:var(--text);transform:translateY(-1px)}
-    .overview-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:17px}
-    .overview-item{min-width:0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-inset)}
-    .overview-label{display:block;color:var(--muted);font-size:9.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
-    .overview-value{display:block;overflow:hidden;margin-top:7px;color:var(--text);font-size:16px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
-    .overview-value.small{font-size:12px}
-    .overview-detail{display:block;margin-top:4px;color:var(--text-soft);font-size:9.5px;line-height:1.35}
-    .overview-status{color:var(--amber)}.overview-status.ready{color:var(--green)}
-    .chart-card{padding:22px 24px;min-width:0}
-    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-    .eyebrow{margin:0 0 5px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
-    h2,h3{margin:0}
-    h2{font-size:18px} h3{font-size:16px}
-    .help{margin:8px 0 12px;color:var(--muted);font-size:12px}
-    kbd{padding:1px 5px;border:1px solid var(--border2);border-radius:4px;background:var(--panel2);font-family:var(--mono);font-size:9.5px}
-    .badges{display:flex;gap:7px}
-    .badge{padding:6px 9px;border:1px solid rgba(154,140,255,.35);border-radius:8px;background:var(--accent-subtle);color:var(--accent);font-size:11px;font-weight:700}
-    .stage{position:relative;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--inset)}
-    canvas{display:block;width:100%;height:430px;touch-action:none;cursor:crosshair}
-    canvas.hover{cursor:grab} canvas.drag{cursor:grabbing}
-    .hud{position:absolute;top:10px;right:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:rgba(20,25,37,.94);color:var(--muted);font-family:var(--mono);font-size:10.5px;box-shadow:0 2px 8px rgba(0,0,0,.3);pointer-events:none}
-    .tooltip{position:absolute;display:none;z-index:5;pointer-events:none;padding:7px 10px;border:1px solid var(--border2);border-radius:8px;background:var(--surface-raised);color:var(--text);font-size:11px;line-height:1.5;white-space:pre-line;box-shadow:0 8px 22px rgba(0,0,0,.4);transform:translate(-50%,calc(-100% - 10px))}
-    .toolbar{margin:12px 0 4px}
-    .toggle{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;cursor:pointer}
-    .toggle input{width:14px;height:14px;margin:0;accent-color:var(--violet)}
-    .dot{width:8px;height:8px;border-radius:50%;background:var(--violet)}
-    .line-key{width:16px;border-top:3px solid var(--pink);border-radius:2px}
-    .dash-key{width:16px;border-top:2px dashed var(--pink)}
-    .tabs{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
-    .tab{padding:8px 11px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:800;cursor:pointer}
-    .tab:hover{color:var(--text);background:var(--panel2)} .tab.active{border-color:rgba(154,140,255,.35);background:var(--accent-subtle);color:var(--accent)}
-    .panel{display:none;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-inset)}
-    .panel.active{display:block}
-    .btn{min-height:34px;padding:0 12px;border:1px solid var(--border2);border-radius:8px;background:var(--panel2);color:var(--text);font-size:11.5px;font-weight:800;cursor:pointer}
-    .btn{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease}
-    .btn:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 11px rgba(0,0,0,.3)} .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent-strong),var(--accent));color:var(--background);box-shadow:0 4px 11px var(--accent-glow)}
-    .btn.primary:hover{background:linear-gradient(135deg,var(--accent),#b9b0ff);box-shadow:0 6px 16px var(--accent-glow)}
-    .btn.danger{border-color:rgba(240,135,162,.4);background:var(--pink-subtle);color:var(--pink)}
-    .btn:disabled{opacity:.48;cursor:not-allowed;transform:none;box-shadow:none}
-    .btn.small{min-height:28px;padding:0 9px;font-size:10.5px}
-    .preset{min-height:30px;padding:0 10px;border:1px solid var(--border2);border-radius:7px;background:var(--panel2);color:var(--muted);font-size:10.5px;font-weight:700;cursor:pointer}
-    .preset:hover{color:var(--accent);border-color:var(--violet);background:var(--accent-subtle)}
-    .degree-control{display:flex;align-items:center;gap:8px}
-    .degree-control select,.degree-control input,.field input,.field select{height:34px;border:1px solid var(--border2);border-radius:7px;background:var(--panel2);color:var(--text);padding:0 8px;font-size:12px}
-    input[type="range"]{accent-color:var(--violet)}
-    .table-wrap{max-height:210px;overflow:auto;border:1px solid var(--border);border-radius:8px}
-    table{width:100%;border-collapse:collapse;font-size:11px} th,td{padding:7px 9px;border-bottom:1px solid var(--border);text-align:left}
-    th{position:sticky;top:0;background:var(--surface-raised);color:var(--text-soft)} td{font-family:var(--mono)} tr:hover td{background:var(--surface-raised)}
-    .cell-edit{width:82px;height:26px;padding:0 6px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--text);font-family:var(--mono);font-size:11px}
-    .cell-edit:hover,.cell-edit:focus{border-color:var(--border2);background:var(--panel2)}
-    .dataset-entry{margin-bottom:14px;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-raised)}
-    .entry-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .entry-heading h3{font-size:13px}
-    .entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
-    .entry-field label{display:block;margin-bottom:5px;color:var(--muted);font-size:10.5px;font-weight:750}
-    .pair-values{display:block;width:100%;height:62px;min-height:62px;margin:0;padding:8px;border:1px solid var(--border2);border-radius:7px;background:var(--surface-inset);color:var(--text);font-family:var(--mono);font-size:11px;resize:vertical}
-    .entry-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
-    .entry-message{min-height:15px;margin:8px 0 0;color:var(--muted);font-size:10.5px}
-    .entry-message.error{color:var(--danger)}.entry-message.success{color:var(--green)}
-    .degree-guidance{margin-top:11px;padding:10px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface-raised)}
-    .degree-description{margin:0;color:var(--text-soft);font-size:10.5px;line-height:1.55}
-    .degree-warning{margin:7px 0 0;padding:7px 9px;border:1px solid rgba(255,209,102,.4);border-radius:6px;background:var(--amber-subtle);color:var(--amber);font-size:10.5px;line-height:1.45}
-    .degree-warning.validation{border-color:rgba(240,135,162,.4);background:var(--pink-subtle);color:var(--pink)}
-    .add-row{display:flex;gap:6px;margin-top:10px}
-    .add-row input{width:76px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--inset);color:var(--text);padding:0 8px}
-    .side{display:grid;gap:18px;min-width:0}
-    .side-card{padding:20px}
-    .prediction-form{margin-top:14px}.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:10.5px;font-weight:700}
-    .predict-row{display:flex;gap:8px}.predict-row input{width:110px}
-    .predict-result{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:12px;border:1px solid rgba(154,140,255,.35);border-radius:10px;background:linear-gradient(120deg,var(--accent-subtle),var(--surface-raised))}
-    #prediction{font-size:23px;font-weight:850;color:var(--accent)}.interval{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
-    .prediction-equation{margin:12px 0;padding:10px;border:1px solid rgba(154,140,255,.35);border-radius:9px;background:var(--accent-subtle)}
-    .prediction-equation p{overflow-wrap:anywhere;margin:4px 0 0;color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:750}
-    .multi-predict-row{display:flex;gap:7px}.multi-predict-row input{min-width:0;flex:1}
-    .prediction-disclaimer{margin:9px 0 7px;color:var(--muted);font-size:10px;line-height:1.45}
-    .prediction-table-wrap{max-height:180px}
-    .prediction-table{min-width:330px}
-    .prediction-table th{background:var(--accent-subtle);color:var(--accent)}
-    .prediction-range{font-family:var(--sans);font-size:9.5px;font-weight:750}
-    .prediction-range.in-range{color:var(--green)}.prediction-range.extrapolation{color:var(--amber)}
-    .warning{display:none;margin-top:8px;padding:7px;border:1px solid rgba(255,209,102,.4);border-radius:7px;background:var(--amber-subtle);color:var(--amber);font-size:10.5px}
-    .equation{margin:14px 0 12px;padding:12px;border:1px solid rgba(154,140,255,.35);border-radius:10px;background:var(--accent-subtle)}
-    #equation{overflow-wrap:anywhere;margin:4px 0 0;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:800}
-    .metrics{margin:0}.metric{display:flex;justify-content:space-between;align-items:center;min-height:39px;border-bottom:1px solid var(--border)}
-    .metric:last-child{border-bottom:0}.metric dt{color:var(--muted);font-size:11px}.metric dd{margin:0;font-family:var(--mono);font-size:12px;font-weight:800}
-    .metric-guide{margin-top:12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-inset)}
-    .metric-guide summary{padding:10px;color:var(--text-soft);font-size:10.5px;font-weight:800;cursor:pointer}
-    .metric-definitions{display:grid;gap:8px;margin:0;padding:0 11px 11px}
-    .metric-definitions div{padding-top:7px;border-top:1px solid var(--border)}
-    .metric-definitions dt{color:var(--text);font-size:10.5px;font-weight:800}
-    .metric-definitions dd,.metric-guide-note{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
-    .metric-definitions code{color:var(--accent);font-family:var(--mono);font-size:9.5px}
-    .metric-guide-note{padding:0 11px 11px}
-    .status{padding:5px 8px;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:9.5px;font-weight:800}.status.ready{border-color:rgba(107,210,167,.4);color:var(--green);background:var(--green-subtle)}
-    .accordion{margin-top:12px;border:1px solid var(--border);border-radius:9px;overflow:hidden}
-    .accordion button{width:100%;height:38px;border:0;background:transparent;color:var(--muted);text-align:left;padding:0 11px;font-size:10.5px;font-weight:800;cursor:pointer}
-    .accordion-body{display:none;padding:11px;border-top:1px solid var(--border);color:var(--muted);font-size:10.5px;line-height:1.7}.accordion-body.open{display:block}
-    .results-card{grid-column:1/-1;min-width:0;padding:22px 24px}
-    .results-card h3{margin:18px 0 9px;font-size:13px}
-    .results-equation{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px;padding:13px 15px;border:1px solid rgba(154,140,255,.35);border-radius:10px;background:var(--accent-subtle)}
-    .results-equation p{overflow-wrap:anywhere;margin:5px 0 0;color:var(--accent);font-family:var(--mono);font-size:15px;font-weight:800}
-    .results-summary{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,1fr);gap:12px}
-    .results-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-    .results-meta-item{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-inset)}
-    .results-meta-item span{color:var(--muted);font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
-    .results-meta-item strong{font-family:var(--mono);font-size:13px}
-    .results-table-wrap{max-height:360px}
-    .results-table{min-width:690px}
-    .results-coefficient-table{max-width:850px}
-    .results-card .empty-result{text-align:center;color:var(--muted);font-family:var(--sans)}
-    .comparison-card{grid-column:1/-1;min-width:0;padding:22px 24px}
-    .comparison-card h3{margin:17px 0 9px;font-size:13px}
-    .dataset-stat-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:13px 0}
-    .dataset-stat{min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-inset)}
-    .dataset-stat span{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.45px;text-transform:uppercase}
-    .dataset-stat strong{display:block;overflow:hidden;margin-top:6px;font-family:var(--mono);font-size:11.5px;text-overflow:ellipsis;white-space:nowrap}
-    .comparison-note{margin:7px 0 10px;color:var(--muted);font-size:10.5px;line-height:1.55}
-    .comparison-table-wrap{max-height:360px}
-    .comparison-table{min-width:720px}
-    .comparison-table tr.current-degree td{background:var(--accent-subtle);font-weight:800}
-    .comparison-table .comparison-ready{color:var(--green)}
-    .comparison-table .comparison-unavailable{font-family:var(--sans);color:var(--muted)}
-    .results-cleared{color:var(--amber)!important}
-    .residual-card{grid-column:1/-1;min-width:0;padding:22px 24px}
-    .residual-summary{margin:14px 0;padding:11px 13px;border:1px solid var(--border);border-radius:9px;background:var(--surface-inset);color:var(--text-soft);font-size:11px;line-height:1.55}
-    .residual-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
-    .residual-stat{padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-inset)}
-    .residual-stat span{display:block;color:var(--muted);font-size:9.5px;font-weight:800;letter-spacing:.55px;text-transform:uppercase}
-    .residual-stat strong{display:block;margin-top:6px;font-family:var(--mono);font-size:14px}
-    .residual-chart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
-    .residual-chart-card{min-width:0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-raised)}
-    .residual-chart-card h3{margin:0;font-size:12px}
-    .residual-chart-card p{min-height:28px;margin:5px 0 8px;color:var(--muted);font-size:9.5px;line-height:1.45}
-    .residual-chart svg{display:block;width:100%;height:auto}
-    .residual-chart .chart-grid{stroke:var(--border);stroke-width:1}
-    .residual-chart .chart-axis{stroke:var(--border2);stroke-width:1}
-    .residual-chart .chart-tick{fill:var(--muted);font-family:var(--mono);font-size:9px}
-    .residual-chart .chart-label{fill:var(--muted);font-family:var(--sans);font-size:10px}
-    .residual-chart .chart-point{fill:var(--violet);stroke:var(--border-strong);stroke-width:1}
-    .residual-chart .residual-point{fill:var(--pink);stroke:var(--border-strong);stroke-width:1}
-    .residual-chart .zero-reference{stroke:var(--amber);stroke-width:1.5;stroke-dasharray:5 4}
-    .residual-chart .identity-reference{stroke:var(--green);stroke-width:1.5;stroke-dasharray:5 4}
-    .residual-chart .histogram-bar{fill:var(--violet);opacity:.78}
-    .residual-empty{display:grid;min-height:150px;place-items:center;padding:16px;border:1px dashed var(--border2);border-radius:8px;color:var(--muted);font-size:10.5px;text-align:center}
-    .residual-pattern-guide{margin:13px 0 0;padding:10px 12px;border-left:3px solid var(--blue);border-radius:4px;background:rgba(112,165,255,.1);color:var(--text-soft);font-size:10.5px;line-height:1.55}
-    .residual-table-wrap{max-height:320px;margin-top:10px}
-    .residual-table{min-width:610px}
-    .education-card{grid-column:1/-1;min-width:0;padding:22px 24px}
-    .education-intro{max-width:900px;margin:8px 0 15px;color:var(--muted);font-size:11.5px;line-height:1.6}
-    .education-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-    .education-topic{min-width:0;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--surface-raised)}
-    .education-topic h3{margin:0 0 7px;font-size:12px}
-    .education-topic p,.education-topic ul{margin:0;color:var(--text-soft);font-size:10.5px;line-height:1.6}
-    .education-topic ul{padding-left:17px}
-    .education-topic li+li{margin-top:4px}
-    .education-equation{display:block;margin:9px 0;padding:10px;border:1px solid rgba(154,140,255,.35);border-radius:8px;background:var(--accent-subtle);color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:800;text-align:center}
-    .education-note{margin-top:9px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted);font-size:9.5px;line-height:1.55}
-    @page{margin:12mm}
-    @media print{
-      body{min-width:0;background:#fff;color:#111;font-size:10pt}
-      header{position:static;max-width:none;padding:0 0 10px;border-bottom:1px solid #999;background:#fff}
-      header .actions,.quick-links,.toolbar,.tabs,.panel,.tab-actions,.prediction-form,.entry-actions,.add-row,.warning,.toast,.modal,.tooltip,.hud,.accordion button,button{display:none!important}
-      .workspace{display:block;max-width:none;margin:0;padding:0}
-      .card{margin:0 0 12px;border:1px solid #bbb;border-radius:5px;background:#fff;box-shadow:none;break-inside:avoid}
-      .dashboard-summary,.chart-card,.side-card,.results-card,.residual-card{padding:14px}
-      .side{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
-      .stage{break-inside:avoid;background:#fff}
-      canvas{height:300px}
-      .results-card,.residual-card{break-inside:auto}
-      .comparison-card{break-inside:auto}
-      .table-wrap{max-height:none;overflow:visible;border-color:#aaa}
-      .table-wrap table{width:100%;min-width:0;font-size:8pt}
-      .table-wrap th{position:static}
-      .results-card h3,.residual-card h3{break-after:avoid}
-      .residual-chart-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .residual-chart-card{break-inside:avoid}
-      .accordion-body{display:block}
-      .education-card{display:none!important}
-      footer{padding:8px;border:0;background:#fff}
-      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(154, 140, 255, 0.14), transparent 38rem),
+        radial-gradient(ellipse at 88% 100%, rgba(112, 165, 255, 0.08), transparent 35rem),
+        var(--background);
+      overflow-x: hidden;
     }
-    .modal{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:16px;background:rgba(0,0,0,.68);backdrop-filter:blur(5px)}
-    .modal.open{display:grid}.modal-card{width:min(520px,100%);padding:20px;border:1px solid var(--border2);border-radius:14px;background:var(--panel);box-shadow:0 24px 70px rgba(0,0,0,.55)}
-    textarea{width:100%;height:150px;margin:10px 0;border:1px solid var(--border2);border-radius:8px;background:var(--inset);color:var(--text);padding:10px;font-family:var(--mono);font-size:11px}
-    .toast{position:fixed;right:22px;bottom:22px;z-index:30;display:none;padding:10px 14px;border:1px solid var(--border2);border-radius:8px;background:var(--surface-raised);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:12px}
-    footer{padding:20px;color:var(--muted);text-align:center;font-size:10.5px;border-top:1px solid var(--border);background:rgba(20,25,37,.55)}
-    @media(max-width:1100px){.overview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.residual-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.education-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dataset-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    @media(max-width:980px){.workspace{grid-template-columns:1fr;padding:0 16px}.side{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}}
-    @media(max-width:600px){header{padding:13px 16px}.workspace{margin-top:16px}.chart-card{padding:16px 12px}.dashboard-summary{padding:17px 14px}.results-card,.residual-card,.education-card,.comparison-card{padding:17px 12px}.results-summary{grid-template-columns:1fr}.results-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.residual-chart-grid,.education-grid{grid-template-columns:1fr}.residual-stat-grid{grid-template-columns:1fr}.dataset-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.results-equation{align-items:flex-start;flex-direction:column}canvas{height:330px}.brand p{display:none}.actions{width:100%}.side{grid-template-columns:1fr}.section-head{flex-wrap:wrap}.tabs{gap:4px}.tab{padding:8px 9px}.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-links{align-items:stretch}.quick-links .eyebrow{width:100%}.entry-grid{grid-template-columns:1fr}.entry-heading{align-items:flex-start;flex-direction:column}}
+
+    button, input, select, textarea { font: inherit; }
+
+    /* ========================================================
+       1. STRICT 100VH EXPERIMENT LAB VIEWPORT
+       ======================================================== */
+    .lab-viewport {
+      height: 100vh;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Slim 42px Header */
+    .site-header {
+      height: 42px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: rgba(14, 18, 27, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 30;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      border-radius: 7px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      font-size: 16px;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .nav-pill-link {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 11px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: all 0.14s ease;
+    }
+    .nav-pill-link:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent-subtle);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 2-Column Responsive Workspace */
+    .lab-workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+      gap: 12px;
+      padding: 8px 16px 8px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Left Column: Canvas, Degrees & Dock Tabs */
+    .lab-main-col {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      gap: 6px;
+    }
+
+    .lab-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lab-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .badge-purple {
+      border: 1px solid rgba(154, 140, 255, 0.25);
+      color: #d1caff;
+      background: var(--accent-subtle);
+    }
+
+    .badge-amber {
+      border: 1px solid rgba(255, 209, 102, 0.3);
+      color: var(--amber);
+      background: rgba(255, 209, 102, 0.1);
+    }
+
+    .badge-green {
+      border: 1px solid rgba(107, 210, 167, 0.3);
+      color: var(--green);
+      background: rgba(107, 210, 167, 0.1);
+    }
+
+    .lab-hints {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    .lab-hints kbd {
+      padding: 1px 4px;
+      border: 1px solid var(--border-strong);
+      border-radius: 3px;
+      background: var(--surface-raised);
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    /* Canvas Stage Container */
+    .chart-stage {
+      position: relative;
+      flex: 1;
+      min-height: 190px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+    }
+
+    #chart {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    #chart.is-point-hover { cursor: grab; }
+    #chart.is-dragging { cursor: grabbing; }
+
+    .canvas-hud {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(14, 18, 27, 0.85);
+      backdrop-filter: blur(6px);
+      color: var(--text-soft);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      pointer-events: none;
+    }
+
+    .floating-tooltip {
+      position: absolute;
+      display: none;
+      pointer-events: none;
+      z-index: 25;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: rgba(19, 25, 39, 0.95);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-size: 10.5px;
+      line-height: 1.4;
+      white-space: nowrap;
+      transform: translate(-50%, -120%);
+    }
+
+    /* Selected Bar */
+    .selected-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 209, 102, 0.3);
+      background: rgba(255, 209, 102, 0.06);
+      font-size: 11px;
+    }
+    .selected-bar.active { display: flex; }
+
+    .selected-bar-coords {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .selected-bar-coords input {
+      width: 58px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* Degree & Layer Control Strip */
+    .controls-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 2px 2px;
+    }
+
+    .degree-selector-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .degree-btn {
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .degree-btn:hover { border-color: var(--accent); color: #fff; }
+    .degree-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+      color: #d8d0ff;
+    }
+
+    .ridge-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    .ridge-group input[type="range"] { width: 65px; accent-color: var(--amber); }
+
+    .toggles-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 10.5px;
+      color: var(--text-soft);
+      user-select: none;
+    }
+    .toggle-chip input[type="checkbox"] {
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      border-radius: 3px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface-inset);
+      cursor: pointer;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .toggle-chip input[type="checkbox"]:checked {
+      border-color: var(--accent);
+      background: var(--accent-strong);
+    }
+    .toggle-chip input[type="checkbox"]:checked::after {
+      content: "✓";
+      font-size: 8px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .legend-curve { width: 14px; height: 2.5px; background: var(--pink); border-radius: 2px; }
+    .legend-ref { width: 12px; border-top: 1.5px dashed var(--muted); }
+    .legend-dash { width: 12px; border-top: 2px dashed #a4aec1; }
+    .legend-band { width: 12px; height: 7px; background: rgba(154, 140, 255, 0.2); border-radius: 2px; }
+
+    /* Bottom Sub-Tabs Dock */
+    .dock-container {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .dock-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-raised);
+    }
+
+    .dock-btn {
+      padding: 4px 9px;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .dock-btn:hover { color: var(--text); background: var(--surface-inset); }
+    .dock-btn.active {
+      color: #fff;
+      background: var(--accent-subtle);
+      border-color: rgba(154, 140, 255, 0.3);
+    }
+
+    .dock-panel {
+      display: none;
+      padding: 6px 10px;
+      min-height: 48px;
+      max-height: 85px;
+      overflow-y: auto;
+    }
+    .dock-panel.active { display: block; }
+
+    .presets-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .dock-preset-btn {
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dock-preset-btn:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent-subtle);
+    }
+
+    /* Comparison Table in Dock */
+    .comp-table-mini {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      font-family: var(--font-mono);
+    }
+    .comp-table-mini th, .comp-table-mini td {
+      padding: 2px 6px;
+      border-bottom: 1px solid rgba(40, 47, 64, 0.4);
+      text-align: left;
+    }
+    .comp-table-mini th { color: var(--muted); font-family: var(--font-sans); }
+    .comp-table-mini tr.active-row td { color: var(--amber); font-weight: 700; }
+
+    /* Right Column: Cards & Metrics */
+    .lab-side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .side-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 10px 12px;
+      flex-shrink: 0;
+    }
+
+    .card-top-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .card-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .equation-display {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #d1c8ff;
+      margin: 2px 0 0;
+      letter-spacing: -0.3px;
+      overflow-wrap: anywhere;
+    }
+
+    .metrics-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px 10px;
+    }
+    .metric-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(40, 47, 64, 0.5);
+      font-size: 11px;
+    }
+    .metric-name { color: var(--text-soft); }
+    .metric-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Prediction Card */
+    .predict-form-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .predict-form-row input[type="number"] {
+      width: 70px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .predict-form-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .predict-output-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: linear-gradient(120deg, rgba(128, 108, 242, 0.12), transparent);
+      border: 1px solid rgba(154, 140, 255, 0.2);
+    }
+    .predict-val {
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .predict-pi {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Common Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 3px 8px;
+      min-height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .btn:hover { border-color: var(--accent); color: #fff; background: #25223a; }
+    .btn.primary {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent-strong), #9580ff);
+      color: #fff;
+    }
+    .btn.primary:hover { background: #9d8cff; }
+    .btn.danger {
+      border-color: rgba(240, 135, 162, 0.3);
+      color: #f7a2b7;
+      background: rgba(240, 135, 162, 0.08);
+    }
+    .btn.danger:hover {
+      border-color: var(--pink);
+      color: #fff;
+      background: rgba(240, 135, 162, 0.2);
+    }
+
+    .jump-to-theory {
+      margin-top: auto;
+      padding: 6px 10px;
+      border-radius: 7px;
+      border: 1px solid rgba(112, 165, 255, 0.25);
+      background: rgba(112, 165, 255, 0.08);
+      color: #c4dcff;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.14s ease;
+    }
+    .jump-to-theory:hover {
+      background: rgba(112, 165, 255, 0.18);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    /* ========================================================
+       2. BELOW-THE-FOLD THEORY & MATHEMATICAL DERIVATIONS
+       ======================================================== */
+    .theory-section {
+      min-height: 100vh;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      border-top: 1px solid var(--border);
+    }
+
+    .theory-header {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .theory-header h2 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      font-weight: 850;
+      letter-spacing: -0.6px;
+    }
+    .theory-header p {
+      margin: 0 auto;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .theory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .theory-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .theory-card-badge {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .theory-card h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .theory-card p {
+      margin: 0 0 14px;
+      color: var(--text-soft);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .math-callout {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: #d1c8ff;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .math-callout span.live-val {
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .back-to-lab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 32px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--accent-subtle);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .back-to-lab-btn:hover { background: var(--accent-strong); }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 7px;
+      border: 1px solid var(--accent);
+      background: #1d1b31;
+      color: #fff;
+      font-size: 11px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      padding: 16px;
+    }
+    .modal-overlay.open { display: grid; }
+    .modal-card {
+      width: min(480px, 100%);
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+    }
+    .modal-card textarea {
+      width: 100%;
+      height: 120px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin: 8px 0 12px;
+    }
+
+    @media (max-width: 860px) {
+      .lab-viewport {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+      }
+      .lab-workspace {
+        grid-template-columns: minmax(0, 1fr);
+        overflow: visible;
+      }
+      .chart-stage { height: 320px; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <span class="mark" aria-hidden="true">〰</span>
-      <div><h1>Polynomial Regression Analyzer</h1><p>Polynomial modeling and evaluation workspace</p></div>
-    </div>
-    <div class="actions">
-      <button class="btn small" id="undo" type="button" title="Undo (Ctrl+Z)">↶ Undo</button>
-      <button class="btn small" id="redo" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
-      <button class="btn small" id="resetApp" type="button" title="Restore the sample dataset and default controls">Reset app</button>
-      <button class="btn small" id="save" type="button">▣ Save PNG</button>
-    </div>
-  </header>
-  <main class="workspace">
-    <section class="card dashboard-summary" aria-labelledby="dashboard-title">
-      <div class="dashboard-heading">
-        <div>
-          <p class="eyebrow">Main Dashboard</p>
-          <h2 id="dashboard-title">Polynomial Regression Analyzer</h2>
-          <p class="dashboard-description">Polynomial regression models nonlinear relationships by fitting a curve through observed X and Y values. Explore model degree, review fit metrics, inspect predictions, and export your results from one workspace.</p>
+
+  <!-- ========================================================
+       1. 100VH EXPERIMENT LAB SCREEN
+       ======================================================== -->
+  <div class="lab-viewport" id="top">
+    <!-- Slim 42px Header -->
+    <header class="site-header">
+      <div class="brand-group">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">∿</span>
+          <span>Polynomial Regression Lab</span>
+        </a>
+        <a class="nav-pill-link" href="index.html">◂ Hub</a>
+        <a class="nav-pill-link" href="linear_regression.html">Linear Lab ▸</a>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="undo-button" type="button" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button class="btn" id="redo-button" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
+        <button class="btn" id="export-chart-button" type="button" title="Download chart PNG">📷 Save PNG</button>
+        <button class="btn danger" id="clear-button" type="button">Clear All</button>
+      </div>
+    </header>
+
+    <!-- 2-Column Responsive Lab Area (No Scroll) -->
+    <main class="lab-workspace">
+      <!-- Left Column: Canvas, Degrees & Dock Tabs -->
+      <section class="lab-main-col" aria-label="Interactive Chart Stage">
+        <!-- Compact Info Bar -->
+        <div class="lab-bar-top">
+          <div class="lab-title-group">
+            <h1 class="lab-title">Polynomial Curve Fitting</h1>
+            <span class="badge badge-purple"><span id="point-count">0</span> points</span>
+            <span class="badge badge-amber" id="degree-badge">Degree 2</span>
+            <span class="badge badge-green" id="overfit-badge">Healthy Fit</span>
+          </div>
+          <span class="lab-hints">Click = add · Drag = move · <kbd>Right-click</kbd> = delete · <kbd>←↑→↓</kbd> = nudge</span>
         </div>
-      </div>
-      <div class="overview-grid" aria-label="Dataset and model overview">
-        <div class="overview-item"><span class="overview-label">Dataset</span><strong class="overview-value small" id="dashboardDataset">No dataset loaded</strong><span class="overview-detail">X predictor · Y response</span></div>
-        <div class="overview-item"><span class="overview-label">Observations</span><strong class="overview-value" id="dashboardObservations">0</strong><span class="overview-detail">Data pairs in current dataset</span></div>
-        <div class="overview-item"><span class="overview-label">Selected degree</span><strong class="overview-value" id="dashboardDegree">2</strong><span class="overview-detail">Polynomial model complexity</span></div>
-        <div class="overview-item"><span class="overview-label">Model status</span><strong class="overview-value small overview-status" id="dashboardStatus">Waiting for data</strong><span class="overview-detail">Fit readiness</span></div>
-        <div class="overview-item"><span class="overview-label">R-squared</span><strong class="overview-value" id="dashboardR2">—</strong><span class="overview-detail">Explained variation</span></div>
-        <div class="overview-item"><span class="overview-label">RMSE</span><strong class="overview-value" id="dashboardRMSE">—</strong><span class="overview-detail">Typical error in Y units</span></div>
-      </div>
-      <nav class="quick-links" aria-label="Quick access">
-        <span class="eyebrow">Quick access</span>
-        <button class="quick-link" type="button" data-jump="presets">Degree &amp; presets</button>
-        <button class="quick-link" type="button" data-jump="table">Edit dataset</button>
-        <button class="quick-link" type="button" data-jump="controls">Model controls</button>
-        <button class="quick-link" type="button" data-jump="predictionCard">Prediction</button>
-        <button class="quick-link" type="button" data-jump="residualAnalysis">Residual analysis</button>
-        <button class="quick-link" type="button" data-jump="education">Learn polynomial regression</button>
-        <button class="quick-link" type="button" data-jump="comparison">Dataset stats &amp; degree comparison</button>
-        <button class="quick-link" type="button" data-jump="report">Export report</button>
-        <button class="quick-link" type="button" data-jump="print">Print results</button>
-      </nav>
-    </section>
-    <section class="card chart-card">
-      <div class="section-head">
-        <div><p class="eyebrow">Interactive Dataset &amp; Plot</p><h2>Polynomial Regression: Actual vs. Fitted Values</h2></div>
-        <div class="badges"><span class="badge"><span id="pointCount">0</span> points</span><span class="badge" id="rangeBadge">Degree 2</span></div>
-      </div>
-      <p class="help">Click to add · drag to move · right-click or <kbd>Delete</kbd> to remove · use arrow keys to nudge</p>
-      <div class="stage">
-        <canvas id="chart" width="700" height="430" aria-label="Polynomial regression chart. Actual observations are scatterplot points and the fitted model is a smooth curve. Horizontal axis: Independent Variable (X). Vertical axis: Dependent Variable (Y)." role="img"></canvas>
-        <div class="hud" id="hud">X — · Y —</div>
-        <div class="tooltip" id="tooltip"></div>
-      </div>
-      <div class="toolbar" aria-label="Chart legend and display options">
-        <label class="toggle"><input id="showPoints" type="checkbox" checked><span class="dot"></span> Actual observations</label>
-        <label class="toggle"><input id="showCurve" type="checkbox" checked><span class="line-key"></span> Regression curve</label>
-        <label class="toggle"><input id="showResidual" type="checkbox" checked><span class="dash-key"></span> Residuals</label>
-        <label class="toggle"><input id="showMean" type="checkbox"><span style="color:var(--blue)">┈</span> Mean Y</label>
-      </div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="presets" type="button">✦ Presets &amp; Degree</button>
-        <button class="tab" data-tab="table" type="button">▦ Data &amp; Entry</button>
-        <button class="tab" data-tab="controls" type="button">⚙ Model Controls</button>
-      </div>
-      <div class="panel active" id="presets">
-        <div class="row">
-          <button class="btn primary small" id="generate" type="button">Generate Sample</button>
-          <button class="preset" data-preset="quadratic" type="button">Quadratic</button>
-          <button class="preset" data-preset="cubic" type="button">Cubic</button>
-          <button class="preset" data-preset="wave" type="button">Sine-like</button>
-          <button class="preset" data-preset="outlier" type="button">Outlier</button>
-          <button class="preset" data-preset="perfect" type="button">Perfect Curve</button>
-          <div class="degree-control"><label for="degree">Degree</label><select id="degree" aria-describedby="degreeDescription degreeWarning"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
-          <div class="degree-control"><label for="noise">Noise</label><input id="noise" type="range" min="0" max="20" value="7" style="width:80px"><span id="noiseVal" style="color:var(--muted);font-size:10.5px">7</span></div>
-          <button class="btn small danger" id="clear" type="button">Clear</button>
+
+        <!-- Canvas Stage -->
+        <div class="chart-stage">
+          <canvas id="chart" width="600" height="380" aria-label="Polynomial Regression Curve Canvas"></canvas>
+          <div class="canvas-hud" id="hud-coords">X: — | Y: —</div>
+          <div class="floating-tooltip" id="chart-tooltip"></div>
         </div>
-        <div class="degree-guidance" aria-live="polite">
-          <p class="degree-description" id="degreeDescription"></p>
-          <p class="degree-warning" id="degreeWarning" role="status" hidden></p>
-        </div>
-      </div>
-      <div class="panel" id="table">
-        <section class="dataset-entry" aria-labelledby="entry-title">
-          <div class="entry-heading"><h3 id="entry-title">Enter paired observations</h3><span class="overview-detail">Use comma-separated numbers · range −1000 to 1000</span></div>
-          <p class="help">Enter matching X and Y lists to replace the current dataset. Each X value pairs with the Y value in the same position.</p>
-          <form id="pairedDataForm" novalidate>
-            <div class="entry-grid">
-              <div class="entry-field"><label for="xValues">Independent variable (X)</label><textarea class="pair-values" id="xValues" placeholder="e.g. 1, 2, 3, 4" aria-describedby="entryMessage"></textarea></div>
-              <div class="entry-field"><label for="yValues">Dependent variable (Y)</label><textarea class="pair-values" id="yValues" placeholder="e.g. 2, 5, 10, 17" aria-describedby="entryMessage"></textarea></div>
-            </div>
-            <div class="entry-actions">
-              <button class="btn primary small" type="submit">Load paired data</button>
-              <button class="btn small" id="sampleDataset" type="button">Sample dataset</button>
-              <button class="btn small danger" id="clearDataset" type="button">Clear all</button>
-              <button class="btn small" id="importCsv" type="button">Import CSV</button>
-            </div>
-            <p class="entry-message" id="entryMessage" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-        <div class="table-wrap"><table><thead><tr><th>#</th><th>X</th><th>Y</th><th>Ŷ</th><th>Residual</th><th>e²</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
-        <div class="tab-actions" style="justify-content:space-between;margin-top:9px">
-          <div class="add-row"><input id="addX" type="number" placeholder="X" aria-label="New observation X value" min="-1000" max="1000" step="any"><input id="addY" type="number" placeholder="Y" aria-label="New observation Y value" min="-1000" max="1000" step="any"><button class="btn primary small" id="addPoint" type="button">Add observation</button></div>
-          <div class="row">
-            <button class="btn small" id="exportCsv" type="button">Export Data CSV</button>
-            <button class="btn small" id="exportPredictions" type="button">Export Predictions CSV</button>
-            <button class="btn small" id="exportCoefficients" type="button">Export Coefficients CSV</button>
-            <button class="btn small" id="exportResults" type="button">Download Results CSV</button>
-            <button class="btn small" id="exportReport" type="button">Export Report TXT</button>
-            <button class="btn small" id="printResults" type="button">Print Results</button>
+
+        <!-- Selected Point Bar -->
+        <div class="selected-bar" id="selected-bar">
+          <div class="selected-bar-coords">
+            <strong style="color: var(--amber);">Selected:</strong>
+            <label>X <input type="number" id="sel-x-input" step="0.5" min="0" max="100"></label>
+            <label>Y <input type="number" id="sel-y-input" step="0.5" min="0" max="100"></label>
+            <span id="selected-point-info" style="color: var(--muted); font-size: 10px;"></span>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn danger" id="delete-selected-btn" type="button" style="padding: 2px 6px; font-size: 10px;">Delete</button>
+            <button class="btn" id="deselect-btn" type="button" style="padding: 2px 6px; font-size: 10px;">Done</button>
           </div>
         </div>
-      </div>
-      <div class="panel" id="controls">
-        <div class="row">
-          <div class="degree-control"><label for="ridge">Ridge λ</label><input id="ridge" type="range" min="0" max="1" step="0.01" value="0" style="width:120px"><span id="ridgeVal" style="color:var(--amber);font-family:var(--mono);font-size:11px">0</span></div>
-          <button class="btn small" id="snapLine" type="button">Reset curve view</button>
-          <span style="color:var(--muted);font-size:10.5px">Centering and scaling stabilize high-degree fits.</span>
-        </div>
-      </div>
-    </section>
-    <aside class="side">
-      <section class="card side-card" id="predictionCard">
-        <p class="eyebrow">Try a Prediction</p><h3>Prediction</h3>
-        <div class="prediction-equation"><span class="eyebrow" id="predictionEquationLabel">Selected polynomial equation</span><p id="predictionEquation">No fitted equation is available yet.</p></div>
-        <form class="prediction-form" id="predictForm">
-          <div class="field"><label for="xInput">New X value</label><div class="predict-row"><input id="xInput" type="number" min="-1000" max="1000" step="any" value="50" aria-describedby="predictionError" required><button class="btn primary" type="submit">Predict Ŷ →</button></div></div>
-          <input id="xSlider" type="range" min="0" max="100" value="50" step=".5" style="width:100%;margin-top:10px">
-        </form>
-        <div class="predict-result"><div><div class="eyebrow">Predicted Y · model estimate</div><div class="interval" id="interval">Approx. residual range: —</div></div><output id="prediction" aria-live="polite">—</output></div>
-        <p class="entry-message error" id="predictionError" role="status" aria-live="polite" hidden></p>
-        <div class="warning" id="warning">⚠ Extrapolation beyond the observed X range</div>
-        <form class="prediction-form" id="multiPredictForm" novalidate>
-          <div class="field">
-            <label for="multiXValues">Predict for multiple new X values</label>
-            <div class="multi-predict-row"><input id="multiXValues" type="text" inputmode="decimal" placeholder="e.g. 10, 25, 50, 75" aria-describedby="multiPredictionMessage"><button class="btn small" type="submit">Predict all</button></div>
+
+        <!-- Degree & Layer Controls Strip -->
+        <div class="controls-strip">
+          <div class="degree-selector-group">
+            <span style="font-size:10.5px; color:var(--muted); font-weight:700;">Degree:</span>
+            <button class="degree-btn" data-degree="1" type="button">1 (Linear)</button>
+            <button class="degree-btn active" data-degree="2" type="button">2 (Quad)</button>
+            <button class="degree-btn" data-degree="3" type="button">3 (Cubic)</button>
+            <button class="degree-btn" data-degree="4" type="button">4</button>
+            <button class="degree-btn" data-degree="5" type="button">5</button>
+            <button class="degree-btn" data-degree="6" type="button">6</button>
           </div>
-        </form>
-        <p class="entry-message" id="multiPredictionMessage" role="status">Enter comma-separated X values from −1000 to 1000.</p>
-        <section id="multiPredictionSection" hidden aria-labelledby="multiPredictionTitle">
-          <h4 id="multiPredictionTitle" class="eyebrow">Model predictions · not observed data</h4>
-          <p class="prediction-disclaimer">These are estimates from the selected polynomial, not observed Y values.</p>
-          <div class="table-wrap prediction-table-wrap">
-            <table class="prediction-table" aria-label="Model predictions for new X values; not observed Y data">
-              <thead><tr><th>#</th><th>New X</th><th>Predicted Y (Ŷ)</th><th>Range</th></tr></thead>
-              <tbody id="multiPredictionRows"></tbody>
+
+          <div class="ridge-group">
+            <span>Ridge λ:</span>
+            <input type="range" id="ridge-slider" min="0" max="1" step="0.01" value="0">
+            <span id="ridge-val" style="font-family:var(--font-mono); color:var(--amber);">0.00</span>
+          </div>
+
+          <div class="toggles-strip">
+            <label class="toggle-chip">
+              <input type="checkbox" id="toggle-curve" checked>
+              <i class="legend-curve"></i> Curve
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="toggle-ref-line">
+              <i class="legend-ref"></i> Linear Ref
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="toggle-residuals" checked>
+              <i class="legend-dash"></i> Residuals
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="toggle-ci">
+              <i class="legend-band"></i> Conf. Band
+            </label>
+          </div>
+        </div>
+
+        <!-- Docked Sub-Tabs at Bottom of Left Column -->
+        <div class="dock-container">
+          <nav class="dock-nav" role="tablist">
+            <button class="dock-btn active" role="tab" data-dock="dock-presets">✦ Presets</button>
+            <button class="dock-btn" role="tab" data-dock="dock-comp">⚖ Degree Comparison</button>
+            <button class="dock-btn" role="tab" data-dock="dock-data">📋 Data Table &amp; CSV</button>
+          </nav>
+
+          <!-- Dock 1: Presets -->
+          <div class="dock-panel active" id="dock-presets" role="tabpanel">
+            <div class="presets-row">
+              <button class="btn primary" id="generate-button" type="button">✦ Sample Parabola</button>
+              <button class="dock-preset-btn" type="button" data-preset="cubic">Cubic S-Curve</button>
+              <button class="dock-preset-btn" type="button" data-preset="runge">Runge's Oscillation</button>
+              <button class="dock-preset-btn" type="button" data-preset="sinusoidal">Sinusoidal Wave</button>
+              <button class="dock-preset-btn" type="button" data-preset="inverted">Inverted U</button>
+              <button class="dock-preset-btn" type="button" data-preset="noisy">Noisy Curve</button>
+              <button class="dock-preset-btn" type="button" data-preset="random">Random Cloud</button>
+
+              <div style="margin-left:auto; display:inline-flex; align-items:center; gap:5px; font-size:10px; color:var(--muted);">
+                <span>Noise:</span>
+                <input type="range" id="noise-slider" min="1" max="25" value="8" style="width:65px; accent-color:var(--accent);">
+                <span id="noise-val">8</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dock 2: Multi-Degree Comparison -->
+          <div class="dock-panel" id="dock-comp" role="tabpanel">
+            <table class="comp-table-mini">
+              <thead>
+                <tr>
+                  <th>Degree</th>
+                  <th>Status</th>
+                  <th>R²</th>
+                  <th>Adj. R²</th>
+                  <th>MSE</th>
+                  <th>RMSE</th>
+                </tr>
+              </thead>
+              <tbody id="comp-table-body">
+                <tr><td colspan="6" style="text-align:center; color:var(--muted);">Add data to compare degrees</td></tr>
+              </tbody>
             </table>
           </div>
-        </section>
-      </section>
-      <section class="card side-card">
-        <div class="section-head"><div><p class="eyebrow">Model Summary</p><h3>Metrics &amp; Fit</h3></div><span class="status" id="status">Waiting for data</span></div>
-        <div class="equation"><span class="eyebrow">Polynomial equation · z = (x − x̄) / sₓ</span><p id="equation">ŷ = —</p></div>
-        <dl class="metrics">
-          <div class="metric"><dt>Degree</dt><dd id="metricDegree">—</dd></div>
-          <div class="metric"><dt>R²</dt><dd id="r2">—</dd></div>
-          <div class="metric"><dt>Adjusted R²</dt><dd id="adjr2">—</dd></div>
-          <div class="metric"><dt>MAE</dt><dd id="mae">—</dd></div>
-          <div class="metric"><dt>MSE</dt><dd id="mse">—</dd></div>
-          <div class="metric"><dt>RMSE</dt><dd id="rmse">—</dd></div>
-          <div class="metric"><dt>SSE</dt><dd id="sse">—</dd></div>
-          <div class="metric"><dt>SST</dt><dd id="sst">—</dd></div>
-        </dl>
-        <details class="metric-guide">
-          <summary>Metric formulas &amp; explanations</summary>
-          <dl class="metric-definitions">
-            <div><dt>R-squared (R²)</dt><dd><code>1 − SSE / SST</code> measures the share of variation explained by the model; it can be negative.</dd></div>
-            <div><dt>Adjusted R-squared</dt><dd><code>1 − (1 − R²)(n − 1)/(n − p − 1)</code> adjusts R² for sample size and the <i>p</i> polynomial predictors.</dd></div>
-            <div><dt>Mean Absolute Error (MAE)</dt><dd><code>Σ|yᵢ − ŷᵢ| / n</code> is the average absolute error, in Y units.</dd></div>
-            <div><dt>Mean Squared Error (MSE)</dt><dd><code>Σ(yᵢ − ŷᵢ)² / n</code> is the average squared error, in squared Y units.</dd></div>
-            <div><dt>Root Mean Squared Error (RMSE)</dt><dd><code>√MSE</code> is the root-mean-square error, in Y units.</dd></div>
-            <div><dt>Sum of Squared Errors (SSE)</dt><dd><code>Σ(yᵢ − ŷᵢ)²</code> is the total squared residual error.</dd></div>
-            <div><dt>Total Sum of Squares (SST)</dt><dd><code>Σ(yᵢ − ȳ)²</code> is the total variation in observed Y around its mean.</dd></div>
-          </dl>
-          <p class="metric-guide-note">Here, <i>n</i> is the observation count, <i>p</i> is the polynomial degree (predictors excluding the intercept), and each residual is <i>yᵢ − ŷᵢ</i>. R² is undefined when SST = 0; adjusted R² is undefined when SST = 0 or n ≤ p + 1. A degree-<i>p</i> model needs at least p + 1 observations to fit. With Ridge λ &gt; 0, the conventional adjusted R² does not account for shrinkage.</p>
-        </details>
-        <div class="accordion"><button id="details" type="button">📐 Model details &amp; coefficients ▾</button><div class="accordion-body" id="detailsBody">Add at least three points to fit a polynomial.</div></div>
-      </section>
-    </aside>
-    <section class="card comparison-card" id="comparison" aria-labelledby="comparison-title">
-      <div class="section-head">
-        <div><p class="eyebrow">Data &amp; Model Selection</p><h2 id="comparison-title">Dataset Statistics &amp; Degree Comparison</h2></div>
-        <span class="status" id="comparisonStatus">Waiting for data</span>
-      </div>
-      <div class="dataset-stat-grid" aria-label="Current dataset statistics">
-        <div class="dataset-stat"><span>Observations</span><strong id="statCount">0</strong></div>
-        <div class="dataset-stat"><span>Distinct X values</span><strong id="statUniqueX">0</strong></div>
-        <div class="dataset-stat"><span>Mean X</span><strong id="statMeanX">—</strong></div>
-        <div class="dataset-stat"><span>Population SD X</span><strong id="statSdX">—</strong></div>
-        <div class="dataset-stat"><span>Mean Y</span><strong id="statMeanY">—</strong></div>
-        <div class="dataset-stat"><span>Population SD Y</span><strong id="statSdY">—</strong></div>
-        <div class="dataset-stat"><span>X range</span><strong id="statRangeX">—</strong></div>
-      </div>
-      <h3>Compare polynomial degrees</h3>
-      <p class="comparison-note" id="comparisonNote">Each degree is refitted to the current dataset using the current Ridge λ. Metrics are in-sample; use validation data when choosing a model. Adjusted R² is conventional and does not correct for Ridge shrinkage. The selected degree is highlighted.</p>
-      <div class="table-wrap comparison-table-wrap">
-        <table class="comparison-table" aria-label="In-sample model performance by polynomial degree">
-          <thead><tr><th>Degree</th><th>Fit status</th><th>R²</th><th>Adjusted R²</th><th>MAE</th><th>RMSE</th><th>SSE</th></tr></thead>
-          <tbody id="comparisonTbody"></tbody>
-        </table>
-      </div>
-    </section>
-    <section class="card results-card" aria-labelledby="results-title">
-      <div class="section-head">
-        <div><p class="eyebrow">Model Output</p><h2 id="results-title">Regression Results</h2></div>
-        <div class="row"><button class="btn small" id="clearResults" type="button">Clear results</button><span class="status" id="resultsStatus">Waiting for data</span></div>
-      </div>
-      <div class="results-summary">
-        <div class="results-equation">
-          <div><span class="eyebrow" id="resultsEquationLabel">Polynomial equation · original-X basis</span><p id="resultsEquation" aria-live="polite">ŷ = —</p></div>
-          <button class="btn small" id="copyEquation" type="button">Copy equation</button>
+
+          <!-- Dock 3: Data Table & CSV -->
+          <div class="dock-panel" id="dock-data" role="tabpanel">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <input type="number" id="tbl-add-x" placeholder="X" min="0" max="100" step="any" style="width:52px; padding:2px 4px; border-radius:4px; border:1px solid var(--border-strong); background:var(--surface-inset); color:#fff; font-size:11px;">
+                <input type="number" id="tbl-add-y" placeholder="Y" min="0" max="100" step="any" style="width:52px; padding:2px 4px; border-radius:4px; border:1px solid var(--border-strong); background:var(--surface-inset); color:#fff; font-size:11px;">
+                <button class="btn primary" id="tbl-add-btn" type="button" style="font-size:10.5px;">+ Add</button>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn" id="export-csv-btn" type="button">Export CSV</button>
+                <button class="btn" id="open-import-btn" type="button">Paste / Import</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="results-meta" aria-label="Model details">
-          <div class="results-meta-item"><span>Selected degree</span><strong id="resultsDegree">2</strong></div>
-          <div class="results-meta-item"><span>Observations</span><strong id="resultsObservations">0</strong></div>
+      </section>
+
+      <!-- Right Column: Metrics, Equation & Prediction -->
+      <aside class="lab-side-col" aria-label="Model metrics and predictions">
+        <!-- Equation Box -->
+        <div class="side-card">
+          <div class="card-top-head">
+            <p class="card-label">Polynomial Model Equation</p>
+            <button class="btn" id="copy-equation-btn" type="button" style="font-size:9.5px; padding:1px 6px;">Copy</button>
+          </div>
+          <div class="equation-display" id="equation">ŷ = —</div>
         </div>
+
+        <!-- Metrics Grid -->
+        <div class="side-card">
+          <div class="card-top-head">
+            <p class="card-label">Goodness of Fit Metrics</p>
+            <span class="badge badge-purple" id="model-status" style="font-size:9px;">Waiting for data</span>
+          </div>
+
+          <div class="metrics-2col">
+            <div class="metric-item">
+              <span class="metric-name">Selected Degree</span>
+              <span class="metric-val" id="metric-degree">2</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">R² Variance</span>
+              <span class="metric-val" id="r2-value" style="color:var(--blue);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">Adjusted R²</span>
+              <span class="metric-val" id="adjr2-value" style="color:var(--green);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">MSE (ε)</span>
+              <span class="metric-val" id="mse-value" style="color:var(--pink);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">RMSE</span>
+              <span class="metric-val" id="rmse-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">MAE</span>
+              <span class="metric-val" id="mae-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">SSE</span>
+              <span class="metric-val" id="sse-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">SST</span>
+              <span class="metric-val" id="sst-value">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prediction Card -->
+        <div class="side-card">
+          <p class="card-label">Curvilinear Prediction (X → Ŷ)</p>
+          <div class="predict-form-row">
+            <input id="x-input" type="number" step="any" value="50">
+            <input type="range" id="x-predict-slider" min="0" max="100" step="0.5" value="50">
+          </div>
+          <div class="predict-output-box">
+            <div>
+              <span style="font-size:9.5px; color:var(--muted); display:block;">PREDICTED Ŷ</span>
+              <span class="predict-pi" id="pred-interval">Residual margin: —</span>
+            </div>
+            <div class="predict-val" id="prediction-output">—</div>
+          </div>
+          <div id="extrapolation-warning" style="display:none; color:var(--amber); font-size:9.5px; margin-top:4px;">
+            ⚠️ Extrapolating beyond observed data range (polynomial curves diverge quickly)
+          </div>
+        </div>
+
+        <!-- Jump to Theory Anchor -->
+        <a class="jump-to-theory" href="#theory-section">
+          <span>Explore Polynomial Theory &amp; Derivations</span>
+          <span aria-hidden="true">↓</span>
+        </a>
+      </aside>
+    </main>
+  </div>
+
+  <!-- ========================================================
+       2. BELOW-THE-FOLD MODULAR THEORY SECTION
+       ======================================================== -->
+  <section class="theory-section" id="theory-section">
+    <div class="theory-header">
+      <h2>Polynomial Theory &amp; Mathematical Foundations</h2>
+      <p>
+        Polynomial regression extends linear regression to model arbitrary smooth non-linear curves.
+        Below are the exact matrix systems, bias-variance tradeoffs, and mathematical formulations powering this analyzer.
+      </p>
+    </div>
+
+    <div class="theory-grid">
+      <!-- Card 1: Vandermonde Matrix Formulation -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Matrix Representation</span>
+        <h3>The Vandermonde Design Matrix</h3>
+        <p>Although polynomial regression produces a curved line, it is still mathematically a <strong>linear model</strong> because it is linear in the parameters $a_k$. By creating artificial polynomial powers of $X$, we construct the Vandermonde design matrix:</p>
+
+        <div class="math-callout">
+          <strong>Design Matrix X:</strong><br>
+          X = [ 1,  x₁,  x₁²,  ...,  x₁ᵈ ]<br>
+              [ 1,  x₂,  x₂²,  ...,  x₂ᵈ ]<br>
+              [ ...,  ...,  ...,  ...,  ... ]<br>
+              [ 1,  xₙ,  xₙ²,  ...,  xₙᵈ ]
+        </div>
+
+        <div class="math-callout">
+          <strong>Vector Equation:</strong> ŷ = X · <strong>a</strong><br>
+          where <strong>a</strong> = [a₀, a₁, a₂, ..., aᵈ]ᵀ are the polynomial coefficients.
+        </div>
+      </article>
+
+      <!-- Card 2: Normal Equations & Householder QR -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Numerical Optimization</span>
+        <h3>Normal Equations &amp; QR Decomposition</h3>
+        <p>The standard least squares closed-form solution solves $(X^T X)\mathbf{a} = X^T \mathbf{y}$. However, directly computing $X^T X$ squares the condition number $\kappa(X)$, causing catastrophic floating-point cancellation for $d \ge 4$.</p>
+        <div class="math-callout">
+          <strong>Standard Normal Eq:</strong> <strong>a</strong> = (XᵀX + λI)⁻¹ Xᵀ y<br><br>
+          <strong>Householder QR Solver:</strong> X = QR<br>
+          R · <strong>a</strong> = Qᵀ y  ==&gt;  Backward substitution.<br>
+          Preserves numerical precision without ever forming XᵀX!
+        </div>
+      </article>
+
+      <!-- Card 3: The Bias-Variance Tradeoff -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Machine Learning Concept</span>
+        <h3>The Bias-Variance Tradeoff</h3>
+        <p>The choice of polynomial degree $d$ is the quintessential visual demonstration of the bias-variance dilemma:</p>
+        <ul style="padding-left:18px; color:var(--text-soft); font-size:12px; line-height:1.6; margin:0 0 12px;">
+          <li><strong>Underfitting ($d = 1$ on curved data):</strong> High Bias. The model is too rigid to capture the genuine trend. Both training and testing error are high.</li>
+          <li><strong>Sweet Spot ($d = 2$ or $3$):</strong> Optimal balance. Captures true curvature without fitting noise.</li>
+          <li><strong>Overfitting ($d \ge 5$ with small $n$):</strong> High Variance. The curve bends unnaturally through every single noisy point. $R^2 \to 1.0$, but out-of-sample test error explodes.</li>
+        </ul>
+      </article>
+
+      <!-- Card 4: Runge's Phenomenon -->
+      <article class="theory-card">
+        <span class="theory-card-badge">High-Degree Pitfall</span>
+        <h3>Runge's Phenomenon &amp; Boundary Oscillation</h3>
+        <p>In numerical analysis, Runge's phenomenon proves that fitting high-degree polynomials over equidistant points causes wild, violent oscillations near the boundaries of the interval $[X_{\min}, X_{\max}]$.</p>
+        <div class="math-callout">
+          <strong>Try This In The Lab:</strong><br>
+          Select the "Runge's Oscillation" preset above and switch to Degree 5 or 6. Notice how the middle fits nicely, but the outer wings plunge or shoot up dramatically!
+        </div>
+        <p>This is why high degrees ($d &gt; 4$) are rarely used in production; practitioners use cubic splines or regularization instead.</p>
+      </article>
+
+      <!-- Card 5: Adjusted R-Squared -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Model Evaluation</span>
+        <h3>Why Ordinary $R^2$ Lies With Polynomials</h3>
+        <p>In standard regression, adding higher polynomial terms <strong>can never decrease $R^2$</strong>. Even adding purely random noise as $x^5$ will slightly increase $R^2$! To penalize unnecessary complexity, we use Adjusted $R^2$:</p>
+
+        <div class="math-callout">
+          <strong>Adjusted R² Formula:</strong><br>
+          R²_adj = 1 - [ (1 - R²) · (n - 1) / (n - d - 1) ]<br><br>
+          Where $n$ = sample size and $d$ = polynomial degree.<br>
+          If adding $x^d$ does not improve the fit enough to offset the loss of a degree of freedom, $R^2_{\text{adj}}$ decreases!
+        </div>
+      </article>
+
+      <!-- Card 6: Ridge Regularization (L2 Shrinkage) -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Regularization</span>
+        <h3>Ridge Shrinkage Penalty ($\lambda$)</h3>
+        <p>To tame high-degree oscillations without discarding higher powers, Ridge regression adds an $L_2$ penalty $\lambda \sum_{k=1}^d a_k^2$ to the objective function:</p>
+        <div class="math-callout">
+          Loss = Σ(yᵢ - ŷᵢ)² + λ · ||a||²₂
+        </div>
+        <p>Drag the <strong>Ridge $\lambda$</strong> slider in the lab above. As $\lambda$ increases, extreme coefficient swings are penalized, flattening aggressive oscillations into a stable, well-behaved curve.</p>
+      </article>
+    </div>
+
+    <div style="text-align:center;">
+      <a class="back-to-lab-btn" href="#top">↑ Back to Interactive Lab</a>
+    </div>
+  </section>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay" id="import-modal">
+    <div class="modal-card">
+      <h3 style="margin:0 0 6px; font-size:14px;">Import Dataset</h3>
+      <p style="color:var(--muted); font-size:11px; margin:0 0 8px;">Paste comma or whitespace separated X,Y pairs (one per line):</p>
+      <textarea id="import-textarea" placeholder="10, 25&#10;20, 38&#10;35, 52"></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:6px;">
+        <button class="btn" id="close-import-btn" type="button">Cancel</button>
+        <button class="btn primary" id="submit-import-btn" type="button">Load Data</button>
       </div>
-      <h3>Regression Coefficients</h3>
-      <div class="table-wrap results-coefficient-table">
-        <table aria-label="Polynomial regression coefficients">
-          <thead><tr><th>Power k</th><th>Standardized basis aₖ</th><th>Original-X basis bₖ</th></tr></thead>
-          <tbody id="resultsCoefficients"></tbody>
-        </table>
-      </div>
-      <h3>Observation Results</h3>
-      <div class="table-wrap results-table-wrap">
-        <table class="results-table" aria-label="Actual and predicted values with residuals">
-          <thead><tr><th>#</th><th>X</th><th>Actual Y</th><th>Predicted Y (Ŷ)</th><th>Residual (Y − Ŷ)</th><th>Squared residual</th></tr></thead>
-          <tbody id="resultsTbody"></tbody>
-        </table>
-      </div>
-    </section>
-    <section class="card residual-card" id="residualAnalysis" aria-labelledby="residual-title">
-      <div class="section-head">
-        <div><p class="eyebrow">Model Diagnostics</p><h2 id="residual-title">Residual Analysis</h2></div>
-        <span class="status" id="residualStatus">Waiting for a fitted model</span>
-      </div>
-      <p class="residual-summary" id="residualSummary" role="status" aria-live="polite">Fit a model to inspect residual behavior.</p>
-      <div class="residual-stat-grid" aria-label="Residual summary statistics">
-        <div class="residual-stat"><span>Mean signed residual</span><strong id="residualMean">—</strong></div>
-        <div class="residual-stat"><span>Largest absolute residual</span><strong id="residualMax">—</strong></div>
-        <div class="residual-stat"><span>Residuals &gt; 2.5 × RMSE</span><strong id="residualLargeCount">—</strong></div>
-      </div>
-      <div class="residual-chart-grid">
-        <article class="residual-chart-card">
-          <h3>Residuals vs. X</h3>
-          <p>Look for random scatter around the zero reference line.</p>
-          <div class="residual-chart" id="residualPlot"></div>
-        </article>
-        <article class="residual-chart-card">
-          <h3>Residual Distribution</h3>
-          <p>Histogram of signed prediction errors.</p>
-          <div class="residual-chart" id="residualHistogram"></div>
-        </article>
-        <article class="residual-chart-card">
-          <h3>Actual vs. Predicted</h3>
-          <p>Closer points to the diagonal indicate closer predictions.</p>
-          <div class="residual-chart" id="actualPredictedPlot"></div>
-        </article>
-      </div>
-      <p class="residual-pattern-guide"><strong>Reading the plots:</strong> Residuals should be randomly distributed around zero. A curved residual pattern can signal a degree that is too low; a funnel shape may indicate changing error variance; and isolated large residuals deserve investigation. A roughly centered histogram is a visual aid, not a formal normality test. The 2.5 × RMSE count is only a screening heuristic.</p>
-      <h3>Residual Values</h3>
-      <div class="table-wrap residual-table-wrap">
-        <table class="residual-table" aria-label="Observed and predicted values with residuals">
-          <thead><tr><th>#</th><th>X</th><th>Actual Y</th><th>Predicted Y (Ŷ)</th><th>Residual (Y − Ŷ)</th></tr></thead>
-          <tbody id="residualTbody"></tbody>
-        </table>
-      </div>
-    </section>
-    <section class="card education-card" id="education" aria-labelledby="education-title">
-      <div class="section-head">
-        <div><p class="eyebrow">Learning Guide</p><h2 id="education-title">Polynomial Regression, Explained</h2></div>
-      </div>
-      <p class="education-intro">This guide introduces the ideas behind the model in this analyzer. Polynomial regression can describe curved trends, but its results should always be checked against the data and interpreted within a sensible range.</p>
-      <div class="education-grid">
-        <article class="education-topic">
-          <h3>What is polynomial regression?</h3>
-          <p>It is a regression method that predicts a numeric response <i>Y</i> from an input <i>X</i> using powers of <i>X</i>. Those extra powers let the fitted relationship bend instead of forcing it to be a straight line.</p>
-          <div class="education-equation" aria-label="General polynomial regression equation">ŷ = b₀ + b₁x + b₂x² + … + bₙxⁿ</div>
-          <p>The fitted value is written as ŷ; the difference between an observed value and its fit is a residual.</p>
-        </article>
-        <article class="education-topic">
-          <h3>Why use it?</h3>
-          <p>Use a polynomial when a scatterplot or domain knowledge suggests a smooth curved relationship that a straight line cannot represent well. It can capture bends and turning points while keeping <i>X</i> numeric.</p>
-          <p class="education-note">Start with a low degree and add complexity only when the data support it. Polynomial curves can behave poorly beyond the observed X range.</p>
-        </article>
-        <article class="education-topic">
-          <h3>How does it work?</h3>
-          <ul>
-            <li>Choose a degree <i>n</i> and create model terms 1, <i>x</i>, <i>x</i>², …, <i>x</i>ⁿ.</li>
-            <li>Estimate one coefficient for each term from the observed pairs.</li>
-            <li>Use the fitted equation to calculate predicted values and residuals.</li>
-          </ul>
-          <p class="education-note">This analyzer centers and scales X for numerical stability while fitting; it also displays original-X coefficients when representable.</p>
-        </article>
-        <article class="education-topic">
-          <h3>Linear vs. polynomial regression</h3>
-          <p>A degree-1 polynomial is ordinary straight-line regression: ŷ = b₀ + b₁x. Degree 2 adds an x² term; higher degrees add more powers and allow more curve shapes.</p>
-          <p>Both methods are linear in their unknown coefficients and can be fitted by least squares. Polynomial regression is not automatically better—it is simply more flexible.</p>
-        </article>
-        <article class="education-topic">
-          <h3>What does degree mean?</h3>
-          <p>The degree is the largest power of X in the equation. A degree-1 model has 2 coefficients, degree 2 has 3, and degree <i>n</i> has <i>n</i> + 1.</p>
-          <p>Higher degree can add bends, but also makes the fit more sensitive to noise. A model needs enough distinct X values to estimate its terms reliably.</p>
-        </article>
-        <article class="education-topic">
-          <h3>What do the coefficients mean?</h3>
-          <p><i>b</i>₀ is the intercept; each later coefficient weights a corresponding power of X. The intercept is the predicted Y at X = 0 when that point is meaningful for the dataset.</p>
-          <p class="education-note">Interpret the terms together: powers of X are related, so a coefficient alone is not a causal effect. Standardized coefficients describe the centered/scaled model; original-X coefficients express the same curve in raw units.</p>
-        </article>
-        <article class="education-topic">
-          <h3>Least-squares estimation</h3>
-          <p>For each observation, the residual is eᵢ = yᵢ − ŷᵢ. Least squares chooses coefficients that make the total squared residual as small as possible:</p>
-          <div class="education-equation" aria-label="Sum of squared errors formula">SSE = ∑ (yᵢ − ŷᵢ)²</div>
-          <p>Squaring makes larger misses count more. This analyzer uses QR decomposition rather than directly inverting the design matrix.</p>
-        </article>
-        <article class="education-topic">
-          <h3>How should a model be evaluated?</h3>
-          <p>R² summarizes fit relative to the variation in Y; MAE and RMSE describe typical error in Y units. Residual plots can reveal visible patterns that the summary numbers miss.</p>
-          <p class="education-note">Training metrics describe the data used to fit the model, not guaranteed future accuracy. When possible, also evaluate on observations held aside from fitting.</p>
-        </article>
-        <article class="education-topic">
-          <h3>Underfitting and overfitting</h3>
-          <p><strong>Underfitting:</strong> the degree is too simple to capture the relationship, often leaving a systematic pattern in the residual plot.</p>
-          <p><strong>Overfitting:</strong> a very flexible curve follows random noise in the training data and may predict poorly on new data, especially outside the observed range.</p>
-          <p class="education-note">Compare reasonable degrees and use validation data; a high training R² alone is not proof of a useful model.</p>
-        </article>
-        <article class="education-topic">
-          <h3>Practical applications</h3>
-          <p>Polynomial models can be useful for calibration curves, engineering response measurements, smooth growth trends, dose-response studies, and approximating physical relationships over a measured interval.</p>
-          <p class="education-note">Use domain knowledge, inspect residuals, and be cautious with extrapolation. A polynomial is not a good choice for every nonlinear or discontinuous relationship.</p>
-        </article>
-      </div>
-    </section>
-  </main>
-  <div class="modal" id="csvModal"><div class="modal-card"><h3>Import Dataset</h3><p class="help">Paste CSV rows using <b>x,y</b>. A header is optional.</p><textarea id="csvText" placeholder="x,y&#10;10,22&#10;20,31"></textarea><div class="tab-actions" style="justify-content:flex-end"><button class="btn small" id="closeCsv" type="button">Cancel</button><button class="btn primary small" id="loadCsv" type="button">Load Dataset</button></div></div></div>
-  <div class="toast" id="toast"></div>
-  <footer>Polynomial Regression · Ordinary Least Squares · Interactive Learning Tool</footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast-msg"></div>
+
+  <!-- Script Engine -->
   <script>
-  (() => {
     "use strict";
-    const canvas=document.getElementById("chart"), ctx=canvas.getContext("2d");
-    const el=id=>document.getElementById(id);
-    let points=[], degree=2, ridge=0, hoverIndex=-1, selectedIndex=-1, dragging=false;
-    let history=[], future=[], model=null, modelMetrics=null, fitError=false, fitErrorMessage="", fitConditionWarning=false, resultsCleared=false, meanX=50, scaleX=25;
-    let multiPredictionValues=[];
-    let datasetSource="No dataset loaded";
-    const ranges={x:[0,100],y:[0,100]};
-    let plot={l:70,r:18,t:22,b:62,w:612,h:346};
 
-    function pushHistory(){history.push(JSON.stringify(points));if(history.length>60)history.shift();future=[];updateHistory()}
-    function updateHistory(){el("undo").disabled=!history.length;el("redo").disabled=!future.length}
-    function undo(){if(!history.length)return;future.push(JSON.stringify(points));points=JSON.parse(history.pop());selectedIndex=-1;markDatasetEdited();updateHistory();fitAndDraw()}
-    function redo(){if(!future.length)return;history.push(JSON.stringify(points));points=JSON.parse(future.pop());selectedIndex=-1;markDatasetEdited();updateHistory();fitAndDraw()}
+    (() => {
+      const canvas = document.getElementById("chart");
+      const context = canvas.getContext("2d");
+      const pointCountEl = document.getElementById("point-count");
+      const degreeBadge = document.getElementById("degree-badge");
+      const overfitBadge = document.getElementById("overfit-badge");
+      const hudCoords = document.getElementById("hud-coords");
+      const tooltip = document.getElementById("chart-tooltip");
+      const selectedBar = document.getElementById("selected-bar");
+      const selXInput = document.getElementById("sel-x-input");
+      const selYInput = document.getElementById("sel-y-input");
+      const selectedPointInfo = document.getElementById("selected-point-info");
+      const deleteSelectedBtn = document.getElementById("delete-selected-btn");
+      const deselectBtn = document.getElementById("deselect-btn");
 
-    function toast(msg){const t=el("toast");t.textContent=msg;t.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display="none",1800)}
-    function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-    function numericExtent(values){
-      let minimum=Infinity,maximum=-Infinity;
-      values.forEach(value=>{minimum=Math.min(minimum,value);maximum=Math.max(maximum,value)});
-      return{minimum,maximum};
-    }
-    function fmt(v,d=3){if(!Number.isFinite(v))return "—";if(Math.abs(v)<1e-10)v=0;return v.toFixed(d)}
-    function setEntryMessage(message,type=""){
-      const messageEl=el("entryMessage");messageEl.textContent=message;messageEl.className=`entry-message ${type}`;
-    }
-    function setDatasetSource(source){
-      datasetSource=source;
-      el("dashboardDataset").textContent=source;
-      el("dashboardDataset").title=`Data source: ${source}`;
-    }
-    function markDatasetEdited(){
-      if(datasetSource!=="Edited dataset")setDatasetSource("Edited dataset");
-    }
-    function setPredictionError(message){
-      const error=el("predictionError");error.textContent=message;error.hidden=!message;
-    }
-    function loadExampleDataset(recordHistory=true){
-      if(recordHistory)pushHistory();
-      points=[{x:1,y:2},{x:2,y:5},{x:3,y:10},{x:4,y:17},{x:5,y:26},{x:6,y:37}];
-      selectedIndex=-1;degree=2;el("degree").value="2";
-      setDatasetSource("Example dataset · y = x² + 1");
-      el("xValues").value=points.map(point=>point.x).join(", ");
-      el("yValues").value=points.map(point=>point.y).join(", ");
-      fitAndDraw();
-      setEntryMessage("Loaded the example dataset y = x² + 1.","success");
-    }
-    function parseValues(text,label){
-      if(!text.trim())throw new Error(`Enter ${label} values.`);
-      const tokens=text.split(",");
-      if(tokens.some(token=>!token.trim()))throw new Error(`${label} values contain an empty item. Separate each number with a comma.`);
-      const values=tokens.map(token=>Number(token.trim()));
-      if(values.some(value=>!Number.isFinite(value)))throw new Error(`${label} values must all be valid numbers.`);
-      if(values.some(value=>value<-1000||value>1000))throw new Error(`${label} values must be between −1000 and 1000.`);
-      return values;
-    }
-    function clearDataset(){
-      if(points.length){pushHistory();points=[];selectedIndex=-1}
-      setDatasetSource("No dataset loaded");
-      el("xValues").value="";el("yValues").value="";
-      fitAndDraw();setEntryMessage("Dataset and entry fields cleared.","success");toast("Dataset cleared");
-    }
-    function clearResults(){
-      if(!points.length){toast("Load a dataset before clearing results");return}
-      resultsCleared=true;model=null;modelMetrics=null;fitError=false;fitErrorMessage="";fitConditionWarning=false;
-      multiPredictionValues=[];el("multiXValues").value="";
-      el("multiPredictionMessage").textContent="Enter comma-separated X values from −1000 to 1000.";
-      el("multiPredictionMessage").className="entry-message";
-      updateMetrics();draw();renderTable();toast("Results cleared; dataset preserved");
-    }
-    function resetApplication(){
-      points=[];history=[];future=[];model=null;modelMetrics=null;fitError=false;fitErrorMessage="";
-      fitConditionWarning=false;resultsCleared=false;selectedIndex=-1;degree=2;ridge=0;multiPredictionValues=[];
-      el("degree").value="2";el("ridge").value="0";el("ridgeVal").textContent="0.00";
-      el("noise").value="7";el("noiseVal").textContent="7";
-      el("xInput").value="50";el("xSlider").value="50";el("multiXValues").value="";
-      el("xValues").value="";el("yValues").value="";el("csvText").value="";
-      el("addX").value="";el("addY").value="";el("csvModal").classList.remove("open");
-      el("showPoints").checked=true;el("showCurve").checked=true;el("showResidual").checked=true;el("showMean").checked=false;
-      el("detailsBody").classList.remove("open");
-      setEntryMessage("");
-      document.querySelector('.tab[data-tab="presets"]').click();
-      loadExampleDataset(false);
-      history=[];future=[];updateHistory();toast("Application reset to the sample dataset");
-    }
-    async function copyEquation(){
-      if(!model){toast("Fit a model before copying the equation");return}
-      const text=el("resultsEquation").textContent;
-      let copied=false;
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        try{await navigator.clipboard.writeText(text);copied=true}catch(error){copied=false}
+      // Controls
+      const degreeBtns = document.querySelectorAll(".degree-btn");
+      const ridgeSlider = document.getElementById("ridge-slider");
+      const ridgeVal = document.getElementById("ridge-val");
+      const toggleCurve = document.getElementById("toggle-curve");
+      const toggleRefLine = document.getElementById("toggle-ref-line");
+      const toggleResiduals = document.getElementById("toggle-residuals");
+      const toggleCi = document.getElementById("toggle-ci");
+
+      // Actions
+      const generateButton = document.getElementById("generate-button");
+      const clearButton = document.getElementById("clear-button");
+      const undoBtn = document.getElementById("undo-button");
+      const redoBtn = document.getElementById("redo-button");
+      const exportChartBtn = document.getElementById("export-chart-button");
+      const noiseSlider = document.getElementById("noise-slider");
+      const noiseVal = document.getElementById("noise-val");
+
+      // Prediction Elements
+      const xInput = document.getElementById("x-input");
+      const xPredictSlider = document.getElementById("x-predict-slider");
+      const predictionOutput = document.getElementById("prediction-output");
+      const predInterval = document.getElementById("pred-interval");
+      const extrapolationWarning = document.getElementById("extrapolation-warning");
+
+      // Metrics Elements
+      const modelStatus = document.getElementById("model-status");
+      const equationEl = document.getElementById("equation");
+      const copyEquationBtn = document.getElementById("copy-equation-btn");
+      const metricDegree = document.getElementById("metric-degree");
+      const r2Value = document.getElementById("r2-value");
+      const adjr2Value = document.getElementById("adjr2-value");
+      const mseValue = document.getElementById("mse-value");
+      const rmseValue = document.getElementById("rmse-value");
+      const maeValue = document.getElementById("mae-value");
+      const sseValue = document.getElementById("sse-value");
+      const sstValue = document.getElementById("sst-value");
+      const compTableBody = document.getElementById("comp-table-body");
+
+      // Table & CSV
+      const tblAddX = document.getElementById("tbl-add-x");
+      const tblAddY = document.getElementById("tbl-add-y");
+      const tblAddBtn = document.getElementById("tbl-add-btn");
+      const exportCsvBtn = document.getElementById("export-csv-btn");
+      const openImportBtn = document.getElementById("open-import-btn");
+      const importModal = document.getElementById("import-modal");
+      const closeImportBtn = document.getElementById("close-import-btn");
+      const submitImportBtn = document.getElementById("submit-import-btn");
+      const importTextarea = document.getElementById("import-textarea");
+      const toastMsg = document.getElementById("toast-msg");
+
+      // State
+      const xMin = 0; const xMax = 100;
+      const yMin = 0; const yMax = 100;
+      const tickStep = 10;
+      const pointHitRadius = 14;
+
+      let plot = { left: 46, right: 580, top: 14, bottom: 340 };
+      let points = [];
+      let currentDegree = 2;
+      let currentRidge = 0;
+      let model = null;
+      let linearModel = null;
+      let prediction = null;
+      let selectedPoint = null;
+      let hoveredPoint = null;
+      let draggedPoint = null;
+      let isDragging = false;
+
+      // History
+      const historyStack = [];
+      let historyStep = -1;
+
+      function pushHistory() {
+        if (historyStep < historyStack.length - 1) historyStack.splice(historyStep + 1);
+        historyStack.push(points.map(p => ({ x: p.x, y: p.y })));
+        if (historyStack.length > 50) historyStack.shift();
+        historyStep = historyStack.length - 1;
+        updateHistoryButtons();
       }
-      if(!copied){
-        const field=document.createElement("textarea");
-        field.value=text;field.setAttribute("readonly","");field.style.position="fixed";field.style.opacity="0";
-        document.body.appendChild(field);field.select();
-        try{copied=document.execCommand("copy")}catch(error){copied=false}
-        field.remove();
+
+      function updateHistoryButtons() {
+        undoBtn.disabled = historyStep <= 0;
+        redoBtn.disabled = historyStep >= historyStack.length - 1;
+        undoBtn.style.opacity = undoBtn.disabled ? "0.4" : "1";
+        redoBtn.style.opacity = redoBtn.disabled ? "0.4" : "1";
       }
-      toast(copied?"Equation copied to clipboard":"Copy unavailable; select the equation and press Ctrl+C");
-    }
-    function downloadFile(filename,content,type){
-      const url=URL.createObjectURL(new Blob([content],{type}));
-      const link=document.createElement("a");link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),1000);
-    }
-    function csvCell(value){
-      const text=value===null||value===undefined?"":String(value);
-      return /[",\r\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text;
-    }
-    function downloadCsv(filename,rows){
-      const csv="\uFEFF"+rows.map(row=>row.map(csvCell).join(",")).join("\r\n");
-      downloadFile(filename,csv,"text/csv;charset=utf-8");
-    }
 
-    function resize(){
-      const r=canvas.getBoundingClientRect(), dpr=Math.max(1,window.devicePixelRatio||1);
-      canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
-      plot={l:70,r:18,t:22,b:62,w:r.width-88,h:r.height-84};
-      draw();
-    }
-    function tx(x){return plot.l+(x-ranges.x[0])/(ranges.x[1]-ranges.x[0])*plot.w}
-    function ty(y){return plot.t+plot.h-(y-ranges.y[0])/(ranges.y[1]-ranges.y[0])*plot.h}
-    function dataXY(px,py){return{x:ranges.x[0]+(px-plot.l)/plot.w*(ranges.x[1]-ranges.x[0]),y:ranges.y[0]+(plot.t+plot.h-py)/plot.h*(ranges.y[1]-ranges.y[0])}}
-    function pos(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-    function findPoint(p,tolerance=12){let best=-1,bestD=tolerance*tolerance;points.forEach((q,i)=>{const d=(tx(q.x)-p.x)**2+(ty(q.y)-p.y)**2;if(d<bestD){best=i;bestD=d}});return best}
-    function updateChartTooltip(pointer,pointIndex){
-      const tooltip=el("tooltip"),rect=canvas.getBoundingClientRect();
-      let anchor=pointer,content="";
-      if(pointIndex>=0){
-        const point=points[pointIndex],fitted=model?predict(point.x):null;
-        anchor={x:tx(point.x),y:ty(point.y)};
-        content=`Actual observation\nX = ${fmt(point.x,3)}\nActual Y = ${fmt(point.y,3)}`;
-        if(fitted!==null)content+=`\nPredicted Ŷ = ${fmt(fitted,3)}\nResidual = ${fmt(point.y-fitted,3)}`;
-      }else if(model&&el("showCurve").checked&&pointer.x>=plot.l&&pointer.x<=plot.l+plot.w&&pointer.y>=plot.t&&pointer.y<=plot.t+plot.h){
-        const x=dataXY(pointer.x,pointer.y).x,fitted=predict(x),curveY=ty(fitted);
-        if(Number.isFinite(fitted)&&Math.abs(curveY-pointer.y)<=10)content=`Fitted regression curve\nX = ${fmt(x,3)}\nPredicted Ŷ = ${fmt(fitted,3)}`;
-      }
-      if(!content){tooltip.style.display="none";return}
-      tooltip.textContent=content;
-      tooltip.style.left=`${Math.max(80,Math.min(rect.width-80,anchor.x))}px`;
-      tooltip.style.top=`${Math.max(75,Math.min(rect.height-10,anchor.y))}px`;
-      tooltip.style.display="block";
-    }
-
-    function setRanges(){
-      let xs=points.map(p=>p.x), ys=points.map(p=>p.y);
-      if(!xs.length){ranges.x=[0,100];ranges.y=[0,100];return}
-      let {minimum:minX,maximum:maxX}=numericExtent(xs);
-      let {minimum:minY,maximum:maxY}=numericExtent(ys);
-      if(maxX===minX){minX-=10;maxX+=10}
-      if(maxY===minY){minY-=10;maxY+=10}
-      ranges.x=[Math.floor(minX/10)*10-10,Math.ceil(maxX/10)*10+10];
-      ranges.y=[Math.floor(minY/10)*10-10,Math.ceil(maxY/10)*10+10];
-      ranges.x=[Math.max(-1000,ranges.x[0]),Math.min(1000,ranges.x[1])];
-      ranges.y=[Math.max(-1000,ranges.y[0]),Math.min(1000,ranges.y[1])];
-    }
-
-    function solveUpper(matrix,rhs,size){
-      const solution=Array(size).fill(0);
-      for(let row=size-1;row>=0;row--){
-        let value=rhs[row];
-        for(let col=row+1;col<size;col++)value-=matrix[row][col]*solution[col];
-        if(Math.abs(matrix[row][row])<1e-14)return null;
-        solution[row]=value/matrix[row][row];
-      }
-      return solution;
-    }
-
-    // Householder QR avoids forming XᵀX, which would square the condition number.
-    function solveLeastSquares(design,target,penalty){
-      const matrix=design.map(row=>row.slice()),rhs=target.slice(),columns=design[0].length;
-      if(penalty>0){
-        const weight=Math.sqrt(penalty);
-        for(let col=1;col<columns;col++){
-          const row=Array(columns).fill(0);row[col]=weight;matrix.push(row);rhs.push(0);
+      function undo() {
+        if (historyStep > 0) {
+          historyStep--;
+          points = historyStack[historyStep].map(p => ({ ...p }));
+          selectedPoint = null;
+          updateView();
+          updateHistoryButtons();
+          showToast("Undo applied");
         }
       }
-      if(matrix.length<columns)return null;
-      for(let col=0;col<columns;col++){
-        let norm=0;
-        for(let row=col;row<matrix.length;row++)norm=Math.hypot(norm,matrix[row][col]);
-        if(norm<1e-12)return null;
-        const alpha=matrix[col][col]>=0?-norm:norm;
-        const vector=matrix.slice(col).map(row=>row[col]);vector[0]-=alpha;
-        const normSquared=vector.reduce((sum,value)=>sum+value*value,0);
-        if(normSquared<1e-24)return null;
-        for(let c=col;c<columns;c++){
-          let projection=0;
-          for(let row=col;row<matrix.length;row++)projection+=vector[row-col]*matrix[row][c];
-          const scale=2*projection/normSquared;
-          for(let row=col;row<matrix.length;row++)matrix[row][c]-=scale*vector[row-col];
-        }
-        let projection=0;
-        for(let row=col;row<rhs.length;row++)projection+=vector[row-col]*rhs[row];
-        const scale=2*projection/normSquared;
-        for(let row=col;row<rhs.length;row++)rhs[row]-=scale*vector[row-col];
-      }
-      const diagonal=matrix.slice(0,columns).map((row,index)=>Math.abs(row[index]));
-      const maxDiagonal=Math.max(...diagonal),minDiagonal=Math.min(...diagonal);
-      const rankTolerance=Number.EPSILON*Math.max(matrix.length,columns)*maxDiagonal;
-      if(!maxDiagonal||minDiagonal<=rankTolerance)return null;
-      let matrixNorm=0;
-      for(let col=0;col<columns;col++){
-        let sum=0;for(let row=0;row<=col;row++)sum+=Math.abs(matrix[row][col]);
-        matrixNorm=Math.max(matrixNorm,sum);
-      }
-      let inverseNorm=0;
-      for(let col=0;col<columns;col++){
-        const unit=Array(columns).fill(0);unit[col]=1;
-        const inverseColumn=solveUpper(matrix,unit,columns);
-        if(!inverseColumn)return null;
-        inverseNorm=Math.max(inverseNorm,inverseColumn.reduce((sum,value)=>sum+Math.abs(value),0));
-      }
-      const conditionEstimate=matrixNorm*inverseNorm;
-      if(!Number.isFinite(conditionEstimate))return null;
-      const coefficients=solveUpper(matrix,rhs,columns);
-      if(!coefficients||coefficients.some(value=>!Number.isFinite(value)))return null;
-      return {coefficients,conditionEstimate};
-    }
 
-    function fitCandidate(candidateDegree,penalty=ridge){
-      if(!Number.isInteger(candidateDegree)||candidateDegree<1||candidateDegree>10)return{error:"Choose a polynomial degree from 1 to 10."};
-      if(points.length<candidateDegree+1)return{error:`Degree ${candidateDegree} requires at least ${candidateDegree+1} observations.`};
-      const distinctXCount=new Set(points.map(point=>point.x)).size;
-      if(distinctXCount<candidateDegree+1){
-        return{error:`Degree ${candidateDegree} needs at least ${candidateDegree+1} distinct X values; this dataset has ${distinctXCount}. Duplicate X values are acceptable when enough distinct values remain.`};
-      }
-      const candidateMean=points.reduce((sum,point)=>sum+point.x,0)/points.length;
-      const candidateScale=Math.sqrt(points.reduce((sum,point)=>sum+(point.x-candidateMean)**2,0)/points.length)||1;
-      const design=[],target=[];
-      points.forEach(point=>{
-        const z=(point.x-candidateMean)/candidateScale,row=[];
-        for(let power=0;power<=candidateDegree;power++)row.push(z**power);
-        design.push(row);target.push(point.y);
-      });
-      let solution;
-      try{
-        solution=solveLeastSquares(design,target,penalty);
-      }catch(error){
-        const detail=error instanceof Error&&error.message?` (${error.message})`:"";
-        return{error:`The numerical solver failed${detail}. Check the data and try a lower degree or a small Ridge λ.`};
-      }
-      if(!solution)return{error:"The design matrix is rank-deficient or numerically unstable. Use more distinct X values, a lower degree, or a small Ridge λ."};
-      if(solution.conditionEstimate>1e12){
-        return{error:`The design matrix is too ill-conditioned (estimated condition number ${solution.conditionEstimate.toExponential(2)}). Add more well-spaced X values or lower the degree.`};
-      }
-      const candidate={
-        coeff:solution.coefficients,
-        raw:scaledToRaw(solution.coefficients,candidateMean,candidateScale),
-        conditionEstimate:solution.conditionEstimate,
-        meanX:candidateMean,
-        scaleX:candidateScale
-      };
-      const predictions=points.map(point=>predictCandidate(candidate,point.x));
-      if(predictions.some(value=>!Number.isFinite(value)))return{error:"The fitted model produced a non-finite value for an observation. Try a lower degree or different data."};
-      const residuals=points.map((point,index)=>point.y-predictions[index]);
-      const sse=residuals.reduce((sum,residual)=>sum+residual*residual,0);
-      if(!Number.isFinite(sse))return{error:"The model's squared errors exceed the stable numeric range. Try a lower degree or different data."};
-      const yMean=points.reduce((sum,point)=>sum+point.y,0)/points.length;
-      const sst=points.some(point=>point.y!==points[0].y)
-        ?points.reduce((sum,point)=>sum+(point.y-yMean)**2,0):0;
-      const r2=sst>0?1-sse/sst:null;
-      const predictorCount=candidateDegree,n=points.length;
-      const adjustedR2=r2!==null&&n>predictorCount+1
-        ?1-(1-r2)*(n-1)/(n-predictorCount-1):null;
-      const mse=sse/n,rmse=Math.sqrt(mse);
-      const mae=residuals.reduce((sum,residual)=>sum+Math.abs(residual),0)/n;
-      if(!Number.isFinite(mse)||!Number.isFinite(rmse)||!Number.isFinite(mae)||(r2!==null&&!Number.isFinite(r2))||(adjustedR2!==null&&!Number.isFinite(adjustedR2))){
-        return{error:"The model metrics could not be calculated in the stable numeric range. Try a lower degree or different data."};
-      }
-      return{
-        model:candidate,meanX:candidateMean,scaleX:candidateScale,
-        conditionWarning:solution.conditionEstimate>1e8,
-        metrics:{r2,adjustedR2,sse,sst,mse,rmse,mae}
-      };
-    }
-
-    function fit(includeComparison=true){
-      resultsCleared=false;model=null;modelMetrics=null;fitError=false;fitErrorMessage="";fitConditionWarning=false;meanX=50;scaleX=25;
-      if(points.length<degree+1){updateMetrics(includeComparison);return null}
-      const result=fitCandidate(degree,ridge);
-      if(!result.model){
-        fitError=true;fitErrorMessage=result.error;
-        updateMetrics(includeComparison);return null;
-      }
-      model=result.model;modelMetrics=result.metrics;meanX=result.meanX;scaleX=result.scaleX;
-      fitConditionWarning=result.conditionWarning;
-      updateMetrics(includeComparison);return model;
-    }
-
-    function scaledToRaw(coefficients,fitMean,fitScale){
-      const raw=Array(coefficients.length).fill(0),compensation=Array(coefficients.length).fill(0);
-      for(let k=0;k<coefficients.length;k++){
-        const scaleFactor=coefficients[k]/fitScale**k;
-        for(let j=0;j<=k;j++){
-          const term=scaleFactor*comb(k,j)*(-fitMean)**(k-j)-compensation[j];
-          const sum=raw[j]+term;
-          compensation[j]=(sum-raw[j])-term;
-          raw[j]=sum;
+      function redo() {
+        if (historyStep < historyStack.length - 1) {
+          historyStep++;
+          points = historyStack[historyStep].map(p => ({ ...p }));
+          selectedPoint = null;
+          updateView();
+          updateHistoryButtons();
+          showToast("Redo applied");
         }
       }
-      return raw.every(Number.isFinite)?raw:null;
-    }
-    function comb(n,k){let value=1;for(let i=1;i<=k;i++)value=value*(n-k+i)/i;return value}
-    function formatCoefficient(value){return Number.isFinite(value)?value.toPrecision(12):"not representable in original X basis"}
-    function predictCandidate(candidate,x){
-      if(!Number.isFinite(x))return null;
-      const z=(x-candidate.meanX)/candidate.scaleX;
-      if(!Number.isFinite(z))return null;
-      let value=0;
-      for(let k=candidate.coeff.length-1;k>=0;k--){
-        value=value*z+candidate.coeff[k];
-        if(!Number.isFinite(value))return null;
-      }
-      return value;
-    }
-    function predict(x){return model?predictCandidate(model,x):null}
 
-    function updateDegreeGuidance(){
-      const description=degree===1
-        ?"Degree 1 is a straight line with 2 coefficients; it captures linear trends."
-        :degree===2
-          ?"Degree 2 is a parabola with 3 coefficients; it can model one bend or turning point."
-          :degree===3
-            ?"Degree 3 uses 4 coefficients and can model an S-shaped trend with up to 2 turning points."
-            :`Degree ${degree} uses ${degree+1} coefficients and can have up to ${degree-1} turning points. Higher degrees allow more bends in the fitted curve.`;
-      el("degreeDescription").textContent=description;
-      const warning=el("degreeWarning");
-      const messages=[];let validation=false;
-      if(points.length<degree+1){
-        messages.push(`Degree ${degree} needs at least ${degree+1} paired observations; this dataset has ${points.length}. Add data or choose a lower degree.`);
-        validation=true;
-      }else if(resultsCleared){
-        messages.push("Results were cleared; change the dataset or model settings to recalculate.");
-      }else if(fitError){
-        messages.push(fitErrorMessage);
-        validation=true;
-      }else{
-        if(fitConditionWarning)messages.push(`Numerical warning: the design matrix is poorly conditioned (estimated condition number ${model.conditionEstimate.toExponential(2)}); coefficient estimates may be sensitive to small data changes.`);
-        if(degree>=5||(degree>=2&&points.length<2*(degree+1)))messages.push(`Overfitting risk: degree ${degree} is flexible for ${points.length} observations. The curve may learn noise; compare lower degrees and validate on held-out data.`);
+      function showToast(msg) {
+        toastMsg.textContent = msg;
+        toastMsg.style.display = "flex";
+        clearTimeout(toastMsg._timer);
+        toastMsg._timer = setTimeout(() => { toastMsg.style.display = "none"; }, 2000);
       }
-      const message=messages.join(" ");
-      warning.textContent=message;
-      warning.hidden=!message;
-      warning.className=`degree-warning${validation?" validation":""}`;
-    }
 
-    function updateMetrics(updateComparison=true){
-      el("pointCount").textContent=points.length;el("rangeBadge").textContent=`Degree ${degree}`;
-      el("metricDegree").textContent=degree;
-      el("dashboardObservations").textContent=points.length;
-      el("dashboardDegree").textContent=degree;
-      updateDegreeGuidance();
-      renderDatasetStatistics();
-      if(!model||points.length<=degree){
-        const statusText=resultsCleared?"Results cleared":fitError?"Numerical fit issue":points.length?`Need ${degree+1-points.length} more points`:"Waiting for data";
-        el("status").textContent=statusText;el("status").className=`status${resultsCleared?" results-cleared":""}`;
-        el("dashboardStatus").textContent=resultsCleared?"Results cleared":fitError?"Cannot fit":points.length?`Need ${degree+1-points.length} more`:"Waiting for data";
-        el("dashboardStatus").className="overview-value small overview-status";
-        el("dashboardR2").textContent="—";el("dashboardR2").title="Explained variation";el("dashboardRMSE").textContent="—";
-        el("equation").textContent="ŷ = —";["r2","adjr2","sst","sse","mse","rmse","mae","prediction","interval"].forEach(id=>el(id).textContent="—");
-        el("detailsBody").textContent=resultsCleared
-          ?"Results were cleared. The dataset is preserved; change the data or model settings to recalculate."
-          :fitError?fitErrorMessage:`Degree ${degree} requires at least ${degree+1} observations; currently there are ${points.length}.`;
-        el("warning").style.display="none";setPredictionError("");renderPredictionEquation();renderMultiPredictions();renderResults();renderResidualAnalysis();
-        if(updateComparison)renderDegreeComparison();
-        return;
+      function formatNumber(v, d = 2) {
+        return Number.isFinite(v) ? v.toFixed(d) : "—";
       }
-      const {r2,adjustedR2:adj,sse:ssRes,sst:ssTot,mse,rmse,mae}=modelMetrics;
-      const n=points.length;
-      el("status").textContent="Model ready";el("status").className="status ready";
-      el("dashboardStatus").textContent="Model ready";el("dashboardStatus").className="overview-value small overview-status ready";
-      el("dashboardR2").textContent=r2===null?"Undefined":fmt(r2,4);
-      el("dashboardR2").title=r2===null?"R-squared is undefined because SST is zero.":"Explained variation";
-      el("dashboardRMSE").textContent=fmt(rmse,4);
-      el("r2").textContent=r2===null?"Undefined":fmt(r2,4);el("adjr2").textContent=adj===null?"Undefined":fmt(adj,4);
-      el("sst").textContent=fmt(ssTot,4);el("sse").textContent=fmt(ssRes,4);el("mse").textContent=fmt(mse,4);
-      el("rmse").textContent=fmt(rmse,4);el("mae").textContent=fmt(mae,4);
-      el("equation").textContent=equationText(model.coeff);
-      const scaledList=model.coeff.map((value,index)=>`a<sub>${index}</sub> = ${formatCoefficient(value)}`).join("<br>");
-      const rawList=model.raw
-        ?model.raw.map((value,index)=>`b<sub>${index}</sub> = ${formatCoefficient(value)}`).join("<br>")
-        :"Original-X coefficients exceed the numeric range; use the stable standardized coefficients above.";
-      el("detailsBody").innerHTML=`n = ${n}<br>QR condition estimate = ${model.conditionEstimate.toExponential(4)}<br>`+
-        `Standardized basis z = (x − ${fmt(meanX,4)}) / ${fmt(scaleX,4)}<br>`+
-        `Stable fitted coefficients in ŷ = Σ a<sub>k</sub>z<sup>k</sup>:<br>${scaledList}<br>`+
-        `Equivalent original-X coefficients in ŷ = Σ b<sub>k</sub>x<sup>k</sup>:<br>${rawList}`;
-      renderPredictionEquation();
-      updatePrediction();
-      renderMultiPredictions();
-      renderResults();
-      renderResidualAnalysis();
-      if(updateComparison)renderDegreeComparison();
-    }
-    function equationText(a){
-      const terms=[];
-      for(let k=a.length-1;k>=0;k--)if(Math.abs(a[k])>=1e-10){
-        const sign=a[k]<0?"−":"+";const av=Math.abs(a[k]);const coeff=av<0.001||av>=10000?av.toExponential(3):fmt(av,4);
-        let term=k===0?coeff:k===1?`${coeff}z`:`${coeff}z${unicodeSup(k)}`;
-        terms.push((terms.length?` ${sign} `:"")+term);
+
+      // Responsive HiDPI Canvas Resizing
+      function resizeCanvas() {
+        const stage = canvas.parentElement;
+        const rect = stage.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = rect.width;
+        const h = rect.height;
+
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        plot.left = 46;
+        plot.right = w - 16;
+        plot.top = 14;
+        plot.bottom = h - 30;
+
+        drawChart();
       }
-      return terms.length?"ŷ = "+terms.join(""):"ŷ = 0";
-    }
-    function rawEquationText(coefficients){
-      const terms=[];
-      const xScale=Math.max(1,...points.map(point=>Math.abs(point.x)));
-      const yScale=Math.max(Number.MIN_VALUE,...points.map(point=>Math.abs(point.y)));
-      const tolerance=yScale*Number.EPSILON*32;
-      for(let k=coefficients.length-1;k>=0;k--){
-        const value=coefficients[k];
-        if(Math.abs(value)*xScale**k<=tolerance)continue;
-        const magnitude=formatCoefficient(Math.abs(value));
-        const term=k===0?magnitude:k===1?`${magnitude}x`:`${magnitude}x${unicodeSup(k)}`;
-        terms.push(terms.length?`${value<0?" − ":" + "}${term}`:`${value<0?"−":""}${term}`);
+
+      window.addEventListener("resize", resizeCanvas);
+
+      function toCanvasX(x) {
+        return plot.left + ((x - xMin) / (xMax - xMin)) * (plot.right - plot.left);
       }
-      return `ŷ = ${terms.join("")}`;
-    }
-    function unicodeSup(k){return String(k).split("").map(d=>({"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"})[d]).join("")}
-    function resultNumber(value){return Number.isFinite(value)?Number(value.toPrecision(10)).toString():"—"}
-    function renderResults(){
-      const coefficientBody=el("resultsCoefficients"),resultsBody=el("resultsTbody");
-      el("resultsDegree").textContent=degree;
-      el("resultsObservations").textContent=points.length;
-      el("resultsStatus").textContent=model?"Model ready":resultsCleared?"Results cleared":fitError?"Fit unavailable":points.length?`Need ${degree+1-points.length} more observations`:"Waiting for data";
-      el("resultsStatus").className=`status${model?" ready":resultsCleared?" results-cleared":""}`;
-      if(model&&model.raw){
-        el("resultsEquationLabel").textContent="Polynomial equation · original-X basis";
-        el("resultsEquation").textContent=rawEquationText(model.raw);
-      }else{
-        el("resultsEquationLabel").textContent=model?`Polynomial equation · z = (x − ${fmt(meanX,4)}) / ${fmt(scaleX,4)}`:"Polynomial equation";
-        el("resultsEquation").textContent=model?equationText(model.coeff):"ŷ = —";
+
+      function toCanvasY(y) {
+        return plot.bottom - ((y - yMin) / (yMax - yMin)) * (plot.bottom - plot.top);
       }
-      coefficientBody.innerHTML=model
-        ?model.coeff.map((value,index)=>`<tr><td>${index}</td><td>${formatCoefficient(value)}</td><td>${model.raw?formatCoefficient(model.raw[index]):"Not representable"}</td></tr>`).join("")
-        :`<tr><td class="empty-result" colspan="3">Coefficients are available after a valid model fit.</td></tr>`;
-      resultsBody.innerHTML=points.length?points.map((point,index)=>{
-        const predicted=model?predict(point.x):null;
-        const residual=predicted===null?null:point.y-predicted;
-        return `<tr><td>${index+1}</td><td>${resultNumber(point.x)}</td><td>${resultNumber(point.y)}</td><td>${resultNumber(predicted)}</td><td>${resultNumber(residual)}</td><td>${resultNumber(residual===null?null:residual*residual)}</td></tr>`;
-      }).join(""):`<tr><td class="empty-result" colspan="6">No observations to display.</td></tr>`;
-    }
-    function renderDatasetStatistics(){
-      el("statCount").textContent=points.length;
-      el("statUniqueX").textContent=new Set(points.map(point=>point.x)).size;
-      if(!points.length){
-        ["statMeanX","statSdX","statMeanY","statSdY","statRangeX"].forEach(id=>el(id).textContent="—");
-        return;
+
+      function toCanvasCoordinates({ x, y }) {
+        return { px: toCanvasX(x), py: toCanvasY(y) };
       }
-      const xs=points.map(point=>point.x),ys=points.map(point=>point.y);
-      const meanXValue=xs.reduce((sum,value)=>sum+value,0)/xs.length;
-      const meanYValue=ys.reduce((sum,value)=>sum+value,0)/ys.length;
-      const sdX=Math.sqrt(xs.reduce((sum,value)=>sum+(value-meanXValue)**2,0)/xs.length);
-      const sdY=Math.sqrt(ys.reduce((sum,value)=>sum+(value-meanYValue)**2,0)/ys.length);
-      const {minimum,maximum}=numericExtent(xs);
-      el("statMeanX").textContent=fmt(meanXValue,3);
-      el("statSdX").textContent=fmt(sdX,3);
-      el("statMeanY").textContent=fmt(meanYValue,3);
-      el("statSdY").textContent=fmt(sdY,3);
-      el("statRangeX").textContent=`${fmt(minimum,3)} to ${fmt(maximum,3)}`;
-    }
-    function renderDegreeComparison(){
-      const tbody=el("comparisonTbody");
-      tbody.replaceChildren();
-      if(!points.length||resultsCleared){
-        const row=document.createElement("tr"),cell=document.createElement("td");
-        cell.colSpan=7;cell.className="comparison-unavailable";
-        cell.textContent=resultsCleared?"Results cleared. Change the dataset or model settings to recalculate.":"Load observations to compare polynomial degrees.";
-        row.appendChild(cell);tbody.appendChild(row);
-        el("comparisonStatus").textContent=resultsCleared?"Results cleared":"Waiting for data";
-        el("comparisonStatus").className=`status${resultsCleared?" results-cleared":""}`;
-        return;
+
+      function toDataCoordinates(px, py) {
+        const boundedX = Math.max(plot.left, Math.min(plot.right, px));
+        const boundedY = Math.max(plot.top, Math.min(plot.bottom, py));
+        return {
+          x: xMin + ((boundedX - plot.left) / (plot.right - plot.left)) * (xMax - xMin),
+          y: yMin + ((plot.bottom - boundedY) / (plot.bottom - plot.top)) * (yMax - yMin)
+        };
       }
-      let fitCount=0;
-      for(let candidateDegree=1;candidateDegree<=10;candidateDegree++){
-        const result=candidateDegree===degree&&model
-          ?{model,metrics:modelMetrics,conditionWarning:fitConditionWarning}
-          :fitCandidate(candidateDegree,ridge);
-        const row=document.createElement("tr");
-        if(candidateDegree===degree){row.className="current-degree";row.setAttribute("aria-current","true")}
-        const values=[String(candidateDegree)];
-        let statusCellText="",statusTitle="";
-        if(result.model){
-          fitCount++;
-          statusCellText=result.conditionWarning?"Condition warning":"Ready";
-          statusTitle=result.conditionWarning
-            ?`Estimated condition number ${result.model.conditionEstimate.toExponential(2)}; coefficients may be sensitive to small data changes.`
-            :"Fit completed with the current dataset and Ridge setting.";
-          const metrics=result.metrics;
-          values.push(null,metrics.r2===null?"Undefined":fmt(metrics.r2,4),metrics.adjustedR2===null?"Undefined":fmt(metrics.adjustedR2,4),fmt(metrics.mae,4),fmt(metrics.rmse,4),fmt(metrics.sse,4));
-        }else{
-          statusCellText=result.error.includes("distinct X values")?"Too few distinct X":"Unavailable";
-          statusTitle=result.error;
-          values.push(null,"—","—","—","—","—");
-        }
-        values[1]=statusCellText;
-        values.forEach((value,index)=>{
-          const cell=document.createElement("td");cell.textContent=value;
-          if(index===1){
-            cell.title=statusTitle;cell.className=result.model?"comparison-ready":"comparison-unavailable";
+
+      function getCanvasPosition(event) {
+        const bounds = canvas.getBoundingClientRect();
+        return {
+          x: event.clientX - bounds.left,
+          y: event.clientY - bounds.top
+        };
+      }
+
+      function findPointAt(position) {
+        let nearest = null;
+        let minDistSq = (pointHitRadius) ** 2;
+        for (let i = points.length - 1; i >= 0; i--) {
+          const pt = points[i];
+          const { px, py } = toCanvasCoordinates(pt);
+          const distSq = (px - position.x) ** 2 + (py - position.y) ** 2;
+          if (distSq <= minDistSq) {
+            nearest = pt;
+            minDistSq = distSq;
           }
-          row.appendChild(cell);
+        }
+        return nearest;
+      }
+
+      // Numerical Matrix Solver for Polynomial Least Squares
+      function solveUpper(matrix, rhs, size) {
+        const solution = Array(size).fill(0);
+        for (let row = size - 1; row >= 0; row--) {
+          let value = rhs[row];
+          for (let col = row + 1; col < size; col++) value -= matrix[row][col] * solution[col];
+          if (Math.abs(matrix[row][row]) < 1e-14) return null;
+          solution[row] = value / matrix[row][row];
+        }
+        return solution;
+      }
+
+      function solveLeastSquares(design, target, penalty) {
+        const matrix = design.map(row => row.slice());
+        const rhs = target.slice();
+        const columns = design[0].length;
+
+        if (penalty > 0) {
+          const weight = Math.sqrt(penalty);
+          for (let col = 1; col < columns; col++) {
+            const row = Array(columns).fill(0);
+            row[col] = weight;
+            matrix.push(row);
+            rhs.push(0);
+          }
+        }
+
+        if (matrix.length < columns) return null;
+
+        for (let col = 0; col < columns; col++) {
+          let norm = 0;
+          for (let row = col; row < matrix.length; row++) norm = Math.hypot(norm, matrix[row][col]);
+          if (norm < 1e-12) return null;
+          const alpha = matrix[col][col] >= 0 ? -norm : norm;
+          const vector = matrix.slice(col).map(row => row[col]);
+          vector[0] -= alpha;
+          const normSquared = vector.reduce((sum, v) => sum + v * v, 0);
+          if (normSquared < 1e-24) return null;
+
+          for (let c = col; c < columns; c++) {
+            let projection = 0;
+            for (let row = col; row < matrix.length; row++) projection += vector[row - col] * matrix[row][c];
+            const scale = (2 * projection) / normSquared;
+            for (let row = col; row < matrix.length; row++) matrix[row][c] -= scale * vector[row - col];
+          }
+
+          let projection = 0;
+          for (let row = col; row < rhs.length; row++) projection += vector[row - col] * rhs[row];
+          const scale = (2 * projection) / normSquared;
+          for (let row = col; row < rhs.length; row++) rhs[row] -= scale * vector[row - col];
+        }
+
+        const coefficients = solveUpper(matrix, rhs, columns);
+        if (!coefficients || coefficients.some(v => !Number.isFinite(v))) return null;
+        return coefficients;
+      }
+
+      function scaledToRaw(scaledCoeffs, meanX, scaleX) {
+        const d = scaledCoeffs.length - 1;
+        const raw = Array(d + 1).fill(0);
+
+        function nCr(n, r) {
+          let res = 1;
+          for (let i = 1; i <= r; i++) res = (res * (n - i + 1)) / i;
+          return res;
+        }
+
+        for (let k = 0; k <= d; k++) {
+          const ak = scaledCoeffs[k];
+          for (let j = 0; j <= k; j++) {
+            const binom = nCr(k, j);
+            const term = (ak * binom * ((-meanX) ** (k - j))) / (scaleX ** k);
+            raw[j] += term;
+          }
+        }
+        return raw;
+      }
+
+      function fitPolynomial(pts, d, penalty = 0) {
+        if (!Array.isArray(pts) || pts.length < d + 1) return null;
+        const distinctX = new Set(pts.map(p => p.x)).size;
+        if (distinctX < d + 1) return null;
+
+        const n = pts.length;
+        const meanX = pts.reduce((sum, p) => sum + p.x, 0) / n;
+        const scaleX = Math.sqrt(pts.reduce((sum, p) => sum + (p.x - meanX) ** 2, 0) / n) || 1;
+
+        const design = [];
+        const target = [];
+        pts.forEach(p => {
+          const z = (p.x - meanX) / scaleX;
+          const row = [];
+          for (let pow = 0; pow <= d; pow++) row.push(z ** pow);
+          design.push(row);
+          target.push(p.y);
         });
-        tbody.appendChild(row);
-      }
-      el("comparisonStatus").textContent=`${fitCount} of 10 degrees fit · Ridge λ ${fmt(ridge,2)}`;
-      el("comparisonStatus").className=`status${fitCount?" ready":""}`;
-    }
 
-    function updatePrediction(){
-      if(!model){
-        el("prediction").textContent="—";el("interval").textContent="A valid model is required to calculate predictions.";
-        el("warning").style.display="none";setPredictionError("Fit a valid model before requesting a prediction.");return;
+        const scaledCoeffs = solveLeastSquares(design, target, penalty);
+        if (!scaledCoeffs) return null;
+
+        const rawCoeffs = scaledToRaw(scaledCoeffs, meanX, scaleX);
+
+        // Evaluation
+        const meanY = pts.reduce((sum, p) => sum + p.y, 0) / n;
+        let sse = 0;
+        let sst = 0;
+        let sae = 0;
+        let minX = Infinity;
+        let maxX = -Infinity;
+
+        pts.forEach(p => {
+          let yHat = 0;
+          for (let pow = 0; pow <= d; pow++) yHat += rawCoeffs[pow] * (p.x ** pow);
+          const err = p.y - yHat;
+          sse += err * err;
+          sst += (p.y - meanY) ** 2;
+          sae += Math.abs(err);
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+        });
+
+        const r2 = sst === 0 ? (sse === 0 ? 1 : 0) : Math.max(0, 1 - (sse / sst));
+        const dfResidual = n - d - 1;
+        const adjR2 = (sst > 0 && dfResidual > 0) ? 1 - ((1 - r2) * (n - 1) / dfResidual) : r2;
+        const mse = sse / n;
+        const rmse = Math.sqrt(mse);
+        const mae = sae / n;
+
+        return {
+          degree: d,
+          scaledCoeffs,
+          rawCoeffs,
+          n, meanX, scaleX, meanY,
+          sse, sst, r2, adjR2, mse, rmse, mae, minX, maxX
+        };
       }
-      const input=el("xInput").value.trim();
-      if(!input){
-        el("prediction").textContent="—";el("interval").textContent="Enter an X value to predict.";
-        el("warning").style.display="none";setPredictionError("Enter an X value to calculate a prediction.");return;
+
+      function evalPoly(modelObj, x) {
+        if (!modelObj || !modelObj.rawCoeffs) return null;
+        let y = 0;
+        for (let i = 0; i < modelObj.rawCoeffs.length; i++) {
+          y += modelObj.rawCoeffs[i] * (x ** i);
+        }
+        return y;
       }
-      const x=Number(input);
-      if(!Number.isFinite(x)||x<-1000||x>1000){
-        el("prediction").textContent="—";el("interval").textContent="X must be a finite value between −1000 and 1000.";
-        el("warning").style.display="none";setPredictionError("Enter a finite X value between −1000 and 1000.");return;
+
+      // Draw Chart
+      function drawChart() {
+        const stage = canvas.parentElement;
+        const w = stage.getBoundingClientRect().width;
+        const h = stage.getBoundingClientRect().height;
+
+        context.clearRect(0, 0, w, h);
+
+        context.fillStyle = "#0e121b";
+        context.fillRect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
+
+        // Grid
+        context.lineWidth = 1;
+        for (let xVal = xMin; xVal <= xMax; xVal += tickStep) {
+          const px = Math.round(toCanvasX(xVal));
+          context.beginPath();
+          context.strokeStyle = xVal === 0 ? "#374158" : "#1a2233";
+          context.moveTo(px, plot.top); context.lineTo(px, plot.bottom);
+          context.stroke();
+        }
+
+        for (let yVal = yMin; yVal <= yMax; yVal += tickStep) {
+          const py = Math.round(toCanvasY(yVal));
+          context.beginPath();
+          context.strokeStyle = yVal === 0 ? "#374158" : "#1a2233";
+          context.moveTo(plot.left, py); context.lineTo(plot.right, py);
+          context.stroke();
+        }
+
+        context.strokeStyle = "#283144";
+        context.lineWidth = 1;
+        context.strokeRect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
+
+        context.font = "10px 'Segoe UI', Arial, sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "top";
+        for (let xVal = xMin; xVal <= xMax; xVal += 20) {
+          context.fillStyle = "#7b879e";
+          context.fillText(String(xVal), toCanvasX(xVal), plot.bottom + 4);
+        }
+
+        context.textAlign = "right";
+        context.textBaseline = "middle";
+        for (let yVal = yMin; yVal <= yMax; yVal += 20) {
+          context.fillStyle = "#7b879e";
+          context.fillText(String(yVal), plot.left - 5, toCanvasY(yVal));
+        }
+
+        context.save();
+        context.beginPath();
+        context.rect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
+        context.clip();
+
+        // 1. Confidence Band
+        if (model && toggleCi.checked && model.rmse > 0) {
+          context.fillStyle = "rgba(154, 140, 255, 0.12)";
+          context.beginPath();
+          for (let x = xMin; x <= xMax; x += 1) {
+            const yHat = evalPoly(model, x);
+            const cy = toCanvasY(yHat + 1.96 * model.rmse);
+            if (x === xMin) context.moveTo(toCanvasX(x), cy); else context.lineTo(toCanvasX(x), cy);
+          }
+          for (let x = xMax; x >= xMin; x -= 1) {
+            const yHat = evalPoly(model, x);
+            context.lineTo(toCanvasX(x), toCanvasY(yHat - 1.96 * model.rmse));
+          }
+          context.closePath();
+          context.fill();
+        }
+
+        // 2. Linear Reference Line (Degree 1)
+        if (linearModel && toggleRefLine.checked) {
+          context.save();
+          context.beginPath();
+          context.setLineDash([4, 4]);
+          context.strokeStyle = "#7b879e";
+          context.lineWidth = 1.3;
+          context.moveTo(toCanvasX(xMin), toCanvasY(evalPoly(linearModel, xMin)));
+          context.lineTo(toCanvasX(xMax), toCanvasY(evalPoly(linearModel, xMax)));
+          context.stroke();
+          context.restore();
+        }
+
+        // 3. Residual Lines
+        if (model && toggleResiduals.checked) {
+          context.save();
+          context.setLineDash([3, 3]);
+          context.lineWidth = 1.2;
+          points.forEach(pt => {
+            const yHat = evalPoly(model, pt.x);
+            const ptPos = toCanvasCoordinates(pt);
+            const pyHat = toCanvasY(yHat);
+            context.beginPath();
+            context.strokeStyle = pt.y >= yHat ? "rgba(107, 210, 167, 0.85)" : "rgba(240, 135, 162, 0.85)";
+            context.moveTo(ptPos.px, ptPos.py);
+            context.lineTo(ptPos.px, pyHat);
+            context.stroke();
+          });
+          context.restore();
+        }
+
+        // 4. Polynomial Curve
+        if (model && toggleCurve.checked) {
+          context.beginPath();
+          let started = false;
+          for (let x = xMin; x <= xMax; x += 0.5) {
+            const y = evalPoly(model, x);
+            if (Number.isFinite(y)) {
+              const cx = toCanvasX(x);
+              const cy = toCanvasY(y);
+              if (!started) { context.moveTo(cx, cy); started = true; }
+              else { context.lineTo(cx, cy); }
+            }
+          }
+          context.strokeStyle = "#f087a2";
+          context.lineWidth = 2.5;
+          context.stroke();
+        }
+
+        // 5. Prediction Dot
+        if (prediction && Number.isFinite(prediction.x) && Number.isFinite(prediction.y)) {
+          const predPos = toCanvasCoordinates(prediction);
+          context.save();
+          context.setLineDash([2, 3]);
+          context.strokeStyle = "rgba(255, 209, 102, 0.5)";
+          context.lineWidth = 1;
+          context.beginPath();
+          context.moveTo(predPos.px, plot.bottom);
+          context.lineTo(predPos.px, predPos.py);
+          context.lineTo(plot.left, predPos.py);
+          context.stroke();
+          context.restore();
+
+          context.beginPath();
+          context.arc(predPos.px, predPos.py, 6, 0, Math.PI * 2);
+          context.fillStyle = "#ffd166";
+          context.fill();
+          context.strokeStyle = "#fff";
+          context.lineWidth = 1.5;
+          context.stroke();
+        }
+
+        context.restore();
+
+        // 6. Data Points
+        points.forEach(pt => {
+          const { px, py } = toCanvasCoordinates(pt);
+          const isSelected = selectedPoint === pt;
+          const isHovered = hoveredPoint === pt;
+
+          context.beginPath();
+          context.arc(px, py, isSelected ? 7 : (isHovered ? 6.5 : 5), 0, Math.PI * 2);
+          context.fillStyle = isSelected ? "#ffd166" : (isHovered ? "#b7a8ff" : "#9a8cff");
+          context.fill();
+          context.lineWidth = isSelected ? 2.2 : 1.5;
+          context.strokeStyle = isSelected ? "#ffffff" : "#ded7ff";
+          context.stroke();
+        });
       }
-      const y=predict(x);
-      if(!Number.isFinite(y)){
-        el("prediction").textContent="—";el("interval").textContent="No finite prediction is available for this X value.";
-        el("warning").style.display="none";setPredictionError("This prediction exceeds the stable numeric range. Try an X closer to the observations or a lower degree.");return;
+
+      // Update View
+      function updateView() {
+        model = fitPolynomial(points, currentDegree, currentRidge);
+        linearModel = fitPolynomial(points, 1, 0);
+        pointCountEl.textContent = String(points.length);
+        degreeBadge.textContent = `Degree ${currentDegree}`;
+
+        // Overfitting badge check
+        if (!model) {
+          overfitBadge.textContent = points.length < currentDegree + 1 ? "Need points" : "Deg too high";
+          overfitBadge.className = "badge badge-purple";
+        } else if (currentDegree >= points.length - 1 && points.length > 2) {
+          overfitBadge.textContent = "Overfitting Risk";
+          overfitBadge.className = "badge badge-amber";
+        } else {
+          overfitBadge.textContent = "Healthy Fit";
+          overfitBadge.className = "badge badge-green";
+        }
+
+        // Selected bar
+        if (selectedPoint) {
+          selectedBar.classList.add("active");
+          selXInput.value = selectedPoint.x.toFixed(1);
+          selYInput.value = selectedPoint.y.toFixed(1);
+          if (model) {
+            const yHat = evalPoly(model, selectedPoint.x);
+            selectedPointInfo.textContent = `Ŷ=${formatNumber(yHat, 1)} | e=${formatNumber(selectedPoint.y - yHat, 2)}`;
+          } else {
+            selectedPointInfo.textContent = "";
+          }
+        } else {
+          selectedBar.classList.remove("active");
+        }
+
+        // Formatted Polynomial Equation
+        if (!model) {
+          equationEl.textContent = "ŷ = —";
+          metricDegree.textContent = String(currentDegree);
+          r2Value.textContent = "—";
+          adjr2Value.textContent = "—";
+          mseValue.textContent = "—";
+          rmseValue.textContent = "—";
+          maeValue.textContent = "—";
+          sseValue.textContent = "—";
+          sstValue.textContent = "—";
+          modelStatus.textContent = points.length < currentDegree + 1 ? `Need ≥ ${currentDegree + 1} pts` : "Ill-conditioned";
+        } else {
+          let eqStr = "ŷ = ";
+          const coeffs = model.rawCoeffs;
+          for (let p = coeffs.length - 1; p >= 0; p--) {
+            const c = coeffs[p];
+            if (p === coeffs.length - 1) {
+              eqStr += `${formatNumber(c, 3)}${p > 0 ? (p === 1 ? "x" : `x${superscript(p)}`) : ""}`;
+            } else {
+              const sign = c >= 0 ? " + " : " − ";
+              eqStr += `${sign}${formatNumber(Math.abs(c), 3)}${p > 0 ? (p === 1 ? "x" : `x${superscript(p)}`) : ""}`;
+            }
+          }
+          equationEl.textContent = eqStr;
+
+          metricDegree.textContent = String(currentDegree);
+          r2Value.textContent = `${formatNumber(model.r2, 3)} (${(model.r2 * 100).toFixed(1)}%)`;
+          adjr2Value.textContent = formatNumber(model.adjR2, 3);
+          mseValue.textContent = formatNumber(model.mse, 2);
+          rmseValue.textContent = formatNumber(model.rmse, 2);
+          maeValue.textContent = formatNumber(model.mae, 2);
+          sseValue.textContent = formatNumber(model.sse, 1);
+          sstValue.textContent = formatNumber(model.sst, 1);
+          modelStatus.textContent = `Deg ${currentDegree} Fitted`;
+        }
+
+        updateComparisonTable();
+        updatePrediction();
+        drawChart();
       }
-      setPredictionError("");el("prediction").textContent=fmt(y,4);
-      const n=points.length;const ss=points.reduce((s,p)=>s+(p.y-predict(p.x))**2,0);const mse=n?ss/n:0;
-      const margin=Math.sqrt(mse)*1.96,lower=y-margin,upper=y+margin;
-      el("interval").textContent=Number.isFinite(lower)&&Number.isFinite(upper)
-        ?`Approx. residual range: ${fmt(lower,3)} to ${fmt(upper,3)}`
-        :"Approx. residual range is unavailable for this prediction.";
-      const {minimum:minObservedX,maximum:maxObservedX}=numericExtent(points.map(point=>point.x));
-      el("warning").style.display=(x<minObservedX||x>maxObservedX)?"block":"none";
-    }
-    function renderPredictionEquation(){
-      if(!model){
-        el("predictionEquationLabel").textContent="Selected polynomial equation";
-        el("predictionEquation").textContent="No fitted equation is available yet.";
-      }else if(model.raw){
-        el("predictionEquationLabel").textContent="Selected equation · original-X basis";
-        el("predictionEquation").textContent=rawEquationText(model.raw);
-      }else{
-        el("predictionEquationLabel").textContent=`Selected equation · z = (x − ${fmt(meanX,4)}) / ${fmt(scaleX,4)}`;
-        el("predictionEquation").textContent=equationText(model.coeff);
+
+      function superscript(n) {
+        const map = { "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶" };
+        return map[String(n)] || `^${n}`;
       }
-    }
-    function renderMultiPredictions(){
-      const section=el("multiPredictionSection"),rows=el("multiPredictionRows");
-      section.hidden=!multiPredictionValues.length;
-      if(!multiPredictionValues.length){rows.innerHTML="";return}
-      if(!model){
-        rows.innerHTML=multiPredictionValues.map((x,index)=>`<tr><td>${index+1}</td><td>${resultNumber(x)}</td><td>—</td><td>Unavailable</td></tr>`).join("");
-        el("multiPredictionMessage").textContent="Predictions are unavailable until a valid model is fitted.";
-        el("multiPredictionMessage").className="entry-message error";
-        return;
+
+      function updateComparisonTable() {
+        compTableBody.innerHTML = "";
+        if (points.length < 2) {
+          compTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">Add at least 2 points to compare</td></tr>`;
+          return;
+        }
+
+        for (let d = 1; d <= 6; d++) {
+          const fit = fitPolynomial(points, d, currentRidge);
+          const tr = document.createElement("tr");
+          if (d === currentDegree) tr.className = "active-row";
+
+          if (!fit) {
+            tr.innerHTML = `
+              <td>Degree ${d}</td>
+              <td style="color:var(--muted);">Need ≥ ${d + 1} pts</td>
+              <td>—</td><td>—</td><td>—</td><td>—</td>
+            `;
+          } else {
+            tr.innerHTML = `
+              <td><strong>Degree ${d}</strong></td>
+              <td style="color:${d >= points.length - 1 ? "var(--amber)" : "var(--green)"}">${d >= points.length - 1 ? "Overfit?" : "Fitted"}</td>
+              <td>${formatNumber(fit.r2, 3)}</td>
+              <td>${formatNumber(fit.adjR2, 3)}</td>
+              <td>${formatNumber(fit.mse, 2)}</td>
+              <td>${formatNumber(fit.rmse, 2)}</td>
+            `;
+          }
+          compTableBody.appendChild(tr);
+        }
       }
-      const {minimum:minX,maximum:maxX}=numericExtent(points.map(point=>point.x));
-      const evaluated=multiPredictionValues.map(x=>({x,y:predict(x)}));
-      rows.innerHTML=evaluated.map(({x,y},index)=>{
-        const extrapolation=x<minX||x>maxX;
-        const rangeClass=!Number.isFinite(y)?"":extrapolation?"extrapolation":"in-range";
-        return `<tr><td>${index+1}</td><td>${resultNumber(x)}</td><td>${resultNumber(y)}</td><td><span class="prediction-range ${rangeClass}">${Number.isFinite(y)?(extrapolation?"Extrapolation":"Within range"):"Unavailable"}</span></td></tr>`;
-      }).join("");
-      const unavailable=evaluated.filter(item=>!Number.isFinite(item.y));
-      if(unavailable.length){
-        el("multiPredictionMessage").textContent=`${unavailable.length} prediction${unavailable.length===1?" is":"s are"} outside the stable numeric range. Try a lower degree or X values closer to the observations.`;
-        el("multiPredictionMessage").className="entry-message error";return;
+
+      function updatePrediction() {
+        prediction = null;
+        extrapolationWarning.style.display = "none";
+
+        if (!model) {
+          predictionOutput.textContent = "—";
+          predInterval.textContent = "Residual margin: —";
+          return;
+        }
+
+        const x = Number(xInput.value);
+        if (!Number.isFinite(x)) {
+          predictionOutput.textContent = "—";
+          return;
+        }
+
+        const y = evalPoly(model, x);
+        prediction = { x, y };
+        predictionOutput.textContent = formatNumber(y, 1);
+
+        if (x < model.minX || x > model.maxX) {
+          extrapolationWarning.style.display = "block";
+        }
+
+        predInterval.textContent = `Residual margin: ±${formatNumber(model.rmse * 1.96, 1)}`;
       }
-      el("multiPredictionMessage").textContent=`Calculated ${multiPredictionValues.length} model prediction${multiPredictionValues.length===1?"":"s"}.`;
-      el("multiPredictionMessage").className="entry-message success";
-    }
-    function chartTick(value){return Number(value.toPrecision(3)).toString()}
-    function chartDomain(values){
-      let minimum=Infinity,maximum=-Infinity;
-      values.forEach(value=>{minimum=Math.min(minimum,value);maximum=Math.max(maximum,value)});
-      const span=maximum-minimum,padding=span?span*.08:Math.max(Math.abs(minimum)*.08,1);
-      return[minimum-padding,maximum+padding];
-    }
-    function scatterChartSvg(data,options){
-      const width=480,height=250,left=58,right=14,top=14,bottom=48,plotWidth=width-left-right,plotHeight=height-top-bottom;
-      const xValues=data.map(options.xValue),yValues=data.map(options.yValue);
-      let xDomain=chartDomain(xValues),yDomain=chartDomain(options.reference==="zero"?yValues.concat(0):yValues);
-      if(options.reference==="identity"){
-        const sharedDomain=chartDomain(xValues.concat(yValues));xDomain=sharedDomain;yDomain=sharedDomain;
-      }
-      const mapX=value=>left+(value-xDomain[0])/(xDomain[1]-xDomain[0])*plotWidth;
-      const mapY=value=>top+plotHeight-(value-yDomain[0])/(yDomain[1]-yDomain[0])*plotHeight;
-      const grid=[];
-      for(let index=0;index<=4;index++){
-        const fraction=index/4,x=left+fraction*plotWidth,y=top+fraction*plotHeight;
-        grid.push(`<line class="chart-grid" x1="${x}" y1="${top}" x2="${x}" y2="${top+plotHeight}"/>`);
-        grid.push(`<line class="chart-grid" x1="${left}" y1="${y}" x2="${left+plotWidth}" y2="${y}"/>`);
-        grid.push(`<text class="chart-tick" text-anchor="middle" x="${x}" y="${top+plotHeight+16}">${chartTick(xDomain[0]+fraction*(xDomain[1]-xDomain[0]))}</text>`);
-        grid.push(`<text class="chart-tick" text-anchor="end" x="${left-7}" y="${y+3}">${chartTick(yDomain[1]-fraction*(yDomain[1]-yDomain[0]))}</text>`);
-      }
-      let reference="";
-      if(options.reference==="zero"&&yDomain[0]<=0&&yDomain[1]>=0){
-        const y=mapY(0);reference=`<line class="zero-reference" x1="${left}" y1="${y}" x2="${left+plotWidth}" y2="${y}"><title>Zero residual</title></line>`;
-      }else if(options.reference==="identity"){
-        reference=`<line class="identity-reference" x1="${mapX(xDomain[0])}" y1="${mapY(yDomain[0])}" x2="${mapX(xDomain[1])}" y2="${mapY(yDomain[1])}"><title>Perfect prediction reference: predicted Y equals actual Y</title></line>`;
-      }
-      const pointsMarkup=data.map(point=>{
-        const x=options.xValue(point),y=options.yValue(point);
-        return `<circle class="${options.pointClass}" cx="${mapX(x)}" cy="${mapY(y)}" r="4"><title>${options.xLabel}: ${chartTick(x)} · ${options.yLabel}: ${chartTick(y)}</title></circle>`;
-      }).join("");
-      return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${options.title}">
-        <title>${options.title}</title><desc>Scatter plot with grid lines, numeric axes, and a reference line.</desc>
-        ${grid.join("")}${reference}
-        <line class="chart-axis" x1="${left}" y1="${top+plotHeight}" x2="${left+plotWidth}" y2="${top+plotHeight}"/>
-        <line class="chart-axis" x1="${left}" y1="${top}" x2="${left}" y2="${top+plotHeight}"/>
-        ${pointsMarkup}
-        <text class="chart-label" text-anchor="middle" x="${left+plotWidth/2}" y="${height-7}">${options.xLabel}</text>
-        <text class="chart-label" text-anchor="middle" transform="translate(12 ${top+plotHeight/2}) rotate(-90)">${options.yLabel}</text>
-      </svg>`;
-    }
-    function histogramSvg(values){
-      const width=480,height=250,left=58,right=14,top=14,bottom=48,plotWidth=width-left-right,plotHeight=height-top-bottom;
-      const domain=chartDomain(values),binCount=Math.min(8,Math.max(1,Math.ceil(Math.sqrt(values.length)))),counts=Array(binCount).fill(0);
-      values.forEach(value=>{
-        const index=Math.min(binCount-1,Math.floor((value-domain[0])/(domain[1]-domain[0])*binCount));
-        counts[index]++;
+
+      // Pointer interactions
+      canvas.addEventListener("pointerdown", (e) => {
+        if (!e.isPrimary) return;
+        const pos = getCanvasPosition(e);
+        const hit = findPointAt(pos);
+
+        if (e.button === 2) {
+          e.preventDefault();
+          if (hit) {
+            const idx = points.indexOf(hit);
+            if (idx > -1) {
+              points.splice(idx, 1);
+              if (selectedPoint === hit) selectedPoint = null;
+              pushHistory();
+              updateView();
+              showToast("Point deleted");
+            }
+          }
+          return;
+        }
+
+        if (e.button !== 0) return;
+
+        if (hit) {
+          selectedPoint = hit;
+          draggedPoint = hit;
+          isDragging = true;
+          canvas.setPointerCapture(e.pointerId);
+          canvas.classList.remove("is-point-hover");
+          canvas.classList.add("is-dragging");
+        } else {
+          const newPt = toDataCoordinates(pos.x, pos.y);
+          points.push(newPt);
+          selectedPoint = newPt;
+          pushHistory();
+          showToast(`Added (${formatNumber(newPt.x, 1)}, ${formatNumber(newPt.y, 1)})`);
+        }
+        updateView();
       });
-      const maxCount=Math.max(1,...counts),grid=[];
-      for(let index=0;index<=4;index++){
-        const fraction=index/4,y=top+fraction*plotHeight;
-        grid.push(`<line class="chart-grid" x1="${left}" y1="${y}" x2="${left+plotWidth}" y2="${y}"/>`);
-        grid.push(`<text class="chart-tick" text-anchor="end" x="${left-7}" y="${y+3}">${Math.round(maxCount*(1-fraction))}</text>`);
-      }
-      const barWidth=plotWidth/binCount;
-      const bars=counts.map((count,index)=>{
-        const barHeight=count/maxCount*plotHeight,x=left+index*barWidth+2,y=top+plotHeight-barHeight;
-        const low=domain[0]+index*(domain[1]-domain[0])/binCount,high=domain[0]+(index+1)*(domain[1]-domain[0])/binCount;
-        return `<rect class="histogram-bar" x="${x}" y="${y}" width="${Math.max(1,barWidth-4)}" height="${barHeight}"><title>${chartTick(low)} to ${chartTick(high)}: ${count} observation${count===1?"":"s"}</title></rect>`;
-      }).join("");
-      return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histogram of residuals">
-        <title>Residual distribution</title><desc>Histogram showing the frequency of residual values.</desc>
-        ${grid.join("")}<line class="chart-axis" x1="${left}" y1="${top+plotHeight}" x2="${left+plotWidth}" y2="${top+plotHeight}"/>${bars}
-        <text class="chart-tick" text-anchor="middle" x="${left}" y="${top+plotHeight+16}">${chartTick(domain[0])}</text>
-        <text class="chart-tick" text-anchor="middle" x="${left+plotWidth}" y="${top+plotHeight+16}">${chartTick(domain[1])}</text>
-        <text class="chart-label" text-anchor="middle" x="${left+plotWidth/2}" y="${height-7}">Residual (Y − Ŷ)</text>
-        <text class="chart-label" text-anchor="middle" transform="translate(12 ${top+plotHeight/2}) rotate(-90)">Frequency</text>
-      </svg>`;
-    }
-    function renderResidualAnalysis(){
-      const residualBody=el("residualTbody");
-      if(!model){
-        el("residualStatus").textContent=resultsCleared?"Results cleared":fitError?"Fit unavailable":points.length?"Awaiting enough observations":"Waiting for a fitted model";
-        el("residualStatus").className=`status${resultsCleared?" results-cleared":""}`;
-        el("residualSummary").textContent=resultsCleared
-          ?"Residual results were cleared. The dataset is preserved; change the data or model settings to fit again."
-          :fitError?fitErrorMessage:"Residual plots and values are available after a valid model fit.";
-        ["residualMean","residualMax","residualLargeCount"].forEach(id=>el(id).textContent="—");
-        const emptyPlot=`<div class="residual-empty">Fit a valid polynomial model to display this plot.</div>`;
-        ["residualPlot","residualHistogram","actualPredictedPlot"].forEach(id=>el(id).innerHTML=emptyPlot);
-        residualBody.innerHTML=points.length
-          ?points.map((point,index)=>`<tr><td>${index+1}</td><td>${resultNumber(point.x)}</td><td>${resultNumber(point.y)}</td><td>—</td><td>—</td></tr>`).join("")
-          :`<tr><td class="empty-result" colspan="5">No observations to display.</td></tr>`;
-        return;
-      }
-      const observations=points.map(point=>({x:point.x,actual:point.y,predicted:predict(point.x),residual:point.y-predict(point.x)}));
-      const residuals=observations.map(observation=>observation.residual),count=residuals.length;
-      const mean=residuals.reduce((sum,value)=>sum+value,0)/count;
-      const rmse=Math.sqrt(residuals.reduce((sum,value)=>sum+value*value,0)/count);
-      const maxAbsolute=residuals.reduce((largest,value)=>Math.max(largest,Math.abs(value)),0);
-      const largeCount=rmse?residuals.filter(value=>Math.abs(value)>2.5*rmse).length:0;
-      el("residualStatus").textContent="Residuals ready";el("residualStatus").className="status ready";
-      el("residualMean").textContent=fmt(mean,4);el("residualMax").textContent=fmt(maxAbsolute,4);
-      el("residualLargeCount").textContent=`${largeCount} / ${count}`;
-      el("residualSummary").textContent=rmse
-        ?`${count} observations · mean signed residual ${fmt(mean,4)} · ${largeCount} residual${largeCount===1?"":"s"} exceed the 2.5 × RMSE screening threshold. Review the plots for structure; these diagnostics do not prove model assumptions.`
-        :`${count} observations · all residuals are zero, so the fitted values match the observations to numerical precision.`;
-      el("residualPlot").innerHTML=scatterChartSvg(observations,{
-        title:"Residuals versus independent variable",
-        xValue:observation=>observation.x,yValue:observation=>observation.residual,
-        xLabel:"Independent Variable (X)",yLabel:"Residual (Y − Ŷ)",pointClass:"residual-point",reference:"zero"
+
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      canvas.addEventListener("pointermove", (e) => {
+        const pos = getCanvasPosition(e);
+        const dataCoords = toDataCoordinates(pos.x, pos.y);
+        hudCoords.textContent = `X: ${formatNumber(dataCoords.x, 1)} | Y: ${formatNumber(dataCoords.y, 1)}`;
+
+        if (draggedPoint && isDragging) {
+          draggedPoint.x = Math.max(xMin, Math.min(xMax, dataCoords.x));
+          draggedPoint.y = Math.max(yMin, Math.min(yMax, dataCoords.y));
+          updateView();
+          tooltip.style.display = "none";
+          return;
+        }
+
+        hoveredPoint = findPointAt(pos);
+        canvas.classList.toggle("is-point-hover", Boolean(hoveredPoint));
+
+        if (hoveredPoint) {
+          const ptPos = toCanvasCoordinates(hoveredPoint);
+          let extraInfo = "";
+          if (model) {
+            const yHat = evalPoly(model, hoveredPoint.x);
+            extraInfo = `<br>e: ${formatNumber(hoveredPoint.y - yHat, 2)}`;
+          }
+          tooltip.innerHTML = `<strong>Point</strong><br>X: ${formatNumber(hoveredPoint.x, 2)} | Y: ${formatNumber(hoveredPoint.y, 2)}${extraInfo}`;
+          tooltip.style.left = `${ptPos.px}px`;
+          tooltip.style.top = `${ptPos.py}px`;
+          tooltip.style.display = "block";
+        } else {
+          tooltip.style.display = "none";
+        }
       });
-      el("residualHistogram").innerHTML=histogramSvg(residuals);
-      el("actualPredictedPlot").innerHTML=scatterChartSvg(observations,{
-        title:"Actual versus predicted dependent variable values",
-        xValue:observation=>observation.actual,yValue:observation=>observation.predicted,
-        xLabel:"Actual Y",yLabel:"Predicted Y (Ŷ)",pointClass:"chart-point",reference:"identity"
+
+      function finishDragging() {
+        if (draggedPoint && isDragging) pushHistory();
+        draggedPoint = null;
+        isDragging = false;
+        canvas.classList.remove("is-dragging");
+        drawChart();
+      }
+
+      canvas.addEventListener("pointerup", finishDragging);
+      canvas.addEventListener("pointercancel", finishDragging);
+      canvas.addEventListener("lostpointercapture", finishDragging);
+      canvas.addEventListener("pointerleave", () => {
+        if (!isDragging) {
+          hoveredPoint = null;
+          canvas.classList.remove("is-point-hover");
+          tooltip.style.display = "none";
+          hudCoords.textContent = "X: — | Y: —";
+          drawChart();
+        }
       });
-      residualBody.innerHTML=observations.map((observation,index)=>
-        `<tr><td>${index+1}</td><td>${resultNumber(observation.x)}</td><td>${resultNumber(observation.actual)}</td><td>${resultNumber(observation.predicted)}</td><td>${resultNumber(observation.residual)}</td></tr>`
-      ).join("");
-    }
 
-    function fitAndDraw(){setRanges();fit();draw();renderTable()}
-    function draw(){
-      const rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height;
-      const style=getComputedStyle(document.documentElement);
-      const palette={inset:style.getPropertyValue("--inset").trim(),border:style.getPropertyValue("--border").trim(),borderStrong:style.getPropertyValue("--border-strong").trim(),muted:style.getPropertyValue("--muted").trim(),violet:style.getPropertyValue("--violet").trim(),pink:style.getPropertyValue("--pink").trim(),blue:style.getPropertyValue("--blue").trim(),amber:style.getPropertyValue("--amber").trim()};
-      ctx.clearRect(0,0,w,h);ctx.fillStyle=palette.inset;ctx.fillRect(0,0,w,h);
-      ctx.save();
-      ctx.strokeStyle=palette.border;ctx.fillStyle=palette.muted;ctx.font="10px "+style.getPropertyValue("--mono");
-      ctx.lineWidth=1;
-      const divisions=w<460?5:10;
-      for(let i=0;i<=divisions;i++){
-        const fraction=i/divisions,x=plot.l+fraction*plot.w,y=plot.t+plot.h-fraction*plot.h;
-        ctx.beginPath();ctx.moveTo(x,plot.t);ctx.lineTo(x,plot.t+plot.h);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(plot.l,y);ctx.lineTo(plot.l+plot.w,y);ctx.stroke();
-        ctx.fillStyle=palette.muted;ctx.textAlign="center";ctx.fillText(fmt(ranges.x[0]+fraction*(ranges.x[1]-ranges.x[0]),0),x,plot.t+plot.h+20);
-        ctx.textAlign="right";ctx.fillText(fmt(ranges.y[0]+fraction*(ranges.y[1]-ranges.y[0]),0),plot.l-9,y+3);
-      }
-      ctx.fillStyle=palette.muted;ctx.textAlign="center";ctx.font="11px "+style.getPropertyValue("--sans");
-      ctx.fillText("Independent Variable (X)",plot.l+plot.w/2,h-9);
-      ctx.save();ctx.translate(15,plot.t+plot.h/2);ctx.rotate(-Math.PI/2);ctx.fillText("Dependent Variable (Y)",0,0);ctx.restore();
-      ctx.restore();
-      if(el("showMean").checked){
-        const ym=points.length?points.reduce((s,p)=>s+p.y,0)/points.length:0;
-        ctx.save();ctx.setLineDash([4,5]);ctx.strokeStyle=palette.blue;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(plot.l,ty(ym));ctx.lineTo(plot.l+plot.w,ty(ym));ctx.stroke();ctx.restore();
-      }
-      if(model&&el("showResidual").checked){
-        ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(240,135,162,.45)";
-        points.forEach(p=>{ctx.beginPath();ctx.moveTo(tx(p.x),ty(p.y));ctx.lineTo(tx(p.x),ty(predict(p.x)));ctx.stroke()});ctx.restore();
-      }
-      if(model&&el("showCurve").checked){
-        ctx.save();ctx.strokeStyle=palette.pink;ctx.lineWidth=3;ctx.shadowColor="rgba(154,140,255,.18)";ctx.shadowBlur=7;
-        ctx.beginPath();let started=false;
-        for(let i=0;i<=300;i++){const x=ranges.x[0]+i/300*(ranges.x[1]-ranges.x[0]),y=predict(x);if(!Number.isFinite(y)||y<ranges.y[0]-100||y>ranges.y[1]+100){started=false;continue}const px=tx(x),py=ty(y);if(!started){ctx.moveTo(px,py);started=true}else ctx.lineTo(px,py)}
-        ctx.stroke();ctx.restore();
-      }
-      if(el("showPoints").checked)points.forEach((p,i)=>{
-        const px=tx(p.x),py=ty(p.y);ctx.beginPath();ctx.arc(px,py,i===selectedIndex||i===hoverIndex?6.5:5,0,Math.PI*2);
-        ctx.fillStyle=i===selectedIndex?palette.amber:palette.violet;ctx.fill();ctx.strokeStyle=palette.borderStrong;ctx.lineWidth=i===selectedIndex||i===hoverIndex?2:1;ctx.stroke();
+      // Keyboard Controls
+      window.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+          e.preventDefault();
+          if (e.shiftKey) redo(); else undo();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+          e.preventDefault(); redo(); return;
+        }
+
+        if ((e.key === "Delete" || e.key === "Backspace") && selectedPoint) {
+          e.preventDefault();
+          const idx = points.indexOf(selectedPoint);
+          if (idx > -1) {
+            points.splice(idx, 1);
+            selectedPoint = null;
+            pushHistory();
+            updateView();
+            showToast("Point deleted");
+          }
+          return;
+        }
+
+        if (selectedPoint && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+          e.preventDefault();
+          const delta = e.shiftKey ? 2 : 0.5;
+          if (e.key === "ArrowUp") selectedPoint.y = Math.min(yMax, selectedPoint.y + delta);
+          if (e.key === "ArrowDown") selectedPoint.y = Math.max(yMin, selectedPoint.y - delta);
+          if (e.key === "ArrowLeft") selectedPoint.x = Math.max(xMin, selectedPoint.x - delta);
+          if (e.key === "ArrowRight") selectedPoint.x = Math.min(xMax, selectedPoint.x + delta);
+          pushHistory();
+          updateView();
+        }
       });
-    }
 
-    function renderTable(){
-      const tb=el("tbody");if(!points.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted)">No points yet.</td></tr>`;return}
-      tb.innerHTML=points.map((p,i)=>{
-        const y=model?predict(p.x):null,r=y==null?null:p.y-y;
-        return `<tr><td>${i+1}</td><td><input class="cell-edit" data-edit="x" data-index="${i}" type="number" step="any" value="${p.x}"></td><td><input class="cell-edit" data-edit="y" data-index="${i}" type="number" step="any" value="${p.y}"></td><td>${y==null?"—":fmt(y,2)}</td><td>${r==null?"—":fmt(r,2)}</td><td>${r==null?"—":fmt(r*r,2)}</td><td><button class="btn small" data-remove="${i}" type="button" aria-label="Remove row ${i+1}">×</button></td></tr>`
-      }).join("");
-      tb.querySelectorAll("[data-remove]").forEach(b=>b.addEventListener("click",()=>{pushHistory();points.splice(Number(b.dataset.remove),1);selectedIndex=-1;markDatasetEdited();fitAndDraw()}));
-      tb.querySelectorAll("[data-edit]").forEach(input=>input.addEventListener("change",()=>{
-        const index=Number(input.dataset.index),axis=input.dataset.edit,value=Number(input.value);
-        if(input.value.trim()===""||!Number.isFinite(value)||value<-1000||value>1000){toast("Enter a finite value between −1000 and 1000");renderTable();return}
-        if(points[index][axis]===value)return;
-        pushHistory();points[index][axis]=value;markDatasetEdited();fitAndDraw();
-      }));
-    }
-
-    function addPoint(x,y,record=true){if(!Number.isFinite(x)||!Number.isFinite(y)||x<-1000||x>1000||y<-1000||y>1000)return false;if(record)pushHistory();points.push({x,y});selectedIndex=points.length-1;markDatasetEdited();fitAndDraw();return true}
-    function generate(kind){
-      pushHistory();points=[];
-      const n=18,random=()=> (Math.random()+Math.random()+Math.random()-1.5)*Number(el("noise").value);
-      for(let i=0;i<n;i++){const x=5+i*90/(n-1),base={quadratic:.011*(x-50)**2+8,cubic:.0009*(x-50)**3-.012*(x-50)**2+45,wave:48+28*Math.sin((x-5)/90*Math.PI*2)+.12*(x-50),outlier:.7*x+8,perfect:.008*(x-50)**2+.25*(x-50)+40}[kind]??40+.8*x;points.push({x,y:clamp(base+random(),-200,300)})}
-      if(kind==="outlier")points.push({x:95,y:5});
-      if(kind==="perfect"){points=[];for(let i=0;i<n;i++){const x=5+i*90/(n-1);points.push({x,y:.008*(x-50)**2+.25*(x-50)+40})}}
-      setDatasetSource(`Synthetic sample · ${kind}`);
-      if(kind==="quadratic")degree=2;if(kind==="cubic")degree=3;if(kind==="wave")degree=5;
-      el("degree").value=String(degree);fitAndDraw();toast("Sample dataset generated");
-    }
-
-    canvas.addEventListener("pointerdown",e=>{
-      const p=pos(e),i=el("showPoints").checked?findPoint(p):-1;if(i>=0){pushHistory();dragging=true;selectedIndex=i;canvas.setPointerCapture(e.pointerId);canvas.classList.add("drag");return}
-      if(e.button===0){const d=dataXY(p.x,p.y);if(d.x>=-1000&&d.x<=1000&&d.y>=-1000&&d.y<=1000)addPoint(clamp(d.x,-1000,1000),clamp(d.y,-1000,1000))}
-    });
-    canvas.addEventListener("pointermove",e=>{
-      const p=pos(e),d=dataXY(p.x,p.y);el("hud").textContent=`X ${fmt(d.x,1)} · Y ${fmt(d.y,1)}`;
-      const i=el("showPoints").checked?findPoint(p,8):-1;hoverIndex=i;canvas.classList.toggle("hover",i>=0);
-      if(dragging&&selectedIndex>=0){points[selectedIndex]={x:clamp(d.x,ranges.x[0],ranges.x[1]),y:clamp(d.y,ranges.y[0],ranges.y[1])};markDatasetEdited();fit(false);renderTable()}
-      updateChartTooltip(p,i);
-      draw();
-    });
-    function finishDrag(){if(dragging){dragging=false;canvas.classList.remove("drag");fitAndDraw()}}
-    canvas.addEventListener("pointerup",finishDrag);
-    canvas.addEventListener("pointercancel",finishDrag);
-    canvas.addEventListener("pointerleave",()=>{if(!dragging){hoverIndex=-1;el("tooltip").style.display="none";draw()}});
-    canvas.addEventListener("contextmenu",e=>{e.preventDefault();const i=el("showPoints").checked?findPoint(pos(e)):-1;if(i>=0){pushHistory();points.splice(i,1);selectedIndex=-1;markDatasetEdited();fitAndDraw();toast("Point removed")}});
-    document.addEventListener("keydown",e=>{
-      if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName))return;
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return}
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){e.preventDefault();redo();return}
-      if(e.key==="Delete"&&selectedIndex>=0){pushHistory();points.splice(selectedIndex,1);selectedIndex=-1;markDatasetEdited();fitAndDraw()}
-      if(selectedIndex>=0&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)){e.preventDefault();pushHistory();const p=points[selectedIndex],step=e.shiftKey?1:.2;if(e.key==="ArrowLeft")p.x-=step;if(e.key==="ArrowRight")p.x+=step;if(e.key==="ArrowUp")p.y+=step;if(e.key==="ArrowDown")p.y-=step;p.x=clamp(p.x,-1000,1000);p.y=clamp(p.y,-1000,1000);markDatasetEdited();fitAndDraw()}
-    });
-
-    document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));el(b.dataset.tab).classList.add("active")}));
-    document.querySelectorAll(".quick-link").forEach(button=>button.addEventListener("click",()=>{
-      const target=button.dataset.jump;
-      if(target==="predictionCard"){el(target).scrollIntoView({behavior:"smooth",block:"center"});el("xInput").focus({preventScroll:true});return}
-      if(target==="residualAnalysis"){el(target).scrollIntoView({behavior:"smooth",block:"start"});return}
-      if(target==="education"){el(target).scrollIntoView({behavior:"smooth",block:"start"});return}
-      if(target==="comparison"){el(target).scrollIntoView({behavior:"smooth",block:"start"});return}
-      if(target==="print"){window.print();return}
-      if(target==="report"){document.querySelector('.tab[data-tab="table"]').click();el("exportReport").click();return}
-      document.querySelector(`.tab[data-tab="${target}"]`).click();
-      el(target).scrollIntoView({behavior:"smooth",block:"nearest"});
-    }));
-    document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>generate(b.dataset.preset)));
-    el("generate").addEventListener("click",()=>generate(["quadratic","cubic","wave","outlier","perfect"][Math.floor(Math.random()*5)]));
-    el("clear").addEventListener("click",clearDataset);
-    el("clearDataset").addEventListener("click",clearDataset);
-    el("resetApp").addEventListener("click",resetApplication);
-    el("clearResults").addEventListener("click",clearResults);
-    el("copyEquation").addEventListener("click",copyEquation);
-    el("pairedDataForm").addEventListener("submit",event=>{
-      event.preventDefault();
-      try{
-        const xs=parseValues(el("xValues").value,"X"),ys=parseValues(el("yValues").value,"Y");
-        if(xs.length!==ys.length)throw new Error(`X has ${xs.length} values and Y has ${ys.length}. Enter the same number of observations.`);
-        pushHistory();points=xs.map((x,index)=>({x,y:ys[index]}));selectedIndex=-1;setDatasetSource("User-entered data");fitAndDraw();
-        setEntryMessage(`Loaded ${points.length} paired observations.`,"success");
-      }catch(error){setEntryMessage(error.message,"error")}
-    });
-    el("sampleDataset").addEventListener("click",()=>{
-      loadExampleDataset();
-    });
-    el("degree").addEventListener("change",()=>{
-      const selection=Number(el("degree").value);
-      if(!Number.isInteger(selection)||selection<1||selection>10){
-        el("degree").value=String(degree);toast("Choose a polynomial degree from 1 to 10.");return;
-      }
-      degree=selection;fitAndDraw();
-    });
-    el("noise").addEventListener("input",()=>el("noiseVal").textContent=el("noise").value);
-    el("ridge").addEventListener("input",()=>{ridge=Number(el("ridge").value);el("ridgeVal").textContent=fmt(ridge,2);fitAndDraw()});
-    ["showCurve","showResidual","showPoints","showMean"].forEach(id=>el(id).addEventListener("change",draw));
-    el("undo").addEventListener("click",undo);el("redo").addEventListener("click",redo);
-    el("predictForm").addEventListener("submit",e=>{e.preventDefault();updatePrediction()});
-    el("xSlider").addEventListener("input",()=>{el("xInput").value=el("xSlider").value;updatePrediction()});
-    el("xInput").addEventListener("input",()=>{el("xSlider").value=clamp(Number(el("xInput").value)||0,0,100);updatePrediction()});
-    el("multiXValues").addEventListener("input",()=>{
-      multiPredictionValues=[];renderMultiPredictions();
-      el("multiPredictionMessage").textContent="Submit comma-separated X values from −1000 to 1000.";
-      el("multiPredictionMessage").className="entry-message";
-    });
-    el("multiPredictForm").addEventListener("submit",event=>{
-      event.preventDefault();
-      try{
-        multiPredictionValues=parseValues(el("multiXValues").value,"X");
-        renderMultiPredictions();
-      }catch(error){
-        multiPredictionValues=[];renderMultiPredictions();
-        el("multiPredictionMessage").textContent=error instanceof Error?error.message:"Unable to parse the X values.";
-        el("multiPredictionMessage").className="entry-message error";
-      }
-    });
-    el("addPoint").addEventListener("click",()=>{
-      const xText=el("addX").value.trim(),yText=el("addY").value.trim();
-      if(!xText||!yText){setEntryMessage("Enter both X and Y to add an observation.","error");return}
-      const x=Number(xText),y=Number(yText);
-      if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>1000||Math.abs(y)>1000){setEntryMessage("X and Y must be valid numbers between −1000 and 1000.","error");return}
-      if(addPoint(x,y)){el("addX").value="";el("addY").value="";setEntryMessage("Observation added.","success")}
-    });
-    el("details").addEventListener("click",()=>el("detailsBody").classList.toggle("open"));
-    el("snapLine").addEventListener("click",()=>{setRanges();draw();toast("Plot view reset")});
-
-    el("save").addEventListener("click",()=>{const a=document.createElement("canvas"),r=canvas.getBoundingClientRect();a.width=canvas.width;a.height=canvas.height;a.getContext("2d").drawImage(canvas,0,0,a.width,a.height);const link=document.createElement("a");link.download="polynomial-regression.png";link.href=a.toDataURL("image/png");link.click();toast("Chart saved as PNG")});
-    el("exportCsv").addEventListener("click",()=>{
-      downloadCsv("polynomial-dataset.csv",[["x","y"],...points.map(point=>[point.x,point.y])]);
-      toast("Dataset CSV exported");
-    });
-    el("exportPredictions").addEventListener("click",()=>{
-      if(!model){toast("Fit a model before exporting predictions");return}
-      const rows=[["x","predicted_y"],...points.map(point=>[point.x,predict(point.x)])];
-      downloadCsv("polynomial-regression-predictions.csv",rows);
-      toast("Predictions CSV exported");
-    });
-    el("exportCoefficients").addEventListener("click",()=>{
-      if(!model){toast("Fit a model before exporting coefficients");return}
-      const rows=[["power","standardized_coefficient_a","original_x_coefficient_b"],
-        ...model.coeff.map((coefficient,index)=>[index,coefficient,model.raw?model.raw[index]:""])];
-      downloadCsv("polynomial-regression-coefficients.csv",rows);
-      toast("Coefficients CSV exported");
-    });
-    el("exportResults").addEventListener("click",()=>{
-      const rows=[["x","y","predicted_y","residual","squared_residual"]];
-      points.forEach(point=>{
-        const predicted=model?predict(point.x):null,residual=predicted===null?null:point.y-predicted;
-        rows.push([point.x,point.y,predicted,residual,residual===null?"":residual**2]);
+      // Selected Point Inputs
+      selXInput.addEventListener("input", () => {
+        if (selectedPoint) {
+          const v = Number(selXInput.value);
+          if (Number.isFinite(v)) { selectedPoint.x = Math.max(xMin, Math.min(xMax, v)); pushHistory(); updateView(); }
+        }
       });
-      downloadCsv("polynomial-regression-results.csv",rows);toast("Results CSV downloaded");
-    });
-    el("exportReport").addEventListener("click",()=>{
-      const report=[
-        "POLYNOMIAL REGRESSION REPORT",
-        `Generated: ${new Date().toLocaleString()}`,
-        `Observations: ${points.length}`,
-        `Dataset source: ${datasetSource}`,
-        `Polynomial degree: ${degree}`,
-        `Model status: ${model?"Fitted":"Not fitted"}`,
-        `Ridge penalty (lambda): ${ridge}`,
-        `Standardized X: z = (x - mean(X)) / standard deviation(X)`,
-        `Model: ${model?equationText(model.coeff):"Not fitted"}`,
-        `QR condition estimate: ${model?model.conditionEstimate.toExponential(6):"Not available"}`,
-        `Standardized coefficients: ${model?model.coeff.map((value,index)=>`a${index}=${formatCoefficient(value)}`).join("; "):"Not available"}`,
-        `Original-X coefficients: ${model?(model.raw?model.raw.map((value,index)=>`b${index}=${formatCoefficient(value)}`).join("; "):"Not representable in numeric range"):"Not available"}`,
-        `R-squared: ${model?el("r2").textContent:"Not available"}`,
-        `Adjusted R-squared: ${model?el("adjr2").textContent:"Not available"}`,
-        `SST: ${model?el("sst").textContent:"Not available"}`,
-        `SSE: ${model?el("sse").textContent:"Not available"}`,
-        `MSE: ${model?el("mse").textContent:"Not available"}`,
-        `RMSE: ${model?el("rmse").textContent:"Not available"}`,
-        `MAE: ${model?el("mae").textContent:"Not available"}`,
-        `Mean signed residual: ${model?el("residualMean").textContent:"Not available"}`,
-        `Largest absolute residual: ${model?el("residualMax").textContent:"Not available"}`,
-        `Residuals exceeding 2.5 x RMSE (screening heuristic): ${model?el("residualLargeCount").textContent:"Not available"}`,
-        "",
-        "Interpretation:",
-        "R-squared describes the share of observed Y variation explained by the fitted curve. RMSE and MAE are average error measures in Y units.",
-        "A high polynomial degree can overfit; evaluate on held-out data before using the model for inference. Prediction ranges shown in the app are approximate residual-based ranges, not formal confidence intervals.",
-        "",
-        "OBSERVATIONS",
-        "row,x,y,predicted_y,residual,squared_residual",
-        ...points.map((point,index)=>{
-          const predicted=model?predict(point.x):null,residual=predicted===null?null:point.y-predicted;
-          return [index+1,point.x,point.y,predicted??"",residual??"",residual===null?"":residual**2].join(",");
-        })
-      ];
-      downloadFile("polynomial-regression-report.txt",report.join("\r\n"),"text/plain;charset=utf-8");toast("Report exported");
-    });
-    el("printResults").addEventListener("click",()=>window.print());
-    el("importCsv").addEventListener("click",()=>el("csvModal").classList.add("open"));
-    el("closeCsv").addEventListener("click",()=>el("csvModal").classList.remove("open"));
-    el("loadCsv").addEventListener("click",()=>{
-      const parsed=[];let invalidLine=0;
-      el("csvText").value.split(/\r?\n/).forEach((line,index)=>{
-        if(!line.trim())return;
-        const cols=line.split(/[,\t;]/).map(v=>v.trim().replace(/"/g,""));
-        if(/^x$/i.test(cols[0])&&/^y$/i.test(cols[1]||""))return;
-        const x=Number(cols[0]),y=Number(cols[1]);
-        if(cols.length!==2||cols[0]===""||cols[1]===""||!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>1000||Math.abs(y)>1000)invalidLine=index+1;
-        else parsed.push({x,y});
+      selYInput.addEventListener("input", () => {
+        if (selectedPoint) {
+          const v = Number(selYInput.value);
+          if (Number.isFinite(v)) { selectedPoint.y = Math.max(yMin, Math.min(yMax, v)); pushHistory(); updateView(); }
+        }
       });
-      if(invalidLine){const message=`Invalid CSV values on line ${invalidLine}; use finite X,Y values from −1000 to 1000.`;setEntryMessage(message,"error");toast(message);return}
-      if(!parsed.length){const message="No valid X,Y rows found in the CSV.";setEntryMessage(message,"error");toast(message);return}
-      pushHistory();points=parsed;selectedIndex=-1;setDatasetSource("Imported CSV data");
-      el("xValues").value=points.map(point=>point.x).join(", ");
-      el("yValues").value=points.map(point=>point.y).join(", ");
-      el("csvModal").classList.remove("open");el("csvText").value="";fitAndDraw();
-      setEntryMessage(`Imported ${parsed.length} paired observations from CSV.`,"success");toast(`${parsed.length} points imported`);
-    });
-    el("csvModal").addEventListener("pointerdown",e=>{if(e.target===el("csvModal"))el("csvModal").classList.remove("open")});
-    window.addEventListener("resize",resize);
-    new ResizeObserver(resize).observe(canvas);
-    generate("quadratic");
-  })();
+      deleteSelectedBtn.addEventListener("click", () => {
+        if (selectedPoint) {
+          const idx = points.indexOf(selectedPoint);
+          if (idx > -1) { points.splice(idx, 1); selectedPoint = null; pushHistory(); updateView(); showToast("Point deleted"); }
+        }
+      });
+      deselectBtn.addEventListener("click", () => { selectedPoint = null; updateView(); });
+
+      // Degree button handlers
+      degreeBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          degreeBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentDegree = parseInt(btn.dataset.degree, 10);
+          updateView();
+          showToast(`Switched to Degree ${currentDegree}`);
+        });
+      });
+
+      // Ridge slider
+      ridgeSlider.addEventListener("input", () => {
+        currentRidge = parseFloat(ridgeSlider.value);
+        ridgeVal.textContent = currentRidge.toFixed(2);
+        updateView();
+      });
+
+      // Toggles
+      [toggleCurve, toggleRefLine, toggleResiduals, toggleCi].forEach(cb => {
+        cb.addEventListener("change", drawChart);
+      });
+
+      // Dock sub-tabs
+      document.querySelectorAll(".dock-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".dock-panel").forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.dock).classList.add("active");
+          drawChart();
+        });
+      });
+
+      // Presets
+      noiseSlider.addEventListener("input", () => { noiseVal.textContent = noiseSlider.value; });
+
+      function generateDataset(type = "parabola") {
+        points.length = 0;
+        selectedPoint = null;
+        const noiseScale = Number(noiseSlider.value);
+
+        if (type === "parabola") {
+          for (let i = 0; i < 18; i++) {
+            const x = 8 + i * 4.8;
+            const normX = (x - 50) / 10;
+            const noise = (Math.random() - 0.5) * noiseScale * 1.5;
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 18 + normX * normX * 3.5 + noise)) });
+          }
+          currentDegree = 2;
+        } else if (type === "cubic") {
+          for (let i = 0; i < 20; i++) {
+            const x = 10 + i * 4.2;
+            const normX = (x - 50) / 16;
+            const noise = (Math.random() - 0.5) * noiseScale;
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 50 + (normX ** 3) * 6 - normX * 8 + noise)) });
+          }
+          currentDegree = 3;
+        } else if (type === "runge") {
+          // Equidistant points showing boundary oscillation
+          for (let i = 0; i < 14; i++) {
+            const x = 10 + i * 6.1;
+            const z = (x - 50) / 12;
+            const y = 85 / (1 + z * z);
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, y + (Math.random() - 0.5) * 4)) });
+          }
+          currentDegree = 5;
+        } else if (type === "sinusoidal") {
+          for (let i = 0; i < 22; i++) {
+            const x = 6 + i * 4.1;
+            const y = 50 + 35 * Math.sin((x / 100) * Math.PI * 2) + (Math.random() - 0.5) * noiseScale;
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, y)) });
+          }
+          currentDegree = 4;
+        } else if (type === "inverted") {
+          for (let i = 0; i < 18; i++) {
+            const x = 10 + i * 4.6;
+            const normX = (x - 50) / 10;
+            const noise = (Math.random() - 0.5) * noiseScale;
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 85 - normX * normX * 3.2 + noise)) });
+          }
+          currentDegree = 2;
+        } else if (type === "noisy") {
+          for (let i = 0; i < 20; i++) {
+            const x = 8 + i * 4.4;
+            const y = 20 + 0.6 * x + (Math.random() - 0.5) * noiseScale * 2.2;
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, y)) });
+          }
+          currentDegree = 2;
+        } else if (type === "random") {
+          for (let i = 0; i < 20; i++) {
+            points.push({ x: 10 + Math.random() * 80, y: 10 + Math.random() * 80 });
+          }
+          currentDegree = 2;
+        }
+
+        // Sync degree button
+        degreeBtns.forEach(b => {
+          b.classList.toggle("active", parseInt(b.dataset.degree, 10) === currentDegree);
+        });
+
+        pushHistory();
+        updateView();
+        showToast("Preset loaded");
+      }
+
+      generateButton.addEventListener("click", () => generateDataset("parabola"));
+      document.querySelectorAll(".dock-preset-btn").forEach(btn => {
+        btn.addEventListener("click", () => generateDataset(btn.dataset.preset));
+      });
+
+      clearButton.addEventListener("click", () => {
+        points.length = 0;
+        selectedPoint = null;
+        pushHistory();
+        updateView();
+        showToast("All points cleared");
+      });
+
+      undoBtn.addEventListener("click", undo);
+      redoBtn.addEventListener("click", redo);
+
+      // Prediction Input Sync
+      xInput.addEventListener("input", () => {
+        xPredictSlider.value = xInput.value;
+        updatePrediction();
+        drawChart();
+      });
+      xPredictSlider.addEventListener("input", () => {
+        xInput.value = xPredictSlider.value;
+        updatePrediction();
+        drawChart();
+      });
+
+      // Table & CSV Handlers
+      tblAddBtn.addEventListener("click", () => {
+        const x = Number(tblAddX.value);
+        const y = Number(tblAddY.value);
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+          points.push({ x: Math.max(xMin, Math.min(xMax, x)), y: Math.max(yMin, Math.min(yMax, y)) });
+          tblAddX.value = ""; tblAddY.value = "";
+          pushHistory();
+          updateView();
+          showToast("Point added");
+        }
+      });
+
+      exportCsvBtn.addEventListener("click", () => {
+        if (points.length === 0) { showToast("Dataset is empty"); return; }
+        let csv = "X,Y\n";
+        points.forEach(p => { csv += `${p.x.toFixed(2)},${p.y.toFixed(2)}\n`; });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "polynomial_regression_data.csv"; a.click();
+        URL.revokeObjectURL(url);
+        showToast("CSV downloaded");
+      });
+
+      exportChartBtn.addEventListener("click", () => {
+        const dataUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = dataUrl; a.download = "polynomial_regression_plot.png"; a.click();
+        showToast("Chart image saved");
+      });
+
+      copyEquationBtn.addEventListener("click", () => {
+        if (equationEl.textContent) {
+          navigator.clipboard.writeText(equationEl.textContent).then(() => {
+            showToast("Equation copied!");
+          });
+        }
+      });
+
+      openImportBtn.addEventListener("click", () => {
+        importModal.classList.add("open");
+        importTextarea.focus();
+      });
+      closeImportBtn.addEventListener("click", () => { importModal.classList.remove("open"); });
+
+      submitImportBtn.addEventListener("click", () => {
+        const raw = importTextarea.value.trim();
+        if (!raw) return;
+        const lines = raw.split(/\r?\n/);
+        const newPts = [];
+        lines.forEach(line => {
+          const parts = line.split(/[,\t\s]+/).filter(Boolean);
+          if (parts.length >= 2) {
+            const x = parseFloat(parts[0]);
+            const y = parseFloat(parts[1]);
+            if (Number.isFinite(x) && Number.isFinite(y)) {
+              newPts.push({ x: Math.max(xMin, Math.min(xMax, x)), y: Math.max(yMin, Math.min(yMax, y)) });
+            }
+          }
+        });
+        if (newPts.length > 0) {
+          points = newPts;
+          importModal.classList.remove("open");
+          importTextarea.value = "";
+          pushHistory();
+          updateView();
+          showToast(`Imported ${newPts.length} points!`);
+        }
+      });
+
+      // Init
+      generateDataset("parabola");
+      resizeCanvas();
+    })();
   </script>
 </body>
 </html>

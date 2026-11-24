@@ -1,1464 +1,1187 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0d11">
-    <title>Interactive Linear Regression Visualizer &amp; Lab</title>
-<style>
-  :root {
-    color-scheme: dark;
-    --background: #0b0d11;
-    --surface: #141925;
-    --surface-raised: #191f2d;
-    --surface-inset: #0e121b;
-    --text: #edf0f8;
-    --text-soft: #c1c8d8;
-    --muted: #8993a8;
-    --border: #282f40;
-    --border-strong: #384259;
-    --accent: #9a8cff;
-    --accent-strong: #806cf2;
-    --accent-subtle: #24203d;
-    --accent-glow: rgba(154, 140, 255, 0.25);
-    --pink: #f087a2;
-    --pink-subtle: rgba(240, 135, 162, 0.15);
-    --green: #6bd2a7;
-    --green-subtle: rgba(107, 210, 167, 0.15);
-    --amber: #ffd166;
-    --amber-subtle: rgba(255, 209, 102, 0.15);
-    --blue: #70a5ff;
-    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-    --font-mono: "Cascadia Code", "Fira Code", Consolas, monospace;
-    font-family: var(--font-sans);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    min-width: 320px;
-    min-height: 100vh;
-    margin: 0;
-    color: var(--text);
-    background:
-      radial-gradient(ellipse at 15% 0%, rgba(128, 108, 242, 0.15), transparent 40rem),
-      radial-gradient(ellipse at 85% 100%, rgba(240, 135, 162, 0.08), transparent 35rem),
-      var(--background);
-  }
-
-  button, input, select, textarea {
-    font: inherit;
-  }
-
-  /* Header */
-  .site-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 22px 32px 14px;
-    border-bottom: 1px solid rgba(40, 47, 64, 0.6);
-  }
-
-  .brand-group {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text);
-    font-size: 19px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    text-decoration: none;
-  }
-
-  .brand-mark {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    place-items: center;
-    border-radius: 10px;
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent-strong), #a980ff);
-    box-shadow: 0 4px 14px rgba(128, 108, 242, 0.35);
-    font-size: 24px;
-    line-height: 1;
-  }
-
-  .header-tagline {
-    margin: 0;
-    color: var(--muted);
-    font-size: 12.5px;
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Main Workspace Layout */
-  .workspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(360px, 1fr);
-    align-items: start;
-    gap: 24px;
-    max-width: 1440px;
-    margin: 24px auto 40px;
-    padding: 0 32px;
-  }
-
-  .card {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: linear-gradient(150deg, rgba(255, 255, 255, 0.02), transparent 55%), var(--surface);
-    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.28);
-    transition: border-color 0.2s ease;
-  }
-
-  .card:hover {
-    border-color: rgba(68, 78, 104, 0.7);
-  }
-
-  .chart-card {
-    min-width: 0;
-    padding: 24px 26px;
-  }
-
-  .section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .eyebrow, .result-label {
-    margin: 0 0 6px;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-  }
-
-  h1, h2, h3 {
-    margin: 0;
-    font-weight: 750;
-    letter-spacing: -0.5px;
-  }
-
-  h1 { font-size: 22px; }
-  h2 { font-size: 17px; }
-  h3 { font-size: 14px; }
-
-  .header-badges {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 11px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .badge-purple {
-    border: 1px solid rgba(154, 140, 255, 0.25);
-    color: #d1caff;
-    background: var(--accent-subtle);
-  }
-
-  .badge-cyan {
-    border: 1px solid rgba(112, 165, 255, 0.25);
-    color: #b7d3ff;
-    background: rgba(112, 165, 255, 0.1);
-  }
-
-  .chart-help {
-    margin: 8px 0 14px;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .chart-help kbd {
-    display: inline-block;
-    padding: 1px 5px;
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    background: var(--surface-raised);
-    color: var(--text-soft);
-    font-family: var(--font-mono);
-    font-size: 10px;
-  }
-
-  /* Canvas Container & HUD */
-  .chart-stage {
-    position: relative;
-    width: 100%;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--surface-inset);
-    border: 1px solid var(--border);
-  }
-
-  #chart {
-    display: block;
-    width: 100%;
-    height: 420px;
-    cursor: crosshair;
-    touch-action: none;
-  }
-
-  #chart.is-point-hover { cursor: grab; }
-  #chart.is-dragging { cursor: grabbing; }
-
-  .canvas-hud {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    pointer-events: none;
-  }
-
-  .hud-pill {
-    padding: 4px 9px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(16, 21, 32, 0.85);
-    backdrop-filter: blur(8px);
-    color: var(--text-soft);
-    font-size: 11px;
-    font-family: var(--font-mono);
-  }
-
-  .floating-tooltip {
-    position: absolute;
-    display: none;
-    pointer-events: none;
-    z-index: 20;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    background: rgba(19, 25, 39, 0.94);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    color: var(--text);
-    font-size: 11.5px;
-    line-height: 1.45;
-    white-space: nowrap;
-    transform: translate(-50%, -120%);
-    transition: opacity 0.15s ease;
-  }
-
-  .floating-tooltip .tt-title {
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 3px;
-  }
-
-  .floating-tooltip .tt-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    color: var(--muted);
-  }
-
-  .floating-tooltip .tt-val {
-    color: var(--text);
-    font-family: var(--font-mono);
-  }
-
-  /* Selected Point Quick Bar */
-  .selected-bar {
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-    padding: 9px 14px;
-    border-radius: 9px;
-    border: 1px solid rgba(255, 209, 102, 0.28);
-    background: linear-gradient(90deg, rgba(255, 209, 102, 0.08), rgba(255, 209, 102, 0.02));
-  }
-
-  .selected-bar.active {
-    display: flex;
-  }
-
-  .selected-bar-coords {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--text);
-  }
-
-  .selected-bar-coords label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .selected-bar-coords input {
-    width: 68px;
-    padding: 3px 6px;
-    border-radius: 6px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-inset);
-    color: var(--amber);
-    font-weight: 700;
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
-
-  /* Visualization Toggles Strip */
-  .toggles-strip {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    padding: 12px 2px 14px;
-    margin-top: 4px;
-  }
-
-  .toggle-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    cursor: pointer;
-    font-size: 11px;
-    color: var(--text-soft);
-    user-select: none;
-  }
-
-  .toggle-chip input[type="checkbox"] {
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    margin: 0;
-    border-radius: 4px;
-    border: 1.5px solid var(--border-strong);
-    background: var(--surface-inset);
-    cursor: pointer;
-    position: relative;
-    display: grid;
-    place-items: center;
-    transition: all 0.15s ease;
-  }
-
-  .toggle-chip input[type="checkbox"]:checked {
-    border-color: var(--accent);
-    background: var(--accent-strong);
-  }
-
-  .toggle-chip input[type="checkbox"]:checked::after {
-    content: "✓";
-    font-size: 9px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-  }
-
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-  .legend-line { width: 14px; height: 2.5px; background: var(--pink); border-radius: 2px; }
-  .legend-dash { width: 14px; border-top: 2px dashed #a4aec1; }
-  .legend-square { width: 10px; height: 10px; background: rgba(240, 135, 162, 0.35); border: 1px solid var(--pink); }
-  .legend-mean { width: 14px; border-top: 2px dotted var(--blue); }
-  .legend-band { width: 14px; height: 8px; background: rgba(154, 140, 255, 0.2); border-radius: 2px; }
-
-  /* Tabbed Modes Section */
-  .modes-container {
-    margin-top: 16px;
-    border-top: 1px solid var(--border);
-    padding-top: 16px;
-  }
-
-  .tabs-nav {
-    display: flex;
-    gap: 6px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
-    margin-bottom: 16px;
-    overflow-x: auto;
-  }
-
-  .tab-btn {
-    padding: 7px 13px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--muted);
-    font-size: 11.5px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-  }
-
-  .tab-btn:hover {
-    color: var(--text);
-    background: var(--surface-raised);
-  }
-
-  .tab-btn.active {
-    color: #fff;
-    background: var(--accent-subtle);
-    border-color: rgba(154, 140, 255, 0.3);
-  }
-
-  .tab-panel {
-    display: none;
-  }
-
-  .tab-panel.active {
-    display: block;
-  }
-
-  /* Preset Controls */
-  .presets-grid {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .preset-btn {
-    padding: 6px 11px;
-    border-radius: 7px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-raised);
-    color: var(--text-soft);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .preset-btn:hover {
-    border-color: var(--accent);
-    color: #fff;
-    background: #232238;
-  }
-
-  .noise-slider-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .noise-slider-wrap input[type="range"] {
-    width: 85px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  /* Buttons */
-  .button {
-    display: inline-flex;
-    min-height: 36px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 13px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 11.5px;
-    font-weight: 700;
-    transition: all 0.14s ease;
-  }
-
-  .button:hover { transform: translateY(-1px); }
-  .button:active { transform: translateY(0); }
-  .button:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .button-primary {
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent-strong), #9580ff);
-    box-shadow: 0 4px 12px rgba(128, 108, 242, 0.25);
-  }
-  .button-primary:hover { background: #9b89ff; }
-
-  .button-secondary {
-    border-color: var(--border-strong);
-    color: var(--text-soft);
-    background: var(--surface-raised);
-  }
-  .button-secondary:hover {
-    border-color: #6459a3;
-    color: #e2ddff;
-    background: #25223a;
-  }
-
-  .button-danger {
-    border-color: rgba(240, 135, 162, 0.35);
-    color: #f7a2b7;
-    background: rgba(240, 135, 162, 0.08);
-  }
-  .button-danger:hover {
-    border-color: var(--pink);
-    color: #fff;
-    background: rgba(240, 135, 162, 0.2);
-  }
-
-  .button-sm {
-    min-height: 28px;
-    padding: 0 9px;
-    font-size: 10.5px;
-  }
-
-  /* Manual Fit Challenge Mode */
-  .manual-fit-box {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    padding: 14px;
-    border-radius: 10px;
-    background: var(--surface-inset);
-    border: 1px solid var(--border);
-  }
-
-  .slider-control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .slider-label-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-soft);
-  }
-
-  .slider-label-row span:last-child {
-    font-family: var(--font-mono);
-    color: var(--amber);
-    font-weight: 700;
-  }
-
-  .slider-control-group input[type="range"] {
-    width: 100%;
-    accent-color: var(--amber);
-  }
-
-  .fit-compare-row {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-  }
-
-  /* Gradient Descent Simulator */
-  .gd-controls-bar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    background: var(--surface-inset);
-    border: 1px solid var(--border);
-  }
-
-  .gd-param {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-soft);
-  }
-
-  .gd-param select, .gd-param input {
-    padding: 4px 7px;
-    border-radius: 6px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-raised);
-    color: var(--text);
-    font-size: 11px;
-  }
-
-  .gd-loss-readout {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--pink);
-    margin-left: auto;
-  }
-
-  /* Data Table View */
-  .data-table-container {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface-inset);
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-    text-align: left;
-  }
-
-  .data-table th, .data-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .data-table th {
-    position: sticky;
-    top: 0;
-    background: var(--surface-raised);
-    color: var(--text-soft);
-    font-weight: 700;
-  }
-
-  .data-table td {
-    font-family: var(--font-mono);
-    color: var(--text);
-  }
-
-  .data-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .table-actions-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .add-point-inputs {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .add-point-inputs input {
-    width: 65px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-inset);
-    color: var(--text);
-    font-size: 11px;
-  }
-
-  /* Side Panel */
-  .side-panel {
-    display: grid;
-    min-width: 0;
-    gap: 20px;
-  }
-
-  .prediction-card, .metrics-card {
-    min-width: 0;
-    padding: 22px;
-  }
-
-  .card-description {
-    margin: 6px 0 16px;
-    color: var(--muted);
-    font-size: 11.5px;
-    line-height: 1.5;
-  }
-
-  #prediction-form label {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--text-soft);
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .input-row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .input-row input {
-    width: 90px;
-    min-width: 0;
-    padding: 0 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    color: var(--text);
-    background: var(--surface-inset);
-    font-size: 13px;
-    font-weight: 600;
-    color-scheme: dark;
-  }
-
-  .input-row input:hover { border-color: #55617d; }
-
-  .predict-button {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .prediction-slider-box {
-    margin-top: 12px;
-  }
-
-  .prediction-slider-box input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent);
-  }
-
-  .prediction-result {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 16px;
-    padding: 12px 14px;
-    border: 1px solid rgba(154, 140, 255, 0.22);
-    border-radius: 10px;
-    background: linear-gradient(120deg, rgba(128, 108, 242, 0.14), rgba(128, 108, 242, 0.03));
-  }
-
-  .prediction-result .result-label {
-    margin: 0;
-    color: #a59cda;
-    font-size: 9px;
-  }
-
-  #prediction-output {
-    color: #d8d0ff;
-    font-size: 22px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .prediction-interval-pill {
-    margin-top: 8px;
-    font-size: 10.5px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-  }
-
-  .prediction-note {
-    min-height: 14px;
-    margin: 8px 0 0;
-    color: var(--muted);
-    font-size: 10px;
-    line-height: 1.5;
-  }
-
-  .extrapolation-warning {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    padding: 6px 9px;
-    border-radius: 6px;
-    background: rgba(255, 209, 102, 0.12);
-    border: 1px solid rgba(255, 209, 102, 0.3);
-    color: #ffdf94;
-    font-size: 10px;
-  }
-
-  /* Metrics Card */
-  .metrics-heading {
-    align-items: flex-start;
-  }
-
-  .model-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 9px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--muted);
-    background: var(--surface-raised);
-    font-size: 9.5px;
-    font-weight: 700;
-  }
-
-  .model-badge .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #68748a;
-  }
-
-  .model-badge.is-ready {
-    border-color: rgba(107, 210, 167, 0.25);
-    color: #9be4c4;
-    background: rgba(51, 135, 101, 0.15);
-  }
-
-  .model-badge.is-ready .dot {
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-  }
-
-  .equation-box {
-    position: relative;
-    margin: 16px 0 12px;
-    padding: 13px 14px;
-    border: 1px solid rgba(154, 140, 255, 0.22);
-    border-radius: 10px;
-    background: linear-gradient(110deg, rgba(128, 108, 242, 0.13), rgba(128, 108, 242, 0.03));
-  }
-
-  .equation-box .result-label {
-    display: block;
-    margin-bottom: 4px;
-    color: #a59cda;
-    font-size: 9px;
-  }
-
-  #equation {
-    overflow-wrap: anywhere;
-    margin: 0;
-    color: #d1c8ff;
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: -0.3px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .copy-equation-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 3px 7px;
-    font-size: 9px;
-    border-radius: 5px;
-    border: 1px solid rgba(154, 140, 255, 0.3);
-    background: rgba(154, 140, 255, 0.1);
-    color: #c9c0ff;
-    cursor: pointer;
-  }
-  .copy-equation-btn:hover { background: rgba(154, 140, 255, 0.25); }
-
-  .metrics-list {
-    margin: 0;
-  }
-
-  .metric-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-height: 38px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .metric-row:last-child {
-    border-bottom: 0;
-  }
-
-  .metric-row dt {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-soft);
-    font-size: 11px;
-  }
-
-  .metric-row dd {
-    margin: 0;
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-mono);
-  }
-
-  .metric-symbol {
-    display: grid;
-    width: 22px;
-    height: 22px;
-    place-items: center;
-    border: 1px solid rgba(239, 177, 123, 0.2);
-    border-radius: 6px;
-    color: #efbd91;
-    background: rgba(177, 111, 58, 0.14);
-    font-size: 9.5px;
-    font-style: italic;
-    font-weight: 700;
-  }
-
-  .metric-symbol-blue {
-    border-color: rgba(123, 160, 255, 0.2);
-    color: #a6bdff;
-    background: rgba(80, 113, 197, 0.16);
-    font-style: normal;
-  }
-
-  .metric-symbol-pink {
-    border-color: rgba(240, 135, 162, 0.2);
-    color: #f7a0b5;
-    background: rgba(240, 135, 162, 0.14);
-    font-style: normal;
-  }
-
-  .metric-symbol-green {
-    border-color: rgba(107, 210, 167, 0.2);
-    color: #9ee4c5;
-    background: rgba(107, 210, 167, 0.14);
-    font-style: normal;
-  }
-
-  /* Math Accordion */
-  .math-accordion {
-    margin-top: 14px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--surface-inset);
-    overflow: hidden;
-  }
-
-  .math-accordion-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    background: transparent;
-    border: none;
-    color: var(--text-soft);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .math-accordion-header:hover {
-    background: rgba(255, 255, 255, 0.02);
-    color: #fff;
-  }
-
-  .math-accordion-body {
-    display: none;
-    padding: 12px;
-    border-top: 1px solid var(--border);
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--muted);
-  }
-
-  .math-accordion-body.open {
-    display: block;
-  }
-
-  .math-formula-box {
-    margin-bottom: 8px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    background: var(--surface-raised);
-    font-family: var(--font-mono);
-    color: #c9c0ff;
-    font-size: 10.5px;
-  }
-
-  .math-formula-box span.val {
-    color: var(--amber);
-  }
-
-  /* Modal for CSV paste / import */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: none;
-    place-items: center;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(5px);
-    padding: 16px;
-  }
-
-  .modal-overlay.open {
-    display: grid;
-  }
-
-  .modal-card {
-    width: min(520px, 100%);
-    padding: 22px;
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 14px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  }
-
-  .modal-card h3 {
-    margin-bottom: 8px;
-    font-size: 16px;
-  }
-
-  .modal-card textarea {
-    width: 100%;
-    height: 140px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface-inset);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    resize: vertical;
-    margin: 10px 0 16px;
-  }
-
-  .modal-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  /* Toast Notification */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 120;
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--accent);
-    background: #1d1b31;
-    color: #fff;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    font-size: 12px;
-    animation: toastIn 0.2s ease;
-  }
-
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  footer {
-    padding: 24px 20px;
-    color: #687286;
-    font-size: 11px;
-    text-align: center;
-    border-top: 1px solid rgba(40, 47, 64, 0.5);
-  }
-
-  @media (max-width: 990px) {
-    .workspace {
-      grid-template-columns: minmax(0, 1fr);
-      padding: 0 16px;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d11">
+  <title>Linear Regression Visualizer &amp; Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #0b0d11;
+      --surface: #141925;
+      --surface-raised: #191f2d;
+      --surface-inset: #0e121b;
+      --text: #edf0f8;
+      --text-soft: #c1c8d8;
+      --muted: #8993a8;
+      --border: #282f40;
+      --border-strong: #384259;
+      --accent: #9a8cff;
+      --accent-strong: #806cf2;
+      --accent-subtle: #24203d;
+      --accent-glow: rgba(154, 140, 255, 0.25);
+      --pink: #f087a2;
+      --pink-subtle: rgba(240, 135, 162, 0.15);
+      --green: #6bd2a7;
+      --green-subtle: rgba(107, 210, 167, 0.15);
+      --amber: #ffd166;
+      --amber-subtle: rgba(255, 209, 102, 0.15);
+      --blue: #70a5ff;
+      --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      --font-mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+      font-family: var(--font-sans);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
     }
-    .side-panel {
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    }
-  }
 
-  @media (max-width: 600px) {
-    .site-header { padding: 16px 16px 12px; }
-    .chart-card { padding: 16px 14px; }
-    #chart { height: 320px; }
-  }
-</style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(128, 108, 242, 0.14), transparent 38rem),
+        radial-gradient(ellipse at 88% 100%, rgba(240, 135, 162, 0.08), transparent 35rem),
+        var(--background);
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    /* ========================================================
+       1. STRICT 100VH EXPERIMENT LAB VIEWPORT
+       ======================================================== */
+    .lab-viewport {
+      height: 100vh;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Slim Header (42px) */
+    .site-header {
+      height: 42px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: rgba(14, 18, 27, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 30;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      border-radius: 7px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      font-size: 16px;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .nav-pill-link {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 11px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: all 0.14s ease;
+    }
+    .nav-pill-link:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent-subtle);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Lab 2-Column Workspace (Fills remaining 100vh space) */
+    .lab-workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+      gap: 12px;
+      padding: 8px 16px 8px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Left Column: Canvas, Layers & Docked Tabs */
+    .lab-main-col {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      gap: 6px;
+    }
+
+    /* Compact Info Bar */
+    .lab-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lab-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .badge-purple {
+      border: 1px solid rgba(154, 140, 255, 0.25);
+      color: #d1caff;
+      background: var(--accent-subtle);
+    }
+
+    .badge-cyan {
+      border: 1px solid rgba(112, 165, 255, 0.25);
+      color: #b7d3ff;
+      background: rgba(112, 165, 255, 0.1);
+    }
+
+    .lab-hints {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    .lab-hints kbd {
+      padding: 1px 4px;
+      border: 1px solid var(--border-strong);
+      border-radius: 3px;
+      background: var(--surface-raised);
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    /* Canvas Stage Container (Auto-stretches) */
+    .chart-stage {
+      position: relative;
+      flex: 1;
+      min-height: 190px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+    }
+
+    #chart {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    #chart.is-point-hover { cursor: grab; }
+    #chart.is-dragging { cursor: grabbing; }
+
+    .canvas-hud {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(14, 18, 27, 0.85);
+      backdrop-filter: blur(6px);
+      color: var(--text-soft);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      pointer-events: none;
+    }
+
+    .floating-tooltip {
+      position: absolute;
+      display: none;
+      pointer-events: none;
+      z-index: 25;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: rgba(19, 25, 39, 0.95);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-size: 10.5px;
+      line-height: 1.4;
+      white-space: nowrap;
+      transform: translate(-50%, -120%);
+    }
+
+    /* Selected Bar (Compact overlay/strip) */
+    .selected-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 209, 102, 0.3);
+      background: rgba(255, 209, 102, 0.06);
+      font-size: 11px;
+    }
+    .selected-bar.active { display: flex; }
+
+    .selected-bar-coords {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .selected-bar-coords input {
+      width: 58px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* Toggles Strip */
+    .toggles-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      flex-shrink: 0;
+      padding: 3px 2px;
+    }
+
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 10.5px;
+      color: var(--text-soft);
+      user-select: none;
+    }
+    .toggle-chip input[type="checkbox"] {
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      border-radius: 3px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface-inset);
+      cursor: pointer;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .toggle-chip input[type="checkbox"]:checked {
+      border-color: var(--accent);
+      background: var(--accent-strong);
+    }
+    .toggle-chip input[type="checkbox"]:checked::after {
+      content: "✓";
+      font-size: 8px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .legend-line { width: 12px; height: 2.5px; background: var(--pink); border-radius: 2px; }
+    .legend-dash { width: 12px; border-top: 2px dashed #a4aec1; }
+    .legend-square { width: 8px; height: 8px; background: rgba(240, 135, 162, 0.35); border: 1px solid var(--pink); }
+    .legend-mean { width: 12px; border-top: 2px dotted var(--blue); }
+    .legend-band { width: 12px; height: 7px; background: rgba(154, 140, 255, 0.2); border-radius: 2px; }
+
+    /* Bottom Sub-Tabs Dock */
+    .dock-container {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .dock-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-raised);
+    }
+
+    .dock-btn {
+      padding: 4px 9px;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .dock-btn:hover { color: var(--text); background: var(--surface-inset); }
+    .dock-btn.active {
+      color: #fff;
+      background: var(--accent-subtle);
+      border-color: rgba(154, 140, 255, 0.3);
+    }
+
+    .dock-panel {
+      display: none;
+      padding: 7px 10px;
+      min-height: 48px;
+      max-height: 85px;
+      overflow-y: auto;
+    }
+    .dock-panel.active { display: block; }
+
+    .presets-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .dock-preset-btn {
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dock-preset-btn:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent-subtle);
+    }
+
+    .noise-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .noise-wrap input[type="range"] { width: 65px; accent-color: var(--accent); }
+
+    /* Manual Fit Challenge Dock */
+    .manual-fit-dock {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+    }
+    .slider-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .slider-item input[type="range"] { width: 90px; accent-color: var(--amber); }
+
+    /* Gradient Descent Dock */
+    .gd-dock {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    /* Table Dock */
+    .table-dock {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    /* Right Column: Cards & Metrics */
+    .lab-side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .side-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 10px 12px;
+      flex-shrink: 0;
+    }
+
+    .card-top-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .card-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    /* Equation Card */
+    .equation-display {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 800;
+      color: #d1c8ff;
+      margin: 2px 0 0;
+      letter-spacing: -0.3px;
+    }
+
+    /* Metrics Grid */
+    .metrics-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px 10px;
+    }
+    .metric-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(40, 47, 64, 0.5);
+      font-size: 11px;
+    }
+    .metric-name { color: var(--text-soft); }
+    .metric-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Prediction Card */
+    .predict-form-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .predict-form-row input[type="number"] {
+      width: 70px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .predict-form-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .predict-output-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: linear-gradient(120deg, rgba(128, 108, 242, 0.12), transparent);
+      border: 1px solid rgba(154, 140, 255, 0.2);
+    }
+    .predict-val {
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .predict-pi {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Common Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 3px 8px;
+      min-height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text-soft);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: #25223a;
+    }
+    .btn.primary {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent-strong), #9580ff);
+      color: #fff;
+    }
+    .btn.primary:hover { background: #9d8cff; }
+    .btn.danger {
+      border-color: rgba(240, 135, 162, 0.3);
+      color: #f7a2b7;
+      background: rgba(240, 135, 162, 0.08);
+    }
+    .btn.danger:hover {
+      border-color: var(--pink);
+      color: #fff;
+      background: rgba(240, 135, 162, 0.2);
+    }
+
+    /* Scroll To Theory Jump Banner */
+    .jump-to-theory {
+      margin-top: auto;
+      padding: 6px 10px;
+      border-radius: 7px;
+      border: 1px solid rgba(112, 165, 255, 0.25);
+      background: rgba(112, 165, 255, 0.08);
+      color: #c4dcff;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.14s ease;
+    }
+    .jump-to-theory:hover {
+      background: rgba(112, 165, 255, 0.18);
+      border-color: var(--blue);
+      color: #fff;
+      transform: translateY(1px);
+    }
+
+    /* ========================================================
+       2. BELOW-THE-FOLD THEORY & MATHEMATICAL DERIVATIONS
+       ======================================================== */
+    .theory-section {
+      min-height: 100vh;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      border-top: 1px solid var(--border);
+    }
+
+    .theory-header {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .theory-header h2 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      font-weight: 850;
+      letter-spacing: -0.6px;
+    }
+    .theory-header p {
+      margin: 0 auto;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .theory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .theory-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .theory-card-badge {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .theory-card h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .theory-card p {
+      margin: 0 0 14px;
+      color: var(--text-soft);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .math-callout {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: #d1c8ff;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .math-callout span.live-val {
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .back-to-lab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 32px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--accent-subtle);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .back-to-lab-btn:hover {
+      background: var(--accent-strong);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 7px;
+      border: 1px solid var(--accent);
+      background: #1d1b31;
+      color: #fff;
+      font-size: 11px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    /* Modal Import */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      padding: 16px;
+    }
+    .modal-overlay.open { display: grid; }
+    .modal-card {
+      width: min(480px, 100%);
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+    }
+    .modal-card textarea {
+      width: 100%;
+      height: 120px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin: 8px 0 12px;
+    }
+
+    @media (max-width: 860px) {
+      .lab-viewport {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+      }
+      .lab-workspace {
+        grid-template-columns: minmax(0, 1fr);
+        overflow: visible;
+      }
+      .chart-stage { height: 320px; }
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand-group">
-      <a class="brand" href="#" aria-label="Linear Regression Visualizer home">
-        <span class="brand-mark" aria-hidden="true">∿</span>
-        <span>Linear Regression Visualizer &amp; Lab</span>
-      </a>
-      <p class="header-tagline">Interactive ordinary least squares (OLS) &amp; gradient descent laboratory</p>
-    </div>
-    <div class="header-actions">
-      <button class="button button-secondary button-sm" id="undo-button" type="button" title="Undo (Ctrl+Z)">
-        <span aria-hidden="true">↶</span> Undo
-      </button>
-      <button class="button button-secondary button-sm" id="redo-button" type="button" title="Redo (Ctrl+Y)">
-        <span aria-hidden="true">↷</span> Redo
-      </button>
-      <button class="button button-secondary button-sm" id="export-chart-button" type="button" title="Download chart as PNG image">
-        <span aria-hidden="true">📷</span> Save PNG
-      </button>
-    </div>
-  </header>
 
-  <main class="workspace">
-    <!-- Chart Column -->
-    <section class="card chart-card" aria-labelledby="chart-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Interactive Dataset &amp; Plot</p>
-          <h1 id="chart-title">Data Points &amp; Fitted Line</h1>
-        </div>
-        <div class="header-badges">
-          <span class="badge badge-purple"><span id="point-count">0</span> points</span>
-          <span class="badge badge-cyan" id="centroid-badge" title="Data centroid (mean of X, mean of Y)">Centroid: (—, —)</span>
-        </div>
-      </div>
-      <p class="chart-help">
-        Click to add points. Drag any point to move it. <kbd>Right-click</kbd> or press <kbd>Delete</kbd> to remove. Arrow keys <kbd>←↑→↓</kbd> nudge selected point.
-      </p>
-
-      <!-- Canvas Stage -->
-      <div class="chart-stage">
-        <canvas id="chart" width="600" height="420" aria-label="Scatter plot canvas" role="img"></canvas>
-        <div class="canvas-hud">
-          <div class="hud-pill" id="hud-coords">X: — | Y: —</div>
-        </div>
-        <div class="floating-tooltip" id="chart-tooltip"></div>
+  <!-- ========================================================
+       1. 100VH EXPERIMENT LAB SCREEN
+       ======================================================== -->
+  <div class="lab-viewport" id="top">
+    <!-- Slim 42px Header -->
+    <header class="site-header">
+      <div class="brand-group">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">∿</span>
+          <span>Linear Regression Lab</span>
+        </a>
+        <a class="nav-pill-link" href="index.html">◂ Hub</a>
+        <a class="nav-pill-link" href="polynomal_regression.html">Polynomial Lab ▸</a>
       </div>
 
-      <!-- Selected Point Inspector Bar -->
-      <div class="selected-bar" id="selected-bar">
-        <div class="selected-bar-coords">
-          <span style="color: var(--amber); font-weight: 700;">Selected:</span>
-          <label>X <input type="number" id="sel-x-input" step="0.5" min="0" max="100"></label>
-          <label>Y <input type="number" id="sel-y-input" step="0.5" min="0" max="100"></label>
-          <span id="selected-point-info" class="selected-point-info" style="color: var(--muted); font-size: 11px;"></span>
-        </div>
-        <div style="display: flex; gap: 6px;">
-          <button class="button button-danger button-sm" id="delete-selected-btn" type="button">Delete Point</button>
-          <button class="button button-secondary button-sm" id="deselect-btn" type="button">Deselect</button>
-        </div>
+      <div class="header-actions">
+        <button class="btn" id="undo-button" type="button" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button class="btn" id="redo-button" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
+        <button class="btn" id="export-chart-button" type="button" title="Download chart PNG">📷 Save PNG</button>
+        <button class="btn danger" id="clear-button" type="button">Clear All</button>
       </div>
+    </header>
 
-      <!-- Visualization Toggles -->
-      <div class="toggles-strip" aria-label="Display layers">
-        <label class="toggle-chip">
-          <input type="checkbox" id="toggle-line" checked>
-          <i class="legend-line"></i> Regression Line
-        </label>
-        <label class="toggle-chip">
-          <input type="checkbox" id="toggle-residuals" checked>
-          <i class="legend-dash"></i> Residuals
-        </label>
-        <label class="toggle-chip" title="Displays geometric squares of residuals to show what Least Squares minimizes">
-          <input type="checkbox" id="toggle-squares">
-          <i class="legend-square"></i> Residual Squares
-        </label>
-        <label class="toggle-chip" title="Mean Y baseline (used to compute SS_tot)">
-          <input type="checkbox" id="toggle-mean">
-          <i class="legend-mean"></i> Mean (ȳ)
-        </label>
-        <label class="toggle-chip" title="Data centroid (mean X, mean Y)">
-          <input type="checkbox" id="toggle-centroid" checked>
-          <span style="color: var(--blue); font-weight: bold;">⊕</span> Centroid (x̄, ȳ)
-        </label>
-        <label class="toggle-chip" title="95% Confidence Interval band around the fitted line">
-          <input type="checkbox" id="toggle-ci">
-          <i class="legend-band"></i> 95% Conf. Band
-        </label>
-      </div>
+    <!-- 2-Column Responsive Lab Area (No Scroll) -->
+    <main class="lab-workspace">
+      <!-- Left Column: Canvas, Layers & Dock Tabs -->
+      <section class="lab-main-col" aria-label="Interactive Chart Stage">
+        <!-- Compact Info Bar -->
+        <div class="lab-bar-top">
+          <div class="lab-title-group">
+            <h1 class="lab-title">Scatter Plot &amp; Best-Fit Line</h1>
+            <span class="badge badge-purple"><span id="point-count">0</span> points</span>
+            <span class="badge badge-cyan" id="centroid-badge">Centroid: (—, —)</span>
+          </div>
+          <span class="lab-hints">Click = add · Drag = move · <kbd>Right-click</kbd> = delete · <kbd>←↑→↓</kbd> = nudge</span>
+        </div>
 
-      <!-- Lab Tabs: Presets / Manual Fit / Gradient Descent / Data Table -->
-      <div class="modes-container">
-        <nav class="tabs-nav" role="tablist">
-          <button class="tab-btn active" role="tab" data-tab="tab-presets">✦ Presets &amp; Generator</button>
-          <button class="tab-btn" role="tab" data-tab="tab-manual">🎮 "Fit Line by Hand" Challenge</button>
-          <button class="tab-btn" role="tab" data-tab="tab-gd">⚙ Gradient Descent</button>
-          <button class="tab-btn" role="tab" data-tab="tab-table">📋 Dataset Table &amp; CSV</button>
-        </nav>
+        <!-- Canvas Stage -->
+        <div class="chart-stage">
+          <canvas id="chart" width="600" height="380" aria-label="Regression Scatter Plot"></canvas>
+          <div class="canvas-hud" id="hud-coords">X: — | Y: —</div>
+          <div class="floating-tooltip" id="chart-tooltip"></div>
+        </div>
 
-        <!-- Tab 1: Presets -->
-        <div class="tab-panel active" id="tab-presets" role="tabpanel">
-          <div class="presets-grid">
-            <button class="button button-primary button-sm" id="generate-button" type="button">
-              ✦ Generate Sample
-            </button>
-            <button class="preset-btn" type="button" data-preset="strong-pos">Strong Positive (+)</button>
-            <button class="preset-btn" type="button" data-preset="strong-neg">Strong Negative (−)</button>
-            <button class="preset-btn" type="button" data-preset="outlier">High Leverage Outlier</button>
-            <button class="preset-btn" type="button" data-preset="parabola">Non-Linear Curve</button>
-            <button class="preset-btn" type="button" data-preset="uncorrelated">Zero Correlation (Cloud)</button>
-            <button class="preset-btn" type="button" data-preset="perfect">Perfect Line (R² = 1)</button>
-            
-            <div class="noise-slider-wrap">
-              <span>Noise:</span>
-              <input type="range" id="noise-slider" min="1" max="25" value="10">
-              <span id="noise-val">10</span>
-            </div>
-
-            <button class="button button-secondary button-sm" id="clear-button" type="button" style="margin-left: 6px;">
-              Clear All
-            </button>
+        <!-- Selected Point Bar (appears when a point is active) -->
+        <div class="selected-bar" id="selected-bar">
+          <div class="selected-bar-coords">
+            <strong style="color: var(--amber);">Selected:</strong>
+            <label>X <input type="number" id="sel-x-input" step="0.5" min="0" max="100"></label>
+            <label>Y <input type="number" id="sel-y-input" step="0.5" min="0" max="100"></label>
+            <span id="selected-point-info" style="color: var(--muted); font-size: 10px;"></span>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn danger" id="delete-selected-btn" type="button" style="padding: 2px 6px; font-size: 10px;">Delete</button>
+            <button class="btn" id="deselect-btn" type="button" style="padding: 2px 6px; font-size: 10px;">Done</button>
           </div>
         </div>
 
-        <!-- Tab 2: Manual Fit Challenge -->
-        <div class="tab-panel" id="tab-manual" role="tabpanel">
-          <div class="manual-fit-box">
-            <div class="slider-control-group">
-              <div class="slider-label-row">
-                <span>Manual Slope (m):</span>
-                <span id="manual-slope-val">0.50</span>
+        <!-- Layer Toggles Strip -->
+        <div class="toggles-strip" aria-label="Display layers">
+          <label class="toggle-chip">
+            <input type="checkbox" id="toggle-line" checked>
+            <i class="legend-line"></i> Line
+          </label>
+          <label class="toggle-chip">
+            <input type="checkbox" id="toggle-residuals" checked>
+            <i class="legend-dash"></i> Residuals
+          </label>
+          <label class="toggle-chip" title="Geometric squares showing what OLS minimizes">
+            <input type="checkbox" id="toggle-squares">
+            <i class="legend-square"></i> Residual Squares
+          </label>
+          <label class="toggle-chip" title="Mean Y baseline (SS_tot)">
+            <input type="checkbox" id="toggle-mean">
+            <i class="legend-mean"></i> Mean (ȳ)
+          </label>
+          <label class="toggle-chip" title="Data centroid (x̄, ȳ)">
+            <input type="checkbox" id="toggle-centroid" checked>
+            <span style="color: var(--blue); font-weight: bold;">⊕</span> Centroid
+          </label>
+          <label class="toggle-chip" title="95% Confidence Interval band">
+            <input type="checkbox" id="toggle-ci">
+            <i class="legend-band"></i> 95% Conf. Band
+          </label>
+        </div>
+
+        <!-- Docked Sub-Tabs at Bottom of Left Column -->
+        <div class="dock-container">
+          <nav class="dock-nav" role="tablist">
+            <button class="dock-btn active" role="tab" data-dock="dock-presets">✦ Presets</button>
+            <button class="dock-btn" role="tab" data-dock="dock-manual">🎮 Fit by Hand</button>
+            <button class="dock-btn" role="tab" data-dock="dock-gd">⚙ Gradient Descent</button>
+            <button class="dock-btn" role="tab" data-dock="dock-data">📋 Data Table &amp; CSV</button>
+          </nav>
+
+          <!-- Dock 1: Presets -->
+          <div class="dock-panel active" id="dock-presets" role="tabpanel">
+            <div class="presets-row">
+              <button class="btn primary" id="generate-button" type="button">✦ Sample Data</button>
+              <button class="dock-preset-btn" type="button" data-preset="strong-pos">Strong (+)</button>
+              <button class="dock-preset-btn" type="button" data-preset="strong-neg">Strong (−)</button>
+              <button class="dock-preset-btn" type="button" data-preset="outlier">High Leverage Outlier</button>
+              <button class="dock-preset-btn" type="button" data-preset="parabola">Non-Linear</button>
+              <button class="dock-preset-btn" type="button" data-preset="uncorrelated">Random Cloud</button>
+              <button class="dock-preset-btn" type="button" data-preset="perfect">Perfect Line</button>
+
+              <div class="noise-wrap">
+                <span>Noise:</span>
+                <input type="range" id="noise-slider" min="1" max="25" value="10">
+                <span id="noise-val">10</span>
               </div>
-              <input type="range" id="manual-slope-slider" min="-2.5" max="2.5" step="0.01" value="0.5">
             </div>
-            <div class="slider-control-group">
-              <div class="slider-label-row">
-                <span>Manual Intercept (b):</span>
-                <span id="manual-intercept-val">30.00</span>
+          </div>
+
+          <!-- Dock 2: Fit by Hand Challenge -->
+          <div class="dock-panel" id="dock-manual" role="tabpanel">
+            <div class="manual-fit-dock">
+              <div class="slider-item">
+                <span>Slope (m): <strong id="manual-slope-val" style="color:var(--amber);">0.50</strong></span>
+                <input type="range" id="manual-slope-slider" min="-2.5" max="2.5" step="0.01" value="0.5">
               </div>
-              <input type="range" id="manual-intercept-slider" min="-30" max="100" step="0.5" value="30">
-            </div>
-            <div class="fit-compare-row">
+              <div class="slider-item">
+                <span>Intercept (b): <strong id="manual-intercept-val" style="color:var(--amber);">30.0</strong></span>
+                <input type="range" id="manual-intercept-slider" min="-30" max="100" step="0.5" value="30">
+              </div>
               <div>
-                <span>Your MSE: <strong id="manual-mse-val" style="color: var(--amber); font-family: var(--font-mono);">—</strong></span>
-                <span style="margin-left: 14px; color: var(--muted);">Optimal OLS MSE: <strong id="manual-optimal-mse" style="color: var(--green); font-family: var(--font-mono);">—</strong></span>
+                <span>Your MSE: <strong id="manual-mse-val" style="color:var(--amber); font-family:var(--font-mono);">—</strong></span>
+                <span style="color:var(--muted); margin-left:8px;">OLS Best: <strong id="manual-optimal-mse" style="color:var(--green); font-family:var(--font-mono);">—</strong></span>
               </div>
-              <div style="display: flex; gap: 8px;">
-                <label class="toggle-chip">
-                  <input type="checkbox" id="show-manual-line" checked> Show Manual Line
+              <div style="display:flex; gap:6px;">
+                <label class="toggle-chip" style="font-size:10px;">
+                  <input type="checkbox" id="show-manual-line" checked> Show Line
                 </label>
-                <button class="button button-primary button-sm" id="match-optimal-btn" type="button">Snap to Optimal</button>
+                <button class="btn primary" id="match-optimal-btn" type="button" style="font-size:10px; padding:2px 6px;">Snap OLS</button>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Tab 3: Gradient Descent -->
-        <div class="tab-panel" id="tab-gd" role="tabpanel">
-          <div class="gd-controls-bar">
-            <div class="gd-param">
-              <label for="gd-lr">Learning Rate (α):</label>
-              <select id="gd-lr">
-                <option value="0.005">0.005</option>
+          <!-- Dock 3: Gradient Descent -->
+          <div class="dock-panel" id="dock-gd" role="tabpanel">
+            <div class="gd-dock">
+              <span>Rate (α):</span>
+              <select id="gd-lr" style="height:24px; font-size:11px; background:var(--surface-raised); color:#fff; border:1px solid var(--border-strong); border-radius:4px;">
                 <option value="0.01">0.01</option>
                 <option value="0.05" selected>0.05</option>
-                <option value="0.1">0.1</option>
-                <option value="0.2">0.2</option>
+                <option value="0.1">0.10</option>
+                <option value="0.2">0.20</option>
               </select>
+              <button class="btn primary" id="gd-step-btn" type="button">Step 1</button>
+              <button class="btn" id="gd-run-btn" type="button">▶ Train 50 Epochs</button>
+              <button class="btn" id="gd-reset-btn" type="button">Reset</button>
+              <span style="margin-left:auto; font-family:var(--font-mono); font-size:10.5px;">
+                Epoch: <strong id="gd-epoch-counter" style="color:#fff;">0</strong> | MSE: <strong id="gd-loss-val" style="color:var(--pink);">—</strong>
+              </span>
             </div>
-            <button class="button button-primary button-sm" id="gd-step-btn" type="button">Step 1 Epoch</button>
-            <button class="button button-secondary button-sm" id="gd-run-btn" type="button">▶ Train 50 Epochs</button>
-            <button class="button button-secondary button-sm" id="gd-reset-btn" type="button">Reset Weights</button>
-            <div class="gd-loss-readout">
-              Epoch: <span id="gd-epoch-counter" style="color: var(--text);">0</span> | MSE: <span id="gd-loss-val">—</span>
+          </div>
+
+          <!-- Dock 4: Data Table & CSV -->
+          <div class="dock-panel" id="dock-data" role="tabpanel">
+            <div class="table-dock">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <input type="number" id="tbl-add-x" placeholder="X" min="0" max="100" step="any" style="width:52px; padding:2px 4px; border-radius:4px; border:1px solid var(--border-strong); background:var(--surface-inset); color:#fff; font-size:11px;">
+                <input type="number" id="tbl-add-y" placeholder="Y" min="0" max="100" step="any" style="width:52px; padding:2px 4px; border-radius:4px; border:1px solid var(--border-strong); background:var(--surface-inset); color:#fff; font-size:11px;">
+                <button class="btn primary" id="tbl-add-btn" type="button" style="font-size:10.5px;">+ Add</button>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn" id="export-csv-btn" type="button">Export CSV</button>
+                <button class="btn" id="open-import-btn" type="button">Paste / Import</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Metrics, Equation & Prediction -->
+      <aside class="lab-side-col" aria-label="Model metrics and predictions">
+        <!-- Equation Box -->
+        <div class="side-card">
+          <div class="card-top-head">
+            <p class="card-label">OLS Fitted Equation</p>
+            <button class="btn" id="copy-equation-btn" type="button" style="font-size:9.5px; padding:1px 6px;">Copy</button>
+          </div>
+          <div class="equation-display" id="equation">y = —x + —</div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="side-card">
+          <div class="card-top-head">
+            <p class="card-label">Goodness of Fit Metrics</p>
+            <span class="badge badge-purple" id="model-status" style="font-size:9px;">Waiting for data</span>
+          </div>
+
+          <div class="metrics-2col">
+            <div class="metric-item">
+              <span class="metric-name">Slope (m)</span>
+              <span class="metric-val" id="slope-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">Intercept (b)</span>
+              <span class="metric-val" id="intercept-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">Pearson (r)</span>
+              <span class="metric-val" id="r-value" style="color:var(--green);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">R² Variance</span>
+              <span class="metric-val" id="r2-value" style="color:var(--blue);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">MSE (ε)</span>
+              <span class="metric-val" id="mse-value" style="color:var(--pink);">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">RMSE</span>
+              <span class="metric-val" id="rmse-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">MAE</span>
+              <span class="metric-val" id="mae-value">—</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-name">SS_res</span>
+              <span class="metric-val" id="ssres-value">—</span>
             </div>
           </div>
         </div>
 
-        <!-- Tab 4: Data Table & CSV -->
-        <div class="tab-panel" id="tab-table" role="tabpanel">
-          <div class="data-table-container">
-            <table class="data-table" id="points-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>X</th>
-                  <th>Y</th>
-                  <th>Predicted Ŷ</th>
-                  <th>Residual (e)</th>
-                  <th>e²</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="points-table-body">
-                <tr><td colspan="7" style="text-align: center; color: var(--muted);">No points yet. Click on the chart to add points.</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="table-actions-row">
-            <div class="add-point-inputs">
-              <input type="number" id="tbl-add-x" placeholder="X (0-100)" min="0" max="100" step="any">
-              <input type="number" id="tbl-add-y" placeholder="Y (0-100)" min="0" max="100" step="any">
-              <button class="button button-primary button-sm" id="tbl-add-btn" type="button">+ Add Point</button>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <button class="button button-secondary button-sm" id="export-csv-btn" type="button">Export CSV</button>
-              <button class="button button-secondary button-sm" id="open-import-btn" type="button">Import Data</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Side Panel -->
-    <aside class="side-panel" aria-label="Prediction and regression controls">
-      <!-- Prediction Card -->
-      <section class="card prediction-card" aria-labelledby="prediction-title">
-        <p class="eyebrow">Try a Prediction</p>
-        <h2 id="prediction-title">Prediction &amp; Inference</h2>
-        <p class="card-description">Enter an X value to predict Ŷ and view prediction uncertainty.</p>
-        
-        <form id="prediction-form">
-          <label for="x-input">Input X Value</label>
-          <div class="input-row">
-            <input id="x-input" name="x" type="number" step="any" value="50" required>
-            <button class="button button-primary predict-button" type="submit">Predict Ŷ <span aria-hidden="true">→</span></button>
-          </div>
-          <div class="prediction-slider-box">
+        <!-- Prediction Card -->
+        <div class="side-card">
+          <p class="card-label">Instant Prediction (X → Ŷ)</p>
+          <div class="predict-form-row">
+            <input id="x-input" type="number" step="any" value="50">
             <input type="range" id="x-predict-slider" min="0" max="100" step="0.5" value="50">
           </div>
-        </form>
-
-        <div class="prediction-result" aria-live="polite">
-          <div>
-            <span class="result-label">Predicted Ŷ</span>
-            <div class="prediction-interval-pill" id="pred-interval">95% PI: —</div>
-          </div>
-          <output id="prediction-output" for="x-input">—</output>
-        </div>
-
-        <div class="extrapolation-warning" id="extrapolation-warning">
-          <span>⚠️ Warning: Extrapolating beyond observed X range!</span>
-        </div>
-
-        <p class="prediction-note" id="prediction-note">Add at least two points to fit a line.</p>
-      </section>
-
-      <!-- Metrics Card -->
-      <section class="card metrics-card" aria-labelledby="metrics-title">
-        <div class="section-heading metrics-heading">
-          <div>
-            <p class="eyebrow">Model Summary</p>
-            <h2 id="metrics-title">Metrics &amp; Goodness of Fit</h2>
-          </div>
-          <span class="model-badge">
-            <span class="dot" aria-hidden="true"></span>
-            <span id="model-status">Waiting for data</span>
-          </span>
-        </div>
-
-        <div class="equation-box">
-          <span class="result-label">Fitted Linear Model</span>
-          <p id="equation">y = —x + —</p>
-          <button class="copy-equation-btn" id="copy-equation-btn" type="button" title="Copy equation to clipboard">Copy</button>
-        </div>
-
-        <dl class="metrics-list">
-          <div class="metric-row">
-            <dt><span class="metric-symbol">m</span> Slope</dt>
-            <dd id="slope-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol">b</span> Y-Intercept</dt>
-            <dd id="intercept-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol metric-symbol-green">r</span> Pearson Correlation (r)</dt>
-            <dd id="r-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol metric-symbol-blue">R²</span> Coefficient of Determination</dt>
-            <dd id="r2-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol metric-symbol-pink">MSE</span> Mean Squared Error (ε)</dt>
-            <dd id="mse-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol metric-symbol-blue">RMSE</span> Root Mean Squared Error</dt>
-            <dd id="rmse-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol">MAE</span> Mean Absolute Error</dt>
-            <dd id="mae-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol">SS_res</span> Sum of Squared Residuals</dt>
-            <dd id="ssres-value">—</dd>
-          </div>
-          <div class="metric-row">
-            <dt><span class="metric-symbol">SS_tot</span> Total Sum of Squares</dt>
-            <dd id="sstot-value">—</dd>
-          </div>
-        </dl>
-
-        <!-- Mathematical Details Accordion -->
-        <div class="math-accordion">
-          <button class="math-accordion-header" id="math-accordion-btn" type="button">
-            <span>📐 Step-by-Step Mathematical Derivations</span>
-            <span id="math-accordion-arrow">▼</span>
-          </button>
-          <div class="math-accordion-body" id="math-accordion-body">
-            <div class="math-formula-box">
-              x̄ = (Σx) / n = <span class="val" id="calc-mean-x">—</span><br>
-              ȳ = (Σy) / n = <span class="val" id="calc-mean-y">—</span>
+          <div class="predict-output-box">
+            <div>
+              <span style="font-size:9.5px; color:var(--muted); display:block;">PREDICTED Ŷ</span>
+              <span class="predict-pi" id="pred-interval">95% PI: —</span>
             </div>
-            <div class="math-formula-box">
-              Slope (m) = Σ((x - x̄)(y - ȳ)) / Σ(x - x̄)²<br>
-              m = <span class="val" id="calc-ssxy">—</span> / <span class="val" id="calc-ssxx">—</span> = <span class="val" id="calc-slope-final">—</span>
-            </div>
-            <div class="math-formula-box">
-              Intercept (b) = ȳ - m·x̄<br>
-              b = <span class="val" id="calc-b-sub">—</span> = <span class="val" id="calc-b-final">—</span>
-            </div>
-            <div class="math-formula-box">
-              R² = 1 - (SS_res / SS_tot)<br>
-              R² = 1 - (<span class="val" id="calc-ssres-sub">—</span> / <span class="val" id="calc-sstot-sub">—</span>) = <span class="val" id="calc-r2-final">—</span>
-            </div>
+            <div class="predict-val" id="prediction-output">—</div>
+          </div>
+          <div id="extrapolation-warning" style="display:none; color:var(--amber); font-size:9.5px; margin-top:4px;">
+            ⚠️ Extrapolating beyond observed data range
           </div>
         </div>
-      </section>
-    </aside>
-  </main>
+
+        <!-- Jump to Theory Anchor -->
+        <a class="jump-to-theory" href="#theory-section">
+          <span>Explore Mathematical Theory &amp; Derivations</span>
+          <span aria-hidden="true">↓</span>
+        </a>
+      </aside>
+    </main>
+  </div>
+
+  <!-- ========================================================
+       2. BELOW-THE-FOLD MODULAR THEORY SECTION
+       ======================================================== -->
+  <section class="theory-section" id="theory-section">
+    <div class="theory-header">
+      <h2>Mathematical Theory &amp; Foundations</h2>
+      <p>
+        Ordinary Least Squares (OLS) is the fundamental bedrock of regression analysis and statistical learning.
+        Below are the exact mathematical derivations, geometric interpretations, and live calculations using your active dataset.
+      </p>
+    </div>
+
+    <div class="theory-grid">
+      <!-- Card 1: Step-by-Step Analytical Derivation -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Analytical Solution</span>
+        <h3>Step-by-Step Parameter Derivation</h3>
+        <p>The normal equation minimizes the sum of squared vertical residuals $S(m, b) = \sum_{i=1}^n (y_i - (mx_i + b))^2$. Setting partial derivatives $\frac{\partial S}{\partial m} = 0$ and $\frac{\partial S}{\partial b} = 0$ produces:</p>
+
+        <div class="math-callout">
+          <strong>1. Data Centroids:</strong><br>
+          x̄ = (Σx) / n = <span class="live-val" id="theory-mean-x">—</span><br>
+          ȳ = (Σy) / n = <span class="live-val" id="theory-mean-y">—</span>
+        </div>
+
+        <div class="math-callout">
+          <strong>2. Slope (m):</strong><br>
+          m = Σ((x - x̄)(y - ȳ)) / Σ(x - x̄)²<br>
+          m = <span class="live-val" id="theory-ssxy">—</span> / <span class="live-val" id="theory-ssxx">—</span> = <span class="live-val" id="theory-slope">—</span>
+        </div>
+
+        <div class="math-callout">
+          <strong>3. Y-Intercept (b):</strong><br>
+          b = ȳ - m·x̄<br>
+          b = <span class="live-val" id="theory-intercept-formula">—</span> = <span class="live-val" id="theory-intercept">—</span>
+        </div>
+      </article>
+
+      <!-- Card 2: Geometric Least Squares & Variance -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Geometry &amp; Variance</span>
+        <h3>Why "Least Squares"? ($R^2$ Decomposition)</h3>
+        <p>OLS squares each residual error $e_i = y_i - \hat{y}_i$. Squaring penalizes larger mistakes quadratically and cancels out negative signs. Total variance in $Y$ is cleanly partitioned into explained and unexplained variation:</p>
+
+        <div class="math-callout">
+          <strong>Total Sum of Squares (SS_tot):</strong><br>
+          SS_tot = Σ(y - ȳ)² = <span class="live-val" id="theory-sstot">—</span><br>
+          <em>(Total variance of Y around its baseline mean)</em>
+        </div>
+
+        <div class="math-callout">
+          <strong>Residual Sum of Squares (SS_res):</strong><br>
+          SS_res = Σ(y - ŷ)² = <span class="live-val" id="theory-ssres">—</span><br>
+          <em>(Remaining variance unexplained by the line)</em>
+        </div>
+
+        <div class="math-callout">
+          <strong>R-Squared (Coefficient of Determination):</strong><br>
+          R² = 1 - (SS_res / SS_tot) = <span class="live-val" id="theory-r2">—</span><br>
+          <em>(Proportion of variance explained by the model)</em>
+        </div>
+      </article>
+
+      <!-- Card 3: The Centroid Invariant -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Geometric Theorem</span>
+        <h3>The Centroid Invariant $(\bar{x}, \bar{y})$</h3>
+        <p>A fundamental property of Ordinary Least Squares is that the optimal fitted line <strong>always passes directly through the mean point $(\bar{x}, \bar{y})$</strong>. This is because:</p>
+        <div class="math-callout">
+          b = ȳ - m·x̄  ==&gt;  ȳ = m·x̄ + b
+        </div>
+        <p>When you toggle the <strong>Centroid</strong> layer in the lab above, notice the crosshairs marker. Even as you drag or add points, the regression line continuously pivots around this balance point.</p>
+      </article>
+
+      <!-- Card 4: Gauss-Markov Assumptions -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Statistical Assumptions</span>
+        <h3>Gauss-Markov Theorem &amp; BLUE</h3>
+        <p>The Gauss-Markov theorem states that under five standard conditions, the OLS estimator is the <strong>Best Linear Unbiased Estimator (BLUE)</strong> with minimum variance:</p>
+        <ul style="padding-left:18px; color:var(--text-soft); font-size:12px; line-height:1.6; margin:0 0 12px;">
+          <li><strong>Linearity in Parameters:</strong> The relationship between $X$ and $Y$ is linear.</li>
+          <li><strong>Exogeneity:</strong> Expected value of residuals given $X$ is zero: $E[\epsilon | X] = 0$.</li>
+          <li><strong>Homoscedasticity:</strong> Constant residual variance across all values of $X$.</li>
+          <li><strong>No Autocorrelation:</strong> Residuals of different observations are uncorrelated.</li>
+          <li><strong>Non-Collinearity:</strong> Sufficient variance in $X$ ($SS_{xx} &gt; 0$).</li>
+        </ul>
+      </article>
+
+      <!-- Card 5: Gradient Descent vs OLS -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Machine Learning</span>
+        <h3>Analytical OLS vs. Gradient Descent</h3>
+        <p>Why use Gradient Descent when an exact analytical formula exists? For a single variable, closed-form $O(1)$ computation is fastest. However, in machine learning:</p>
+        <div class="math-callout">
+          <strong>Closed-Form (Normal Eq):</strong> $(X^T X)^{-1} X^T y$<br>
+          Matrix inversion takes $O(d^3)$ time, becoming intractable when features $d &gt; 10,000$.<br><br>
+          <strong>Gradient Descent:</strong> Iterative updates $w \leftarrow w - \alpha \nabla J(w)$ scaling efficiently to millions of features and online streaming batches.
+        </div>
+      </article>
+
+      <!-- Card 6: Outlier Leverage & Influence -->
+      <article class="theory-card">
+        <span class="theory-card-badge">Diagnostics</span>
+        <h3>Outliers, Leverage, &amp; Influence</h3>
+        <p>Not all outliers have equal influence on the slope:</p>
+        <p><strong>Leverage</strong> measures how far an observation's $X$ value is from the mean $\bar{x}$. An outlier near $\bar{x}$ only shifts the intercept, but an outlier far along the $X$-axis exerts immense leverage like a lever, tilting the entire slope drastically (try the "High Leverage Outlier" preset above to observe this effect!).</p>
+      </article>
+    </div>
+
+    <div style="text-align:center;">
+      <a class="back-to-lab-btn" href="#top">↑ Back to Interactive Lab</a>
+    </div>
+  </section>
 
   <!-- Import Modal -->
   <div class="modal-overlay" id="import-modal">
     <div class="modal-card">
-      <h3>Import Coordinates / CSV</h3>
-      <p style="color: var(--muted); font-size: 11px; margin-bottom: 8px;">
-        Paste comma-separated or tab-separated X,Y coordinate pairs (one pair per line). Example:<br>
-        <code>12, 25<br>34, 48<br>55, 62</code>
-      </p>
-      <textarea id="import-textarea" placeholder="X, Y"></textarea>
-      <div class="modal-buttons">
-        <button class="button button-secondary button-sm" id="close-import-btn" type="button">Cancel</button>
-        <button class="button button-primary button-sm" id="submit-import-btn" type="button">Load Dataset</button>
+      <h3 style="margin:0 0 6px; font-size:14px;">Import Dataset</h3>
+      <p style="color:var(--muted); font-size:11px; margin:0 0 8px;">Paste comma or whitespace separated X,Y pairs (one per line):</p>
+      <textarea id="import-textarea" placeholder="10, 25&#10;20, 38&#10;35, 52"></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:6px;">
+        <button class="btn" id="close-import-btn" type="button">Cancel</button>
+        <button class="btn primary" id="submit-import-btn" type="button">Load Data</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast-msg"></div>
 
-  <footer>
-    Built for learning &amp; discovery · Ordinary Least Squares (OLS) &amp; Machine Learning Foundations
-  </footer>
-
+  <!-- Script Engine -->
   <script>
     "use strict";
 
     (() => {
-      // Elements
       const canvas = document.getElementById("chart");
       const context = canvas.getContext("2d");
       const pointCountEl = document.getElementById("point-count");
@@ -1480,7 +1203,7 @@
       const toggleCentroid = document.getElementById("toggle-centroid");
       const toggleCi = document.getElementById("toggle-ci");
 
-      // Actions & Presets
+      // Actions
       const generateButton = document.getElementById("generate-button");
       const clearButton = document.getElementById("clear-button");
       const undoBtn = document.getElementById("undo-button");
@@ -1490,17 +1213,14 @@
       const noiseVal = document.getElementById("noise-val");
 
       // Prediction Elements
-      const predictionForm = document.getElementById("prediction-form");
       const xInput = document.getElementById("x-input");
       const xPredictSlider = document.getElementById("x-predict-slider");
       const predictionOutput = document.getElementById("prediction-output");
-      const predictionNote = document.getElementById("prediction-note");
       const predInterval = document.getElementById("pred-interval");
       const extrapolationWarning = document.getElementById("extrapolation-warning");
 
       // Metrics Elements
       const modelStatus = document.getElementById("model-status");
-      const modelBadge = modelStatus.closest(".model-badge");
       const equationEl = document.getElementById("equation");
       const copyEquationBtn = document.getElementById("copy-equation-btn");
       const slopeValue = document.getElementById("slope-value");
@@ -1511,24 +1231,20 @@
       const rmseValue = document.getElementById("rmse-value");
       const maeValue = document.getElementById("mae-value");
       const ssresValue = document.getElementById("ssres-value");
-      const sstotValue = document.getElementById("sstot-value");
 
-      // Math Derivation Accordion Elements
-      const mathAccordionBtn = document.getElementById("math-accordion-btn");
-      const mathAccordionBody = document.getElementById("math-accordion-body");
-      const mathAccordionArrow = document.getElementById("math-accordion-arrow");
-      const calcMeanX = document.getElementById("calc-mean-x");
-      const calcMeanY = document.getElementById("calc-mean-y");
-      const calcSsxy = document.getElementById("calc-ssxy");
-      const calcSsxx = document.getElementById("calc-ssxx");
-      const calcSlopeFinal = document.getElementById("calc-slope-final");
-      const calcBSub = document.getElementById("calc-b-sub");
-      const calcBFinal = document.getElementById("calc-b-final");
-      const calcSsresSub = document.getElementById("calc-ssres-sub");
-      const calcSstotSub = document.getElementById("calc-sstot-sub");
-      const calcR2Final = document.getElementById("calc-r2-final");
+      // Theory live elements
+      const thMeanX = document.getElementById("theory-mean-x");
+      const thMeanY = document.getElementById("theory-mean-y");
+      const thSsxy = document.getElementById("theory-ssxy");
+      const thSsxx = document.getElementById("theory-ssxx");
+      const thSlope = document.getElementById("theory-slope");
+      const thInterceptFormula = document.getElementById("theory-intercept-formula");
+      const thIntercept = document.getElementById("theory-intercept");
+      const thSstot = document.getElementById("theory-sstot");
+      const thSsres = document.getElementById("theory-ssres");
+      const thR2 = document.getElementById("theory-r2");
 
-      // Manual Fit Challenge Elements
+      // Manual Challenge Elements
       const manualSlopeSlider = document.getElementById("manual-slope-slider");
       const manualInterceptSlider = document.getElementById("manual-intercept-slider");
       const manualSlopeVal = document.getElementById("manual-slope-val");
@@ -1547,7 +1263,6 @@
       const gdLossVal = document.getElementById("gd-loss-val");
 
       // Table Elements
-      const pointsTableBody = document.getElementById("points-table-body");
       const tblAddX = document.getElementById("tbl-add-x");
       const tblAddY = document.getElementById("tbl-add-y");
       const tblAddBtn = document.getElementById("tbl-add-btn");
@@ -1559,43 +1274,36 @@
       const importTextarea = document.getElementById("import-textarea");
       const toastMsg = document.getElementById("toast-msg");
 
-      // Plot & State Configuration
-      const xMin = 0;
-      const xMax = 100;
-      const yMin = 0;
-      const yMax = 100;
+      // State
+      const xMin = 0; const xMax = 100;
+      const yMin = 0; const yMax = 100;
       const tickStep = 10;
       const pointHitRadius = 14;
 
-      let plot = { left: 56, right: 574, top: 24, bottom: 366 };
+      let plot = { left: 48, right: 580, top: 16, bottom: 340 };
       let points = [];
       let model = null;
       let prediction = null;
-      let predictionRequested = true;
       let selectedPoint = null;
       let hoveredPoint = null;
       let draggedPoint = null;
       let isDragging = false;
 
-      // Manual Line parameters
+      // Manual Fit
       let manualM = 0.5;
       let manualB = 30;
 
-      // Gradient Descent state
+      // Gradient Descent
       let gdM = 0;
       let gdB = 0;
       let gdEpoch = 0;
-      let gdRunning = false;
-      let gdAnimationTimer = null;
 
-      // History for Undo / Redo
+      // History
       const historyStack = [];
       let historyStep = -1;
 
       function pushHistory() {
-        if (historyStep < historyStack.length - 1) {
-          historyStack.splice(historyStep + 1);
-        }
+        if (historyStep < historyStack.length - 1) historyStack.splice(historyStep + 1);
         historyStack.push(points.map(p => ({ x: p.x, y: p.y })));
         if (historyStack.length > 50) historyStack.shift();
         historyStep = historyStack.length - 1;
@@ -1635,18 +1343,17 @@
         toastMsg.textContent = msg;
         toastMsg.style.display = "flex";
         clearTimeout(toastMsg._timer);
-        toastMsg._timer = setTimeout(() => {
-          toastMsg.style.display = "none";
-        }, 2200);
+        toastMsg._timer = setTimeout(() => { toastMsg.style.display = "none"; }, 2000);
       }
 
-      function formatNumber(value, digits = 2) {
-        return Number.isFinite(value) ? value.toFixed(digits) : "—";
+      function formatNumber(v, d = 2) {
+        return Number.isFinite(v) ? v.toFixed(d) : "—";
       }
 
       // Responsive HiDPI Canvas Resizing
       function resizeCanvas() {
-        const rect = canvas.getBoundingClientRect();
+        const stage = canvas.parentElement;
+        const rect = stage.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         const w = rect.width;
         const h = rect.height;
@@ -1655,18 +1362,16 @@
         canvas.height = Math.round(h * dpr);
         context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Update plot margins dynamically based on canvas logical size
-        plot.left = 54;
-        plot.right = w - 24;
-        plot.top = 22;
-        plot.bottom = h - 48;
+        plot.left = 46;
+        plot.right = w - 16;
+        plot.top = 14;
+        plot.bottom = h - 30;
 
         drawChart();
       }
 
       window.addEventListener("resize", resizeCanvas);
 
-      // Coordinate conversions
       function toCanvasX(x) {
         return plot.left + ((x - xMin) / (xMax - xMin)) * (plot.right - plot.left);
       }
@@ -1699,7 +1404,6 @@
       function findPointAt(position) {
         let nearest = null;
         let minDistSq = (pointHitRadius) ** 2;
-
         for (let i = points.length - 1; i >= 0; i--) {
           const pt = points[i];
           const { px, py } = toCanvasCoordinates(pt);
@@ -1712,10 +1416,9 @@
         return nearest;
       }
 
-      // Regression Fitting Algorithm
+      // Linear Regression Math
       function fitLinearRegression(pts) {
         if (!Array.isArray(pts) || pts.length < 2) return null;
-
         const n = pts.length;
         const sumX = pts.reduce((acc, p) => acc + p.x, 0);
         const sumY = pts.reduce((acc, p) => acc + p.y, 0);
@@ -1726,22 +1429,23 @@
         const SS_yy = pts.reduce((acc, p) => acc + (p.y - meanY) ** 2, 0);
         const SS_xy = pts.reduce((acc, p) => acc + (p.x - meanX) * (p.y - meanY), 0);
 
-        if (SS_xx === 0) {
-          // All X coordinates are identical -> vertical line
-          return null;
-        }
+        if (SS_xx === 0) return null;
 
         const slope = SS_xy / SS_xx;
         const intercept = meanY - slope * meanX;
 
-        // Residuals and errors
         let SS_res = 0;
         let sumAbsErr = 0;
+        let minX = Infinity;
+        let maxX = -Infinity;
+
         pts.forEach(p => {
           const yHat = slope * p.x + intercept;
           const err = p.y - yHat;
           SS_res += err * err;
           sumAbsErr += Math.abs(err);
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
         });
 
         const SS_tot = SS_yy;
@@ -1752,40 +1456,17 @@
         const mae = sumAbsErr / n;
         const seResidual = n > 2 ? Math.sqrt(SS_res / (n - 2)) : Math.sqrt(mse);
 
-        // Range of X
-        let minX = Infinity;
-        let maxX = -Infinity;
-        pts.forEach(p => {
-          if (p.x < minX) minX = p.x;
-          if (p.x > maxX) maxX = p.x;
-        });
-
         return {
-          n,
-          meanX,
-          meanY,
-          slope,
-          intercept,
-          SS_xx,
-          SS_yy,
-          SS_xy,
-          SS_res,
-          SS_tot,
-          r,
-          r2,
-          mse,
-          rmse,
-          mae,
-          seResidual,
-          minX,
-          maxX
+          n, meanX, meanY, slope, intercept, SS_xx, SS_yy, SS_xy, SS_res, SS_tot,
+          r, r2, mse, rmse, mae, seResidual, minX, maxX
         };
       }
 
-      // Draw Grid, Axes, and Lines
+      // Drawing
       function drawChart() {
-        const w = canvas.getBoundingClientRect().width;
-        const h = canvas.getBoundingClientRect().height;
+        const stage = canvas.parentElement;
+        const w = stage.getBoundingClientRect().width;
+        const h = stage.getBoundingClientRect().height;
 
         context.clearRect(0, 0, w, h);
 
@@ -1793,7 +1474,7 @@
         context.fillStyle = "#0e121b";
         context.fillRect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
 
-        // Grid Lines
+        // Subtle Grid
         context.lineWidth = 1;
         for (let xVal = xMin; xVal <= xMax; xVal += tickStep) {
           const px = Math.round(toCanvasX(xVal));
@@ -1815,87 +1496,68 @@
 
         // Plot Border
         context.strokeStyle = "#283144";
-        context.lineWidth = 1.5;
+        context.lineWidth = 1;
         context.strokeRect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
 
-        // Axis Tick Labels
-        context.font = "11px 'Segoe UI', Arial, sans-serif";
+        // Axis Tick Numbers
+        context.font = "10px 'Segoe UI', Arial, sans-serif";
         context.textAlign = "center";
         context.textBaseline = "top";
-        for (let xVal = xMin; xVal <= xMax; xVal += tickStep) {
+        for (let xVal = xMin; xVal <= xMax; xVal += 20) {
           const px = toCanvasX(xVal);
-          context.fillStyle = "#8a96ad";
-          context.fillText(String(xVal), px, plot.bottom + 8);
+          context.fillStyle = "#7b879e";
+          context.fillText(String(xVal), px, plot.bottom + 4);
         }
 
         context.textAlign = "right";
         context.textBaseline = "middle";
-        for (let yVal = yMin; yVal <= yMax; yVal += tickStep) {
+        for (let yVal = yMin; yVal <= yMax; yVal += 20) {
           const py = toCanvasY(yVal);
-          context.fillStyle = "#8a96ad";
-          context.fillText(String(yVal), plot.left - 8, py);
+          context.fillStyle = "#7b879e";
+          context.fillText(String(yVal), plot.left - 5, py);
         }
 
-        // Axis Titles
-        context.fillStyle = "#c1c8d8";
-        context.font = "bold 11px 'Segoe UI', Arial, sans-serif";
-        context.textAlign = "center";
-        context.fillText("X Variable", (plot.left + plot.right) / 2, plot.bottom + 32);
-
-        context.save();
-        context.translate(16, (plot.top + plot.bottom) / 2);
-        context.rotate(-Math.PI / 2);
-        context.fillText("Y Variable", 0, 0);
-        context.restore();
-
-        // Clip everything inside plot area
+        // Clip to plot area
         context.save();
         context.beginPath();
         context.rect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
         context.clip();
 
-        // 1. Confidence Interval Band (if toggled)
+        // 1. Confidence Band
         if (model && toggleCi.checked && model.n > 2) {
           context.fillStyle = "rgba(154, 140, 255, 0.12)";
           context.beginPath();
-          // Draw top curve
           for (let val = xMin; val <= xMax; val += 2) {
             const yHat = model.slope * val + model.intercept;
             const seFit = model.seResidual * Math.sqrt((1 / model.n) + ((val - model.meanX) ** 2) / model.SS_xx);
-            const yUpper = yHat + 1.96 * seFit;
-            const cx = toCanvasX(val);
-            const cy = toCanvasY(yUpper);
-            if (val === xMin) context.moveTo(cx, cy);
-            else context.lineTo(cx, cy);
+            const cy = toCanvasY(yHat + 1.96 * seFit);
+            if (val === xMin) context.moveTo(toCanvasX(val), cy);
+            else context.lineTo(toCanvasX(val), cy);
           }
-          // Draw bottom curve in reverse
           for (let val = xMax; val >= xMin; val -= 2) {
             const yHat = model.slope * val + model.intercept;
             const seFit = model.seResidual * Math.sqrt((1 / model.n) + ((val - model.meanX) ** 2) / model.SS_xx);
-            const yLower = yHat - 1.96 * seFit;
-            const cx = toCanvasX(val);
-            const cy = toCanvasY(yLower);
-            context.lineTo(cx, cy);
+            context.lineTo(toCanvasX(val), toCanvasY(yHat - 1.96 * seFit));
           }
           context.closePath();
           context.fill();
         }
 
-        // 2. Mean Baseline Line ȳ (if toggled)
+        // 2. Mean Y line
         if (model && toggleMean.checked) {
           const pyMean = toCanvasY(model.meanY);
           context.save();
           context.beginPath();
           context.setLineDash([3, 4]);
           context.strokeStyle = "#70a5ff";
-          context.lineWidth = 1.5;
+          context.lineWidth = 1.4;
           context.moveTo(plot.left, pyMean);
           context.lineTo(plot.right, pyMean);
           context.stroke();
           context.restore();
         }
 
-        // 3. Residual Squares (if toggled)
+        // 3. Residual Squares
         if (model && toggleSquares.checked) {
           points.forEach(pt => {
             const yHat = model.slope * pt.x + model.intercept;
@@ -1904,22 +1566,20 @@
             const diffY = ptPos.py - pyHat;
             const size = Math.abs(diffY);
             if (size > 0.5) {
-              const sign = diffY > 0 ? 1 : -1;
               context.fillStyle = "rgba(240, 135, 162, 0.16)";
               context.strokeStyle = "rgba(240, 135, 162, 0.5)";
               context.lineWidth = 1;
-              // Draw square attached to vertical residual
               context.fillRect(ptPos.px, pyHat, size, diffY);
               context.strokeRect(ptPos.px, pyHat, size, diffY);
             }
           });
         }
 
-        // 4. Residual Vertical Lines (if toggled)
+        // 4. Residual vertical lines
         if (model && toggleResiduals.checked) {
           context.save();
-          context.setLineDash([4, 4]);
-          context.lineWidth = 1.3;
+          context.setLineDash([3, 3]);
+          context.lineWidth = 1.2;
           points.forEach(pt => {
             const yHat = model.slope * pt.x + model.intercept;
             const ptPos = toCanvasCoordinates(pt);
@@ -1933,22 +1593,19 @@
           context.restore();
         }
 
-        // 5. OLS Regression Line (if toggled)
+        // 5. OLS Regression Line
         if (model && toggleLine.checked) {
           context.beginPath();
           context.moveTo(toCanvasX(xMin), toCanvasY(model.slope * xMin + model.intercept));
           context.lineTo(toCanvasX(xMax), toCanvasY(model.slope * xMax + model.intercept));
           context.strokeStyle = "#f087a2";
           context.lineWidth = 2.5;
-          context.shadowColor = "rgba(240, 135, 162, 0.4)";
-          context.shadowBlur = 8;
           context.stroke();
-          context.shadowBlur = 0;
         }
 
-        // 6. Manual Challenge Line (if tab active and toggled)
-        const isManualTab = document.getElementById("tab-manual").classList.contains("active");
-        if (isManualTab && showManualLine.checked) {
+        // 6. Manual Challenge Line
+        const isManualDock = document.getElementById("dock-manual").classList.contains("active");
+        if (isManualDock && showManualLine.checked) {
           context.beginPath();
           context.moveTo(toCanvasX(xMin), toCanvasY(manualM * xMin + manualB));
           context.lineTo(toCanvasX(xMax), toCanvasY(manualM * xMax + manualB));
@@ -1957,9 +1614,9 @@
           context.stroke();
         }
 
-        // 7. Gradient Descent Line (if tab active)
-        const isGdTab = document.getElementById("tab-gd").classList.contains("active");
-        if (isGdTab && gdEpoch > 0) {
+        // 7. Gradient Descent Line
+        const isGdDock = document.getElementById("dock-gd").classList.contains("active");
+        if (isGdDock && gdEpoch > 0) {
           context.beginPath();
           context.moveTo(toCanvasX(xMin), toCanvasY(gdM * xMin + gdB));
           context.lineTo(toCanvasX(xMax), toCanvasY(gdM * xMax + gdB));
@@ -1968,37 +1625,33 @@
           context.stroke();
         }
 
-        // 8. Centroid Indicator (x̄, ȳ)
+        // 8. Centroid
         if (model && toggleCentroid.checked) {
           const cx = toCanvasX(model.meanX);
           const cy = toCanvasY(model.meanY);
           context.beginPath();
-          context.arc(cx, cy, 6, 0, Math.PI * 2);
+          context.arc(cx, cy, 5.5, 0, Math.PI * 2);
           context.fillStyle = "#70a5ff";
           context.fill();
-          context.strokeStyle = "#ffffff";
+          context.strokeStyle = "#fff";
           context.lineWidth = 1.5;
           context.stroke();
 
-          // Centroid crosshairs
           context.beginPath();
-          context.strokeStyle = "rgba(112, 165, 255, 0.4)";
+          context.strokeStyle = "rgba(112, 165, 255, 0.5)";
           context.lineWidth = 1;
-          context.moveTo(cx - 10, cy);
-          context.lineTo(cx + 10, cy);
-          context.moveTo(cx, cy - 10);
-          context.lineTo(cx, cy + 10);
+          context.moveTo(cx - 8, cy); context.lineTo(cx + 8, cy);
+          context.moveTo(cx, cy - 8); context.lineTo(cx, cy + 8);
           context.stroke();
         }
 
-        // 9. Prediction Dot & Guideline
+        // 9. Prediction Dot
         if (prediction && Number.isFinite(prediction.x) && Number.isFinite(prediction.y)) {
           const predPos = toCanvasCoordinates(prediction);
-          // guideline from X axis up to predicted point
           context.save();
-          context.setLineDash([3, 3]);
-          context.strokeStyle = "rgba(255, 209, 102, 0.6)";
-          context.lineWidth = 1.2;
+          context.setLineDash([2, 3]);
+          context.strokeStyle = "rgba(255, 209, 102, 0.5)";
+          context.lineWidth = 1;
           context.beginPath();
           context.moveTo(predPos.px, plot.bottom);
           context.lineTo(predPos.px, predPos.py);
@@ -2006,48 +1659,45 @@
           context.stroke();
           context.restore();
 
-          // predicted dot
           context.beginPath();
-          context.arc(predPos.px, predPos.py, 7, 0, Math.PI * 2);
+          context.arc(predPos.px, predPos.py, 6, 0, Math.PI * 2);
           context.fillStyle = "#ffd166";
           context.fill();
-          context.strokeStyle = "#ffffff";
-          context.lineWidth = 2;
+          context.strokeStyle = "#fff";
+          context.lineWidth = 1.5;
           context.stroke();
         }
 
-        // End clip
         context.restore();
 
-        // 10. Data Points
+        // 10. Data points
         points.forEach(pt => {
           const { px, py } = toCanvasCoordinates(pt);
           const isSelected = selectedPoint === pt;
           const isHovered = hoveredPoint === pt;
 
           context.beginPath();
-          context.arc(px, py, isSelected ? 8 : (isHovered ? 7 : 5.5), 0, Math.PI * 2);
+          context.arc(px, py, isSelected ? 7 : (isHovered ? 6.5 : 5), 0, Math.PI * 2);
           context.fillStyle = isSelected ? "#ffd166" : (isHovered ? "#b7a8ff" : "#9a8cff");
           context.fill();
-          context.lineWidth = isSelected ? 2.5 : 1.8;
+          context.lineWidth = isSelected ? 2.2 : 1.5;
           context.strokeStyle = isSelected ? "#ffffff" : "#ded7ff";
           context.stroke();
         });
       }
 
-      // Update View, Calculations, and DOM
+      // Update calculations, cards and theory
       function updateView() {
         model = fitLinearRegression(points);
         pointCountEl.textContent = String(points.length);
 
-        // Update Centroid Badge
         if (model) {
           centroidBadge.textContent = `Centroid: (${formatNumber(model.meanX, 1)}, ${formatNumber(model.meanY, 1)})`;
         } else {
           centroidBadge.textContent = "Centroid: (—, —)";
         }
 
-        // Update Selected Bar
+        // Selected bar
         if (selectedPoint) {
           selectedBar.classList.add("active");
           selXInput.value = selectedPoint.x.toFixed(1);
@@ -2055,7 +1705,7 @@
           if (model) {
             const yHat = model.slope * selectedPoint.x + model.intercept;
             const res = selectedPoint.y - yHat;
-            selectedPointInfo.textContent = `Ŷ = ${formatNumber(yHat, 1)} | Residual e = ${formatNumber(res, 2)}`;
+            selectedPointInfo.textContent = `Ŷ=${formatNumber(yHat, 1)} | e=${formatNumber(res, 2)}`;
           } else {
             selectedPointInfo.textContent = "";
           }
@@ -2063,7 +1713,7 @@
           selectedBar.classList.remove("active");
         }
 
-        // Update Model Summary Card
+        // Live Model Metrics
         if (!model) {
           equationEl.textContent = "y = —x + —";
           slopeValue.textContent = "—";
@@ -2074,78 +1724,67 @@
           rmseValue.textContent = "—";
           maeValue.textContent = "—";
           ssresValue.textContent = "—";
-          sstotValue.textContent = "—";
           modelStatus.textContent = points.length < 2 ? "Waiting for data" : "Need varied X";
-          modelBadge.classList.remove("is-ready");
 
-          // Reset math details
-          calcMeanX.textContent = "—";
-          calcMeanY.textContent = "—";
-          calcSsxy.textContent = "—";
-          calcSsxx.textContent = "—";
-          calcSlopeFinal.textContent = "—";
-          calcBSub.textContent = "—";
-          calcBFinal.textContent = "—";
-          calcSsresSub.textContent = "—";
-          calcSstotSub.textContent = "—";
-          calcR2Final.textContent = "—";
-
+          // Theory live numbers
+          thMeanX.textContent = "—";
+          thMeanY.textContent = "—";
+          thSsxy.textContent = "—";
+          thSsxx.textContent = "—";
+          thSlope.textContent = "—";
+          thInterceptFormula.textContent = "—";
+          thIntercept.textContent = "—";
+          thSstot.textContent = "—";
+          thSsres.textContent = "—";
+          thR2.textContent = "—";
           manualOptimalMse.textContent = "—";
         } else {
           const interceptSign = model.intercept < 0 ? "−" : "+";
           equationEl.textContent = `y = ${formatNumber(model.slope, 3)}x ${interceptSign} ${formatNumber(Math.abs(model.intercept), 2)}`;
-          slopeValue.textContent = formatNumber(model.slope, 4);
-          interceptValue.textContent = formatNumber(model.intercept, 3);
-          
+          slopeValue.textContent = formatNumber(model.slope, 3);
+          interceptValue.textContent = formatNumber(model.intercept, 2);
+
           let rDesc = "";
           if (Math.abs(model.r) > 0.85) rDesc = model.r > 0 ? " (Strong +)" : " (Strong −)";
-          else if (Math.abs(model.r) > 0.5) rDesc = model.r > 0 ? " (Moderate +)" : " (Moderate −)";
-          else rDesc = " (Weak / None)";
+          else if (Math.abs(model.r) > 0.5) rDesc = model.r > 0 ? " (Mod +)" : " (Mod −)";
           rValue.textContent = `${formatNumber(model.r, 3)}${rDesc}`;
 
           const r2Pct = (model.r2 * 100).toFixed(1);
-          r2Value.textContent = `${formatNumber(model.r2, 4)} (${r2Pct}% variance explained)`;
-          mseValue.textContent = formatNumber(model.mse, 3);
-          rmseValue.textContent = formatNumber(model.rmse, 3);
-          maeValue.textContent = formatNumber(model.mae, 3);
-          ssresValue.textContent = formatNumber(model.SS_res, 2);
-          sstotValue.textContent = formatNumber(model.SS_tot, 2);
+          r2Value.textContent = `${formatNumber(model.r2, 3)} (${r2Pct}%)`;
+          mseValue.textContent = formatNumber(model.mse, 2);
+          rmseValue.textContent = formatNumber(model.rmse, 2);
+          maeValue.textContent = formatNumber(model.mae, 2);
+          ssresValue.textContent = formatNumber(model.SS_res, 1);
+          modelStatus.textContent = "OLS Fitted";
 
-          modelStatus.textContent = "Optimal OLS Fit";
-          modelBadge.classList.add("is-ready");
-
-          // Math Derivation Accordion
-          calcMeanX.textContent = formatNumber(model.meanX, 2);
-          calcMeanY.textContent = formatNumber(model.meanY, 2);
-          calcSsxy.textContent = formatNumber(model.SS_xy, 2);
-          calcSsxx.textContent = formatNumber(model.SS_xx, 2);
-          calcSlopeFinal.textContent = formatNumber(model.slope, 4);
-          calcBSub.textContent = `${formatNumber(model.meanY, 2)} - (${formatNumber(model.slope, 3)} × ${formatNumber(model.meanX, 2)})`;
-          calcBFinal.textContent = formatNumber(model.intercept, 3);
-          calcSsresSub.textContent = formatNumber(model.SS_res, 2);
-          calcSstotSub.textContent = formatNumber(model.SS_tot, 2);
-          calcR2Final.textContent = formatNumber(model.r2, 4);
+          // Update Theory values
+          thMeanX.textContent = formatNumber(model.meanX, 2);
+          thMeanY.textContent = formatNumber(model.meanY, 2);
+          thSsxy.textContent = formatNumber(model.SS_xy, 2);
+          thSsxx.textContent = formatNumber(model.SS_xx, 2);
+          thSlope.textContent = formatNumber(model.slope, 3);
+          thInterceptFormula.textContent = `${formatNumber(model.meanY, 2)} - (${formatNumber(model.slope, 3)} × ${formatNumber(model.meanX, 2)})`;
+          thIntercept.textContent = formatNumber(model.intercept, 2);
+          thSstot.textContent = formatNumber(model.SS_tot, 2);
+          thSsres.textContent = formatNumber(model.SS_res, 2);
+          thR2.textContent = formatNumber(model.r2, 3);
 
           manualOptimalMse.textContent = formatNumber(model.mse, 2);
         }
 
         updateManualChallenge();
-        updateTable();
         updatePrediction();
         drawChart();
       }
 
-      // Update Prediction
+      // Prediction calculation
       function updatePrediction() {
         prediction = null;
         extrapolationWarning.style.display = "none";
 
-        if (!predictionRequested || !model) {
+        if (!model) {
           predictionOutput.textContent = "—";
           predInterval.textContent = "95% PI: —";
-          predictionNote.textContent = model
-            ? "Enter an X value to predict Ŷ."
-            : "Add at least two points to fit a line.";
           return;
         }
 
@@ -2153,20 +1792,17 @@
         if (!Number.isFinite(x)) {
           predictionOutput.textContent = "—";
           predInterval.textContent = "95% PI: —";
-          predictionNote.textContent = "Enter a valid numerical X value.";
           return;
         }
 
         const y = model.slope * x + model.intercept;
         prediction = { x, y };
-        predictionOutput.textContent = formatNumber(y, 2);
+        predictionOutput.textContent = formatNumber(y, 1);
 
-        // Check for extrapolation
         if (x < model.minX || x > model.maxX) {
-          extrapolationWarning.style.display = "flex";
+          extrapolationWarning.style.display = "block";
         }
 
-        // Compute 95% Prediction Interval:
         if (model.n > 2) {
           const sePred = model.seResidual * Math.sqrt(1 + (1 / model.n) + ((x - model.meanX) ** 2) / model.SS_xx);
           const margin = 1.96 * sePred;
@@ -2174,63 +1810,12 @@
         } else {
           predInterval.textContent = "95% PI: —";
         }
-
-        predictionNote.textContent = `For X = ${formatNumber(x, 1)}, using Ŷ = ${formatNumber(model.slope, 3)}·X ${model.intercept < 0 ? "−" : "+"} ${formatNumber(Math.abs(model.intercept), 2)}`;
-      }
-
-      // Update Data Table
-      function updateTable() {
-        pointsTableBody.innerHTML = "";
-        if (points.length === 0) {
-          pointsTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 16px;">No points in dataset. Click on the chart to add points.</td></tr>`;
-          return;
-        }
-
-        points.forEach((pt, idx) => {
-          const tr = document.createElement("tr");
-          let yHatStr = "—";
-          let resStr = "—";
-          let resSqStr = "—";
-
-          if (model) {
-            const yHat = model.slope * pt.x + model.intercept;
-            const res = pt.y - yHat;
-            yHatStr = formatNumber(yHat, 2);
-            resStr = formatNumber(res, 2);
-            resSqStr = formatNumber(res * res, 2);
-          }
-
-          tr.innerHTML = `
-            <td>${idx + 1}</td>
-            <td>${formatNumber(pt.x, 1)}</td>
-            <td>${formatNumber(pt.y, 1)}</td>
-            <td>${yHatStr}</td>
-            <td style="color: ${resStr.startsWith("-") ? "var(--pink)" : "var(--green)"}">${resStr}</td>
-            <td>${resSqStr}</td>
-            <td>
-              <button class="button button-danger button-sm del-row-btn" data-index="${idx}" type="button" style="padding: 2px 6px; font-size: 10px;">✕</button>
-            </td>
-          `;
-          pointsTableBody.appendChild(tr);
-        });
-
-        // Delete button listener in table
-        pointsTableBody.querySelectorAll(".del-row-btn").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            const idx = parseInt(e.currentTarget.dataset.index, 10);
-            if (points[idx] === selectedPoint) selectedPoint = null;
-            points.splice(idx, 1);
-            pushHistory();
-            updateView();
-            showToast("Point deleted");
-          });
-        });
       }
 
       // Manual Challenge Calculation
       function updateManualChallenge() {
         manualSlopeVal.textContent = formatNumber(manualM, 2);
-        manualInterceptVal.textContent = formatNumber(manualB, 2);
+        manualInterceptVal.textContent = formatNumber(manualB, 1);
 
         if (points.length === 0) {
           manualMseVal.textContent = "—";
@@ -2242,18 +1827,16 @@
           const yHat = manualM * p.x + manualB;
           totalSqErr += (p.y - yHat) ** 2;
         });
-        const currentMse = totalSqErr / points.length;
-        manualMseVal.textContent = formatNumber(currentMse, 2);
+        manualMseVal.textContent = formatNumber(totalSqErr / points.length, 2);
       }
 
-      // Pointer / Mouse Interactions on Canvas
+      // Canvas Pointer Events
       canvas.addEventListener("pointerdown", (e) => {
         if (!e.isPrimary) return;
-
         const pos = getCanvasPosition(e);
         const hit = findPointAt(pos);
 
-        // Right-click: delete point directly
+        // Right-click delete
         if (e.button === 2) {
           e.preventDefault();
           if (hit) {
@@ -2263,7 +1846,7 @@
               if (selectedPoint === hit) selectedPoint = null;
               pushHistory();
               updateView();
-              showToast("Point removed");
+              showToast("Point deleted");
             }
           }
           return;
@@ -2279,14 +1862,12 @@
           canvas.classList.remove("is-point-hover");
           canvas.classList.add("is-dragging");
         } else {
-          // Add new point at data coordinates
           const newPt = toDataCoordinates(pos.x, pos.y);
           points.push(newPt);
           selectedPoint = newPt;
           pushHistory();
-          showToast(`Point added: (${formatNumber(newPt.x, 1)}, ${formatNumber(newPt.y, 1)})`);
+          showToast(`Added (${formatNumber(newPt.x, 1)}, ${formatNumber(newPt.y, 1)})`);
         }
-
         updateView();
       });
 
@@ -2295,8 +1876,6 @@
       canvas.addEventListener("pointermove", (e) => {
         const pos = getCanvasPosition(e);
         const dataCoords = toDataCoordinates(pos.x, pos.y);
-
-        // Update HUD
         hudCoords.textContent = `X: ${formatNumber(dataCoords.x, 1)} | Y: ${formatNumber(dataCoords.y, 1)}`;
 
         if (draggedPoint && isDragging) {
@@ -2307,7 +1886,6 @@
           return;
         }
 
-        // Hover test
         hoveredPoint = findPointAt(pos);
         canvas.classList.toggle("is-point-hover", Boolean(hoveredPoint));
 
@@ -2317,14 +1895,9 @@
           if (model) {
             const yHat = model.slope * hoveredPoint.x + model.intercept;
             const res = hoveredPoint.y - yHat;
-            extraInfo = `<div class="tt-row"><span>Residual (e):</span> <span class="tt-val">${formatNumber(res, 2)}</span></div>`;
+            extraInfo = `<br>e: ${formatNumber(res, 2)} | e²: ${formatNumber(res * res, 2)}`;
           }
-          tooltip.innerHTML = `
-            <div class="tt-title">Data Point</div>
-            <div class="tt-row"><span>X:</span> <span class="tt-val">${formatNumber(hoveredPoint.x, 2)}</span></div>
-            <div class="tt-row"><span>Y:</span> <span class="tt-val">${formatNumber(hoveredPoint.y, 2)}</span></div>
-            ${extraInfo}
-          `;
+          tooltip.innerHTML = `<strong>Point</strong><br>X: ${formatNumber(hoveredPoint.x, 2)} | Y: ${formatNumber(hoveredPoint.y, 2)}${extraInfo}`;
           tooltip.style.left = `${ptPos.px}px`;
           tooltip.style.top = `${ptPos.py}px`;
           tooltip.style.display = "block";
@@ -2333,10 +1906,8 @@
         }
       });
 
-      function finishDragging(e) {
-        if (draggedPoint && isDragging) {
-          pushHistory();
-        }
+      function finishDragging() {
+        if (draggedPoint && isDragging) pushHistory();
         draggedPoint = null;
         isDragging = false;
         canvas.classList.remove("is-dragging");
@@ -2346,7 +1917,6 @@
       canvas.addEventListener("pointerup", finishDragging);
       canvas.addEventListener("pointercancel", finishDragging);
       canvas.addEventListener("lostpointercapture", finishDragging);
-
       canvas.addEventListener("pointerleave", () => {
         if (!isDragging) {
           hoveredPoint = null;
@@ -2357,27 +1927,19 @@
         }
       });
 
-      // Keyboard Controls (Delete, Arrow Nudge)
+      // Keyboard Nudge & Delete
       window.addEventListener("keydown", (e) => {
-        // If typing in an input or textarea, don't trigger global shortcuts
-        if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
-          return;
-        }
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
 
-        // Undo (Ctrl+Z) / Redo (Ctrl+Y or Ctrl+Shift+Z)
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
           e.preventDefault();
-          if (e.shiftKey) redo();
-          else undo();
+          if (e.shiftKey) redo(); else undo();
           return;
         }
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-          e.preventDefault();
-          redo();
-          return;
+          e.preventDefault(); redo(); return;
         }
 
-        // Delete / Backspace selected point
         if ((e.key === "Delete" || e.key === "Backspace") && selectedPoint) {
           e.preventDefault();
           const idx = points.indexOf(selectedPoint);
@@ -2391,7 +1953,6 @@
           return;
         }
 
-        // Arrow keys to nudge selected point
         if (selectedPoint && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
           e.preventDefault();
           const delta = e.shiftKey ? 2 : 0.5;
@@ -2404,23 +1965,22 @@
         }
       });
 
-      // Selected point inspector inputs
+      // Selected point inputs
       selXInput.addEventListener("input", () => {
         if (selectedPoint) {
-          const val = Number(selXInput.value);
-          if (Number.isFinite(val)) {
-            selectedPoint.x = Math.max(xMin, Math.min(xMax, val));
+          const v = Number(selXInput.value);
+          if (Number.isFinite(v)) {
+            selectedPoint.x = Math.max(xMin, Math.min(xMax, v));
             pushHistory();
             updateView();
           }
         }
       });
-
       selYInput.addEventListener("input", () => {
         if (selectedPoint) {
-          const val = Number(selYInput.value);
-          if (Number.isFinite(val)) {
-            selectedPoint.y = Math.max(yMin, Math.min(yMax, val));
+          const v = Number(selYInput.value);
+          if (Number.isFinite(v)) {
+            selectedPoint.y = Math.max(yMin, Math.min(yMax, v));
             pushHistory();
             updateView();
           }
@@ -2439,33 +1999,29 @@
           }
         }
       });
-
       deselectBtn.addEventListener("click", () => {
         selectedPoint = null;
         updateView();
       });
 
-      // Toggles listeners
+      // Layer Toggles
       [toggleLine, toggleResiduals, toggleSquares, toggleMean, toggleCentroid, toggleCi].forEach(cb => {
         cb.addEventListener("change", drawChart);
       });
 
-      // Tab switcher
-      document.querySelectorAll(".tab-btn").forEach(btn => {
+      // Dock Sub-Tabs
+      document.querySelectorAll(".dock-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-          document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+          document.querySelectorAll(".dock-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".dock-panel").forEach(p => p.classList.remove("active"));
           btn.classList.add("active");
-          const targetId = btn.dataset.tab;
-          document.getElementById(targetId).classList.add("active");
+          document.getElementById(btn.dataset.dock).classList.add("active");
           drawChart();
         });
       });
 
-      // Presets & Sample Data
-      noiseSlider.addEventListener("input", () => {
-        noiseVal.textContent = noiseSlider.value;
-      });
+      // Presets
+      noiseSlider.addEventListener("input", () => { noiseVal.textContent = noiseSlider.value; });
 
       function generateDataset(type = "default") {
         points.length = 0;
@@ -2473,54 +2029,45 @@
         const noiseScale = Number(noiseSlider.value);
 
         if (type === "default") {
-          for (let i = 0; i < 18; i++) {
-            const x = 5 + i * 5.2;
+          for (let i = 0; i < 16; i++) {
+            const x = 6 + i * 5.8;
             const noise = (Math.random() - 0.5) * noiseScale * 1.8;
-            const y = Math.max(yMin, Math.min(yMax, 15 + 0.72 * x + noise));
-            points.push({ x, y });
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 16 + 0.72 * x + noise)) });
           }
         } else if (type === "strong-pos") {
-          for (let i = 0; i < 20; i++) {
-            const x = 6 + i * 4.6;
-            const noise = (Math.random() - 0.5) * (noiseScale * 0.7);
-            const y = Math.max(yMin, Math.min(yMax, 10 + 0.85 * x + noise));
-            points.push({ x, y });
+          for (let i = 0; i < 18; i++) {
+            const x = 6 + i * 5.2;
+            const noise = (Math.random() - 0.5) * (noiseScale * 0.6);
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 10 + 0.85 * x + noise)) });
           }
         } else if (type === "strong-neg") {
-          for (let i = 0; i < 20; i++) {
-            const x = 6 + i * 4.6;
-            const noise = (Math.random() - 0.5) * (noiseScale * 0.7);
-            const y = Math.max(yMin, Math.min(yMax, 92 - 0.82 * x + noise));
-            points.push({ x, y });
+          for (let i = 0; i < 18; i++) {
+            const x = 6 + i * 5.2;
+            const noise = (Math.random() - 0.5) * (noiseScale * 0.6);
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 92 - 0.82 * x + noise)) });
           }
         } else if (type === "outlier") {
-          for (let i = 0; i < 15; i++) {
-            const x = 10 + i * 4;
+          for (let i = 0; i < 14; i++) {
+            const x = 10 + i * 4.5;
             const noise = (Math.random() - 0.5) * 6;
-            const y = Math.max(yMin, Math.min(yMax, 20 + 0.5 * x + noise));
-            points.push({ x, y });
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 20 + 0.5 * x + noise)) });
           }
-          // Drastic outlier with high leverage:
           points.push({ x: 92, y: 15 });
         } else if (type === "parabola") {
-          for (let i = 0; i < 22; i++) {
-            const x = 8 + i * 4;
+          for (let i = 0; i < 18; i++) {
+            const x = 8 + i * 4.8;
             const normX = (x - 50) / 10;
             const noise = (Math.random() - 0.5) * noiseScale;
-            const y = Math.max(yMin, Math.min(yMax, 18 + normX * normX * 4 + noise));
-            points.push({ x, y });
+            points.push({ x, y: Math.max(yMin, Math.min(yMax, 18 + normX * normX * 4 + noise)) });
           }
         } else if (type === "uncorrelated") {
-          for (let i = 0; i < 25; i++) {
-            const x = 10 + Math.random() * 80;
-            const y = 10 + Math.random() * 80;
-            points.push({ x, y });
+          for (let i = 0; i < 20; i++) {
+            points.push({ x: 10 + Math.random() * 80, y: 10 + Math.random() * 80 });
           }
         } else if (type === "perfect") {
-          for (let i = 0; i < 15; i++) {
-            const x = 10 + i * 6;
-            const y = 12 + 0.75 * x;
-            points.push({ x, y });
+          for (let i = 0; i < 14; i++) {
+            const x = 10 + i * 6.5;
+            points.push({ x, y: 12 + 0.75 * x });
           }
         }
 
@@ -2530,11 +2077,8 @@
       }
 
       generateButton.addEventListener("click", () => generateDataset("default"));
-
-      document.querySelectorAll(".preset-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          generateDataset(btn.dataset.preset);
-        });
+      document.querySelectorAll(".dock-preset-btn").forEach(btn => {
+        btn.addEventListener("click", () => generateDataset(btn.dataset.preset));
       });
 
       clearButton.addEventListener("click", () => {
@@ -2548,43 +2092,30 @@
       undoBtn.addEventListener("click", undo);
       redoBtn.addEventListener("click", redo);
 
-      // Prediction Form & Slider
-      predictionForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        predictionRequested = true;
-        updatePrediction();
-        drawChart();
-      });
-
+      // Prediction Input Sync
       xInput.addEventListener("input", () => {
         xPredictSlider.value = xInput.value;
-        predictionRequested = true;
         updatePrediction();
         drawChart();
       });
-
       xPredictSlider.addEventListener("input", () => {
         xInput.value = xPredictSlider.value;
-        predictionRequested = true;
         updatePrediction();
         drawChart();
       });
 
-      // Manual Challenge Line Listeners
+      // Manual Challenge Handlers
       manualSlopeSlider.addEventListener("input", () => {
         manualM = Number(manualSlopeSlider.value);
         updateManualChallenge();
         drawChart();
       });
-
       manualInterceptSlider.addEventListener("input", () => {
         manualB = Number(manualInterceptSlider.value);
         updateManualChallenge();
         drawChart();
       });
-
       showManualLine.addEventListener("change", drawChart);
-
       matchOptimalBtn.addEventListener("click", () => {
         if (model) {
           manualM = model.slope;
@@ -2597,39 +2128,28 @@
         }
       });
 
-      // Gradient Descent Simulation
+      // Gradient Descent Handlers
       function runGdStep() {
         if (points.length < 2) return;
         const lr = Number(gdLrSelect.value);
         const n = points.length;
-
-        // Features normalized to [0, 1] for stable gradient descent:
-        let gradM = 0;
-        let gradB = 0;
-        let totalLoss = 0;
+        let gradM = 0; let gradB = 0;
 
         points.forEach(p => {
           const xNorm = p.x / 100;
           const yNorm = p.y / 100;
-          // Normalized prediction
           const yHatNorm = (gdM * xNorm) + (gdB / 100);
           const diff = yHatNorm - yNorm;
-          gradM += (diff * xNorm);
+          gradM += diff * xNorm;
           gradB += diff;
-          totalLoss += diff * diff;
         });
 
-        gradM /= n;
-        gradB /= n;
-
-        // Gradient updates
+        gradM /= n; gradB /= n;
         gdM -= lr * gradM * 10;
         gdB -= lr * gradB * 100;
         gdEpoch++;
-
         gdEpochCounter.textContent = String(gdEpoch);
 
-        // Compute unnormalized MSE
         let mse = 0;
         points.forEach(p => {
           const yHat = gdM * p.x + gdB;
@@ -2640,121 +2160,85 @@
       }
 
       gdStepBtn.addEventListener("click", runGdStep);
-
       gdRunBtn.addEventListener("click", () => {
-        if (points.length < 2) {
-          showToast("Need at least 2 points for Gradient Descent");
-          return;
-        }
-        let count = 0;
+        if (points.length < 2) { showToast("Need ≥ 2 points"); return; }
+        let c = 0;
         function loop() {
           runGdStep();
-          count++;
-          if (count < 50) {
-            requestAnimationFrame(loop);
-          }
+          c++;
+          if (c < 50) requestAnimationFrame(loop);
         }
         loop();
       });
-
       gdResetBtn.addEventListener("click", () => {
-        gdM = 0;
-        gdB = 0;
-        gdEpoch = 0;
+        gdM = 0; gdB = 0; gdEpoch = 0;
         gdEpochCounter.textContent = "0";
         gdLossVal.textContent = "—";
         drawChart();
-        showToast("Gradient Descent weights reset");
+        showToast("Weights reset");
       });
 
-      // Data Table Add Point
+      // Table & CSV Handlers
       tblAddBtn.addEventListener("click", () => {
         const x = Number(tblAddX.value);
         const y = Number(tblAddY.value);
         if (Number.isFinite(x) && Number.isFinite(y)) {
-          points.push({
-            x: Math.max(xMin, Math.min(xMax, x)),
-            y: Math.max(yMin, Math.min(yMax, y))
-          });
-          tblAddX.value = "";
-          tblAddY.value = "";
+          points.push({ x: Math.max(xMin, Math.min(xMax, x)), y: Math.max(yMin, Math.min(yMax, y)) });
+          tblAddX.value = ""; tblAddY.value = "";
           pushHistory();
           updateView();
-          showToast("Point added from table");
-        } else {
-          showToast("Please enter valid X and Y coordinates");
+          showToast("Point added");
         }
       });
 
-      // CSV Export
       exportCsvBtn.addEventListener("click", () => {
-        if (points.length === 0) {
-          showToast("Dataset is empty");
-          return;
-        }
+        if (points.length === 0) { showToast("Dataset is empty"); return; }
         let csv = "X,Y\n";
-        points.forEach(p => {
-          csv += `${p.x.toFixed(2)},${p.y.toFixed(2)}\n`;
-        });
+        points.forEach(p => { csv += `${p.x.toFixed(2)},${p.y.toFixed(2)}\n`; });
         const blob = new Blob([csv], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
-        a.download = "linear_regression_data.csv";
-        a.click();
+        a.href = url; a.download = "linear_regression_data.csv"; a.click();
         URL.revokeObjectURL(url);
         showToast("CSV downloaded");
       });
 
-      // Chart PNG Export
       exportChartBtn.addEventListener("click", () => {
         const dataUrl = canvas.toDataURL("image/png");
         const a = document.createElement("a");
-        a.href = dataUrl;
-        a.download = "linear_regression_plot.png";
-        a.click();
-        showToast("Chart image downloaded");
+        a.href = dataUrl; a.download = "linear_regression_plot.png"; a.click();
+        showToast("Chart image saved");
       });
 
-      // Copy equation button
       copyEquationBtn.addEventListener("click", () => {
         if (equationEl.textContent) {
           navigator.clipboard.writeText(equationEl.textContent).then(() => {
-            showToast("Equation copied to clipboard!");
+            showToast("Equation copied!");
           });
         }
       });
 
-      // Import Modal
       openImportBtn.addEventListener("click", () => {
         importModal.classList.add("open");
         importTextarea.focus();
       });
-
-      closeImportBtn.addEventListener("click", () => {
-        importModal.classList.remove("open");
-      });
+      closeImportBtn.addEventListener("click", () => { importModal.classList.remove("open"); });
 
       submitImportBtn.addEventListener("click", () => {
         const raw = importTextarea.value.trim();
         if (!raw) return;
         const lines = raw.split(/\r?\n/);
         const newPts = [];
-
         lines.forEach(line => {
           const parts = line.split(/[,\t\s]+/).filter(Boolean);
           if (parts.length >= 2) {
             const x = parseFloat(parts[0]);
             const y = parseFloat(parts[1]);
             if (Number.isFinite(x) && Number.isFinite(y)) {
-              newPts.push({
-                x: Math.max(xMin, Math.min(xMax, x)),
-                y: Math.max(yMin, Math.min(yMax, y))
-              });
+              newPts.push({ x: Math.max(xMin, Math.min(xMax, x)), y: Math.max(yMin, Math.min(yMax, y)) });
             }
           }
         });
-
         if (newPts.length > 0) {
           points = newPts;
           importModal.classList.remove("open");
@@ -2762,18 +2246,10 @@
           pushHistory();
           updateView();
           showToast(`Imported ${newPts.length} points!`);
-        } else {
-          showToast("Could not parse coordinates. Format: X, Y");
         }
       });
 
-      // Math Accordion toggle
-      mathAccordionBtn.addEventListener("click", () => {
-        const isOpen = mathAccordionBody.classList.toggle("open");
-        mathAccordionArrow.textContent = isOpen ? "▲" : "▼";
-      });
-
-      // Initialize with sample data
+      // Init
       generateDataset("default");
       resizeCanvas();
     })();
