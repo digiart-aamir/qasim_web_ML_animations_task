@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNN Regression | ML Simulator</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* =========================
+   1. GLOBAL STYLES
+========================= */
+
+        :root {
+            --bg: #f4f7fb;
+            --sidebar: #111c32;
+            --primary: #4169e1;
+            --primary-light: #eaf0ff;
+            --text: #17233b;
+            --muted: #7b879b;
+            --border: #e7ebf2;
+            --white: #ffffff;
+            --green: #12a878;
+            --red: #e45b67;
+            --orange: #f0a43b;
+            --shadow: 0 5px 20px rgba(25, 45, 80, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* =========================
+   2. MAIN LAYOUT
+========================= */
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar);
+            color: white;
+            padding: 28px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 8px 8px;
+        }
+
+        .logo span {
+            color: #7395ff;
+        }
+
+        .logo-sub {
+            color: #9ba9c2;
+            font-size: 11px;
+            margin: 0 0 35px 8px;
+        }
+
+        .nav-title {
+            font-size: 10px;
+            color: #8190a9;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 24px 8px 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            color: #bac5d8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 5px;
+            transition: .2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: #263b64;
+        }
+
+        .nav-link.active {
+            border-left: 3px solid #7795ff;
+        }
+
+        .sidebar-bottom {
+            margin-top: 45px;
+            padding: 15px;
+            background: #1b2b48;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #c4cde0;
+            line-height: 1.7;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px 38px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .topbar h1 {
+            font-size: 25px;
+        }
+
+        .topbar p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .status {
+            background: #e4f8f0;
+            color: #0c986a;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        section {
+            scroll-margin-top: 25px;
+            margin-bottom: 28px;
+        }
+
+        .section-heading {
+            font-size: 17px;
+            font-weight: 750;
+            margin-bottom: 16px;
+        }
+
+        .section-description {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: -10px;
+            margin-bottom: 16px;
+        }
+
+        /* =========================
+   3. CARDS
+========================= */
+
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 21px;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 13px;
+        }
+
+        .stat-value {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        /* =========================
+   4. GRID LAYOUTS
+========================= */
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-layout {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 310px;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+        }
+
+        /* =========================
+   5. FORM ELEMENTS
+========================= */
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 650;
+            margin-bottom: 9px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #dfe5ef;
+            border-radius: 7px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            font-size: 13px;
+            transition: .2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px #4169e118;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 165px;
+            font-family: monospace;
+            line-height: 1.8;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            accent-color: var(--primary);
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .range-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .range-value {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* =========================
+   6. BUTTONS
+========================= */
+
+        .btn {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: .2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3155c6;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #edf1f8;
+            color: #34415a;
+        }
+
+        .btn-secondary:hover {
+            background: #dfe6f2;
+        }
+
+        .btn-danger {
+            background: #fff0f1;
+            color: #d94b5a;
+            padding: 7px 10px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        /* =========================
+   7. TABLE
+========================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        th {
+            text-align: left;
+            color: #7b879b;
+            font-weight: 700;
+            padding: 13px 12px;
+            background: #f7f9fc;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        tr.neighbor-row {
+            background: #edf3ff;
+        }
+
+        tr.neighbor-row td:first-child {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .neighbor-badge {
+            background: #dce8ff;
+            color: #3158c7;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 750;
+        }
+
+        .not-neighbor {
+            color: #9ba5b6;
+        }
+
+        /* =========================
+   8. PREDICTION RESULT
+========================= */
+
+        .prediction-box {
+            background: linear-gradient(135deg, #263f82, #4169e1);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .prediction-box p {
+            color: #d8e2ff;
+            font-size: 12px;
+        }
+
+        .prediction-number {
+            font-size: 35px;
+            font-weight: 850;
+            margin: 12px 0;
+        }
+
+        .prediction-details {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 18px;
+            border-top: 1px solid #ffffff35;
+            padding-top: 15px;
+            font-size: 11px;
+        }
+
+        /* =========================
+   9. ALGORITHM STEPS
+========================= */
+
+        .step-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step-number {
+            background: var(--primary-light);
+            color: var(--primary);
+            min-width: 31px;
+            height: 31px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .step-content h4 {
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        .step-content p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.8;
+            word-break: break-word;
+        }
+
+        .step-content code {
+            color: #3158c7;
+            background: #eef2ff;
+            padding: 3px 5px;
+            border-radius: 4px;
+        }
+
+        /* =========================
+   10. EDUCATIONAL SECTION
+========================= */
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .info-card p,
+        .info-card li {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.9;
+        }
+
+        .info-card ul {
+            padding-left: 18px;
+        }
+
+        .formula {
+            background: #f0f4ff;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            color: #3158c7;
+            font-size: 16px;
+            font-weight: 750;
+            margin-top: 12px;
+        }
+
+        /* =========================
+   11. EXPERIMENT
+========================= */
+
+        .experiment-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .experiment-bar p {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .notice {
+            padding: 12px;
+            background: #fff8e8;
+            color: #9b7026;
+            border-radius: 7px;
+            font-size: 12px;
+            margin-top: 13px;
+        }
+
+        .error-message {
+            color: #d94b5a;
+            font-size: 12px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            color: #8994a8;
+            font-size: 11px;
+            padding: 25px 0;
+        }
+
+        /* =========================
+   12. RESPONSIVE
+========================= */
+
+        @media(max-width:1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:800px) {
+            .sidebar {
+                width: 65px;
+                padding: 20px 8px;
+            }
+
+            .logo {
+                font-size: 17px;
+                margin-left: 6px;
+            }
+
+            .logo-sub,
+            .nav-title,
+            .nav-link span,
+            .sidebar-bottom {
+                display: none;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 14px 5px;
+                font-size: 17px;
+            }
+
+            .main {
+                margin-left: 65px;
+                width: calc(100% - 65px);
+                padding: 22px 18px;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:550px) {
+            .main {
+                padding: 18px 12px;
+            }
+
+            .topbar h1 {
+                font-size: 19px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                gap: 9px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .prediction-number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- =========================
+     SIDEBAR
+========================= -->
+
+        <aside class="sidebar">
+
+            <div class="logo">KNN<span>Lab</span></div>
+            <div class="logo-sub">MACHINE LEARNING SIMULATOR</div>
+
+            <div class="nav-title">Workspace</div>
+
+            <a href="#dashboard" class="nav-link active">
+                <span>▦</span><span>Dashboard</span>
+            </a>
+
+            <a href="#dataset" class="nav-link">
+                <span>▤</span><span>Dataset</span>
+            </a>
+
+            <a href="#visualization" class="nav-link">
+                <span>◉</span><span>Visualization</span>
+            </a>
+
+            <a href="#results" class="nav-link">
+                <span>◈</span><span>Results</span>
+            </a>
+
+            <a href="#experiment" class="nav-link">
+                <span>⚗</span><span>Experiment</span>
+            </a>
+
+            <div class="nav-title">Learning Center</div>
+
+            <a href="#algorithm" class="nav-link">
+                <span>⌘</span><span>Algorithm Steps</span>
+            </a>
+
+            <a href="#learning" class="nav-link">
+                <span>▣</span><span>Learn KNN</span>
+            </a>
+
+            <div class="sidebar-bottom">
+                <strong>Machine Learning Lab</strong>
+                <br>
+                Learn how KNN Regression predicts continuous numerical values through neighboring data points.
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+     MAIN CONTENT
+========================= -->
+
+        <main class="main">
+
+            <header class="topbar" id="dashboard">
+                <div>
+                    <h1>KNN Regression Simulator</h1>
+                    <p>Interactive Machine Learning Environment / Regression Analysis</p>
+                </div>
+
+                <div class="status">● Algorithm Ready</div>
+            </header>
+
+
+            <!-- =========================
+         STATISTICS
+    ========================= -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-label">Training Samples</div>
+                    <div class="stat-value" id="totalSamples">8</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-label">Selected K</div>
+                    <div class="stat-value" id="statK">3</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-label">Query House Size</div>
+                    <div class="stat-value" id="statQuery">1600</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🧠</div>
+                    <div class="stat-label">Predicted Price</div>
+                    <div class="stat-value" id="statPrediction">200</div>
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+         MODEL CONFIGURATION
+    ========================= -->
+
+            <section>
+                <h2 class="section-heading">Model Configuration</h2>
+
+                <div class="two-column">
+
+                    <div class="card">
+
+                        <div class="form-group">
+
+                            <label>Query Input: House Size (sq. ft.)</label>
+
+                            <input type="number" id="queryInput" value="1600" min="0" step="any">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <div class="range-label">
+                                <label>Number of Neighbors (K)</label>
+                                <span class="range-value" id="kValue">3</span>
+                            </div>
+
+                            <input type="range" id="kInput" min="1" max="8" value="3">
+
+                        </div>
+
+                        <div class="button-row">
+
+                            <button class="btn btn-primary" id="predictBtn">
+                                ▶ Run Prediction
+                            </button>
+
+                            <button class="btn btn-secondary" id="resetBtn">
+                                ↻ Reset
+                            </button>
+
+                        </div>
+
+                        <div class="notice">
+                            Change K or query input to automatically update the prediction.
+                        </div>
+
+                        <div class="error-message" id="errorMessage"></div>
+
+                    </div>
+
+
+                    <!-- PREDICTION RESULT -->
+
+                    <div class="prediction-box">
+
+                        <p>MODEL PREDICTION</p>
+
+                        <div class="prediction-number" id="prediction">
+                            $200,000
+                        </div>
+
+                        <p>Estimated House Price</p>
+
+                        <div class="prediction-details">
+
+                            <div>
+                                <strong id="resultK">3</strong>
+                                <br>K Neighbors
+                            </div>
+
+                            <div>
+                                <strong id="resultQuery">1600</strong>
+                                <br>Input Size
+                            </div>
+
+                            <div>
+                                <strong id="resultCount">8</strong>
+                                <br>Data Points
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- =========================
+         DATASET
+    ========================= -->
+
+            <section id="dataset">
+
+                <h2 class="section-heading">Training Dataset</h2>
+
+                <p class="section-description">
+                    Edit the dataset or add new training samples.
+                    X represents house size and Y represents house price in thousands.
+                </p>
+
+                <div class="two-column">
+
+                    <div class="card">
+
+                        <h3 style="font-size:14px;margin-bottom:15px;">
+                            Dataset Editor
+                        </h3>
+
+                        <div class="form-group">
+                            <label>Training Data (X,Y)</label>
+
+                            <textarea id="datasetInput">800,100
+1000,120
+1200,150
+1500,180
+1800,210
+2000,230
+2200,260
+2500,300</textarea>
+
+                        </div>
+
+                        <div class="button-row">
+
+                            <button class="btn btn-primary" id="applyDataset">
+                                Apply Dataset
+                            </button>
+
+                            <button class="btn btn-secondary" id="sampleDataset">
+                                Load Sample
+                            </button>
+
+                        </div>
+
+                        <div class="notice">
+                            Enter one sample per line using X,Y format.
+                            Example: 800,100
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <h3 style="font-size:14px;margin-bottom:15px;">
+                            Add Training Point
+                        </h3>
+
+                        <div class="form-group">
+                            <label>House Size (X)</label>
+                            <input type="number" id="newX" placeholder="Example: 2700">
+                        </div>
+
+                        <div class="form-group">
+                            <label>House Price (Y) - Thousands</label>
+                            <input type="number" id="newY" placeholder="Example: 320">
+                        </div>
+
+                        <div class="button-row">
+
+                            <button class="btn btn-primary" id="addPoint">
+                                + Add Point
+                            </button>
+
+                        </div>
+
+                        <div class="notice">
+                            New points will immediately become part of the training dataset.
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+
+                    <div class="experiment-bar">
+                        <div>
+                            <h3 style="font-size:14px;">Training Data Records</h3>
+                            <p>Current dataset used by the algorithm</p>
+                        </div>
+
+                        <span class="neighbor-badge" id="datasetCount">
+                            8 RECORDS
+                        </span>
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>House Size (X)</th>
+                                    <th>House Price (Y)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="datasetTable"></tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+         VISUALIZATION
+    ========================= -->
+
+            <section id="visualization">
+
+                <h2 class="section-heading">Data Visualization</h2>
+
+                <p class="section-description">
+                    Explore the training points, nearest neighbors,
+                    query point, and predicted output.
+                </p>
+
+                <div class="chart-layout">
+
+                    <div class="card">
+
+                        <div class="experiment-bar">
+                            <div>
+                                <h3 style="font-size:14px;">KNN Regression Plot</h3>
+                                <p>House Size vs House Price</p>
+                            </div>
+
+                            <span class="neighbor-badge">LIVE CHART</span>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="knnChart"></canvas>
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <h3 style="font-size:14px;margin-bottom:18px;">
+                            Chart Legend
+                        </h3>
+
+                        <div style="font-size:12px;line-height:3;">
+
+                            <p>🔵 Training Data Points</p>
+
+                            <p>🟢 Selected Neighbors</p>
+
+                            <p>🔴 Query Point</p>
+
+                            <p>🟣 Predicted Output</p>
+
+                            <hr style="border:0;border-top:1px solid #eee;margin:15px 0;">
+
+                            <p style="color:#7b879b;line-height:1.8;">
+                                The green points represent the K nearest
+                                neighbors selected by the algorithm.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+         RESULTS TABLE
+    ========================= -->
+
+            <section id="results">
+
+                <h2 class="section-heading">Distance Calculation & Results</h2>
+
+                <p class="section-description">
+                    Every training point is compared with the query input
+                    using Euclidean distance.
+                </p>
+
+                <div class="card">
+
+                    <div class="experiment-bar">
+                        <div>
+                            <h3 style="font-size:14px;">Distance Analysis</h3>
+                            <p>Sorted by nearest distance</p>
+                        </div>
+
+                        <span class="neighbor-badge" id="neighborCount">
+                            TOP 3 NEIGHBORS
+                        </span>
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Data ID</th>
+                                    <th>House Size (X)</th>
+                                    <th>Price (Y)</th>
+                                    <th>Distance</th>
+                                    <th>Selection</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="distanceTable"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+         STEP BY STEP
+    ========================= -->
+
+            <section id="algorithm">
+
+                <h2 class="section-heading">Step-by-Step Algorithm Execution</h2>
+
+                <p class="section-description">
+                    Understand how the KNN Regression algorithm
+                    produces the prediction.
+                </p>
+
+                <div class="card">
+
+                    <div id="steps">
+
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Read Training Dataset</h4>
+                                <p>Training data is loaded.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+         EXPERIMENT
+    ========================= -->
+
+            <section id="experiment">
+
+                <h2 class="section-heading">Experiment: Effect of K</h2>
+
+                <p class="section-description">
+                    Compare predictions for different K values
+                    using the current query point and dataset.
+                </p>
+
+                <div class="card">
+
+                    <div class="experiment-bar">
+
+                        <div>
+                            <h3 style="font-size:14px;">K Value Comparison</h3>
+                            <p>See how changing K affects regression results.</p>
+                        </div>
+
+                        <button class="btn btn-primary" id="compareBtn">
+                            Compare K Values
+                        </button>
+
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>K Value</th>
+                                    <th>Predicted Price ($1000s)</th>
+                                    <th>Predicted Price ($)</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="comparisonTable"></tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="notice">
+                        A smaller K is more sensitive to individual neighbors.
+                        A larger K averages more observations and can smooth predictions.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+         LEARNING CENTER
+    ========================= -->
+
+            <section id="learning">
+
+                <h2 class="section-heading">KNN Regression Learning Center</h2>
+
+                <div class="info-grid">
+
+                    <div class="card info-card">
+
+                        <h3>01. What is KNN Regression?</h3>
+
+                        <p>
+                            K-Nearest Neighbors Regression is a supervised
+                            machine learning algorithm used to predict
+                            continuous numerical values.
+                        </p>
+
+                        <p style="margin-top:10px;">
+                            It predicts a new value by finding the K closest
+                            observations in the training dataset and
+                            calculating the average of their target values.
+                        </p>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>02. Euclidean Distance</h3>
+
+                        <p>
+                            Euclidean distance measures how close two
+                            observations are to each other.
+                        </p>
+
+                        <div class="formula">
+                            d = √((X - Xq)²)
+                        </div>
+
+                        <p style="margin-top:10px;">
+                            X = Training input<br>
+                            Xq = Query input
+                        </p>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>03. Prediction Formula</h3>
+
+                        <p>
+                            The algorithm calculates the average target
+                            value of the selected K nearest neighbors.
+                        </p>
+
+                        <div class="formula">
+                            ŷ = (y₁ + y₂ + ... + yₖ) / K
+                        </div>
+
+                        <p style="margin-top:10px;">
+                            The result is the predicted numerical value.
+                        </p>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>04. Role of K</h3>
+
+                        <p>
+                            K determines how many neighboring observations
+                            contribute to the final prediction.
+                        </p>
+
+                        <ul style="margin-top:10px;">
+                            <li>Small K: More sensitive to local data.</li>
+                            <li>Large K: Smoother predictions.</li>
+                            <li>K = 1: Uses only the closest observation.</li>
+                        </ul>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>05. Advantages</h3>
+
+                        <ul>
+                            <li>Simple and easy to understand.</li>
+                            <li>No complex training phase.</li>
+                            <li>Works for regression problems.</li>
+                            <li>Adapts to local data patterns.</li>
+                        </ul>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>06. Disadvantages</h3>
+
+                        <ul>
+                            <li>Prediction can be computationally expensive.</li>
+                            <li>Sensitive to feature scaling.</li>
+                            <li>Can be affected by noisy data.</li>
+                            <li>Choosing K is important.</li>
+                        </ul>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>07. Regression vs Classification</h3>
+
+                        <p>
+                            KNN Classification predicts a category or class,
+                            while KNN Regression predicts a continuous
+                            numerical value.
+                        </p>
+
+                        <div class="formula">
+                            Classification = Majority Vote
+                            <br><br>
+                            Regression = Average
+                        </div>
+
+                    </div>
+
+
+                    <div class="card info-card">
+
+                        <h3>08. Real-World Applications</h3>
+
+                        <ul>
+                            <li>House price prediction.</li>
+                            <li>Stock value estimation (with suitable data).</li>
+                            <li>Sales forecasting.</li>
+                            <li>Temperature estimation.</li>
+                            <li>Predicting product demand.</li>
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <footer>
+                KNN Regression Simulator | Educational Machine Learning Project
+                <br><br>
+                Built with HTML, CSS, Vanilla JavaScript & Chart.js
+            </footer>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================
+     JAVASCRIPT
+========================= -->
+
+    <script>
+
+        /* ==========================================
+           1. INITIAL DATASET
+        ========================================== */
+
+        const defaultData = [
+            { x: 800, y: 100 },
+            { x: 1000, y: 120 },
+            { x: 1200, y: 150 },
+            { x: 1500, y: 180 },
+            { x: 1800, y: 210 },
+            { x: 2000, y: 230 },
+            { x: 2200, y: 260 },
+            { x: 2500, y: 300 }
+        ];
+
+        let trainingData = defaultData.map(point => ({ ...point }));
+
+        let currentK = 3;
+        let query = 1600;
+        let currentPrediction = 0;
+        let currentResults = [];
+
+
+        /* ==========================================
+           2. HTML ELEMENT REFERENCES
+        ========================================== */
+
+        const queryInput = document.getElementById("queryInput");
+        const kInput = document.getElementById("kInput");
+
+        const predictionElement = document.getElementById("prediction");
+
+        const errorMessage = document.getElementById("errorMessage");
+
+        let chart;
+
+
+        /* ==========================================
+           3. KNN REGRESSION ALGORITHM
+        ========================================== */
+
+        /*
+           This function calculates Euclidean distance.
+        
+           For one input feature:
+        
+           Distance = sqrt((x1 - x2)^2)
+        
+           This is equivalent to absolute difference.
+        */
+
+        function calculateDistance(x1, x2) {
+
+            return Math.sqrt(
+                Math.pow(x1 - x2, 2)
+            );
+
+        }
+
+
+        /*
+           Main KNN Regression function.
+        
+           Step 1: Calculate distances.
+           Step 2: Sort distances.
+           Step 3: Select K neighbors.
+           Step 4: Calculate average target value.
+        */
+
+        function knnRegression(data, queryValue, k) {
+
+            // Calculate distance for every training point
+
+            const distances = data.map((point, index) => {
+
+                const distance = calculateDistance(
+                    point.x,
+                    queryValue
+                );
+
+                return {
+                    id: index + 1,
+                    x: point.x,
+                    y: point.y,
+                    distance: distance
+                };
+
+            });
+
+
+            // Sort by ascending distance
+
+            distances.sort((a, b) => {
+
+                if (a.distance !== b.distance) {
+                    return a.distance - b.distance;
+                }
+
+                // Stable tie-breaking using original data order
+
+                return a.id - b.id;
+
+            });
+
+
+            // Select K nearest neighbors
+
+            const neighbors = distances.slice(0, k);
+
+
+            // Calculate average target value
+
+            const sum = neighbors.reduce(
+                (total, point) => total + point.y,
+                0
+            );
+
+            const prediction = sum / k;
+
+
+            return {
+                distances,
+                neighbors,
+                prediction,
+                sum
+            };
+
+        }
+
+
+        /* ==========================================
+           4. CHART INITIALIZATION
+        ========================================== */
+
+        function initializeChart() {
+
+            if (typeof Chart === "undefined") {
+
+                document.querySelector(".chart-container").innerHTML =
+                    "<p style='color:#d94b5a;padding:20px'>Chart.js could not load. Check your internet connection and reload the page.</p>";
+
+                return;
+
+            }
+
+            const context = document.getElementById("knnChart");
+
+            chart = new Chart(context, {
+
+                type: "scatter",
+
+                data: {
+
+                    datasets: [
+
+                        {
+                            label: "Training Data",
+                            data: [],
+                            backgroundColor: "#4169e1",
+                            pointRadius: 6,
+                            pointHoverRadius: 9
+                        },
+
+                        {
+                            label: "K Nearest Neighbors",
+                            data: [],
+                            backgroundColor: "#12a878",
+                            pointRadius: 9,
+                            pointStyle: "triangle"
+                        },
+
+                        {
+                            label: "Query Point",
+                            data: [],
+                            backgroundColor: "#e45b67",
+                            pointRadius: 10,
+                            pointStyle: "rectRot"
+                        },
+
+                        {
+                            label: "Predicted Output",
+                            data: [],
+                            backgroundColor: "#8b5cf6",
+                            pointRadius: 9,
+                            pointStyle: "star"
+                        },
+
+                        {
+                            label: "Prediction Connection",
+                            data: [],
+                            showLine: true,
+                            borderColor: "#8b5cf6",
+                            borderDash: [6, 5],
+                            pointRadius: 0
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+
+                                    return `Size: ${context.parsed.x}, Price: ${context.parsed.y}`;
+
+                                }
+                            }
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+                            title: {
+                                display: true,
+                                text: "House Size (sq. ft.)"
+                            }
+                        },
+
+                        y: {
+                            title: {
+                                display: true,
+                                text: "House Price ($1000s)"
+                            }
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        /* ==========================================
+           5. UPDATE CHART
+        ========================================== */
+
+        function updateChart(results) {
+
+            if (!chart) return;
+
+            const trainingPoints = trainingData.map(point => ({
+                x: point.x,
+                y: point.y
+            }));
+
+
+            const neighbors = results.neighbors.map(point => ({
+                x: point.x,
+                y: point.y
+            }));
+
+
+            const predictionPoint = {
+                x: query,
+                y: results.prediction
+            };
+
+
+            chart.data.datasets[0].data = trainingPoints;
+
+            chart.data.datasets[1].data = neighbors;
+
+            chart.data.datasets[2].data = [{
+                x: query,
+                y: results.prediction
+            }];
+
+            chart.data.datasets[3].data = [predictionPoint];
+
+            chart.data.datasets[4].data = [
+                { x: query, y: 0 },
+                predictionPoint
+            ];
+
+            chart.update();
+
+        }
+
+
+        /* ==========================================
+           6. UPDATE DATASET TABLE
+        ========================================== */
+
+        function updateDatasetTable() {
+
+            const table = document.getElementById("datasetTable");
+
+            table.innerHTML = "";
+
+            trainingData.forEach((point, index) => {
+
+                const row = document.createElement("tr");
+
+                const values = [
+                    index + 1,
+                    point.x,
+                    point.y
+                ];
+
+                values.forEach(value => {
+
+                    const cell = document.createElement("td");
+
+                    cell.textContent = value;
+
+                    row.appendChild(cell);
+
+                });
+
+
+                const actionCell = document.createElement("td");
+
+                const removeButton = document.createElement("button");
+
+                removeButton.className = "btn btn-danger";
+
+                removeButton.textContent = "Remove";
+
+                removeButton.addEventListener("click", () => {
+
+                    if (trainingData.length <= 1) {
+
+                        showError("At least one training point is required.");
+
+                        return;
+
+                    }
+
+                    trainingData.splice(index, 1);
+
+                    refreshDatasetInput();
+
+                    updateAll();
+
+                });
+
+                actionCell.appendChild(removeButton);
+
+                row.appendChild(actionCell);
+
+                table.appendChild(row);
+
+            });
+
+
+            document.getElementById("totalSamples").textContent =
+                trainingData.length;
+
+            document.getElementById("datasetCount").textContent =
+                trainingData.length + " RECORDS";
+
+            kInput.max = trainingData.length;
+
+            currentK = Math.min(currentK, trainingData.length);
+
+            kInput.value = currentK;
+
+            document.getElementById("kValue").textContent = currentK;
+
+        }
+
+
+        /* ==========================================
+           7. DISTANCE TABLE
+        ========================================== */
+
+        function updateDistanceTable(results) {
+
+            const table = document.getElementById("distanceTable");
+
+            table.innerHTML = "";
+
+            results.distances.forEach(point => {
+
+                const isNeighbor = results.neighbors.some(
+                    neighbor => neighbor.id === point.id
+                );
+
+                const row = document.createElement("tr");
+
+                if (isNeighbor) {
+                    row.className = "neighbor-row";
+                }
+
+                const values = [
+
+                    point.id,
+
+                    point.x,
+
+                    point.y,
+
+                    point.distance.toFixed(2)
+
+                ];
+
+
+                values.forEach(value => {
+
+                    const cell = document.createElement("td");
+
+                    cell.textContent = value;
+
+                    row.appendChild(cell);
+
+                });
+
+
+                const statusCell = document.createElement("td");
+
+                if (isNeighbor) {
+
+                    statusCell.innerHTML =
+                        '<span class="neighbor-badge">Selected Neighbor</span>';
+
+                } else {
+
+                    statusCell.innerHTML =
+                        '<span class="not-neighbor">Not Selected</span>';
+
+                }
+
+                row.appendChild(statusCell);
+
+                table.appendChild(row);
+
+            });
+
+
+            document.getElementById("neighborCount").textContent =
+                "TOP " + currentK + " NEIGHBORS";
+
+        }
+
+
+        /* ==========================================
+           8. STEP-BY-STEP EXPLANATION
+        ========================================== */
+
+        function updateSteps(results) {
+
+            const container = document.getElementById("steps");
+
+            const neighborValues = results.neighbors
+                .map(point => point.y)
+                .join(" + ");
+
+            const distanceValues = results.distances
+                .map(point => point.distance.toFixed(2))
+                .join(", ");
+
+            const average = `${results.sum.toFixed(2)} / ${currentK}`;
+
+            const steps = [
+
+                {
+                    title: "Step 1: Read Training Dataset",
+
+                    text: `The algorithm reads ${trainingData.length} training samples containing house size and house price.`
+                },
+
+                {
+                    title: "Step 2: Read Query Input",
+
+                    text: `The query input is Xq = ${query} sq. ft. We want to predict its house price.`
+                },
+
+                {
+                    title: "Step 3: Calculate Euclidean Distances",
+
+                    text: `Distance = |X - Xq|. The distances are: ${distanceValues}.`
+                },
+
+                {
+                    title: "Step 4: Sort Distances",
+
+                    text: `The observations are sorted from smallest to largest distance. The closest point has a distance of ${results.distances[0].distance.toFixed(2)}.`
+                },
+
+                {
+                    title: "Step 5: Select K Nearest Neighbors",
+
+                    text: `K = ${currentK}. Selected target values: ${neighborValues}.`
+                },
+
+                {
+                    title: "Step 6: Calculate Average",
+
+                    text: `Prediction = (${neighborValues}) / ${currentK} = ${average} = ${results.prediction.toFixed(2)} thousand dollars.`
+                },
+
+                {
+                    title: "Step 7: Final Prediction",
+
+                    text: `The estimated house price for ${query} sq. ft. is $${(results.prediction * 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })}.`
+                }
+
+            ];
+
+
+            container.innerHTML = "";
+
+
+            steps.forEach((step, index) => {
+
+                const element = document.createElement("div");
+
+                element.className = "step-item";
+
+                const number = document.createElement("div");
+
+                number.className = "step-number";
+
+                number.textContent = index + 1;
+
+
+                const content = document.createElement("div");
+
+                content.className = "step-content";
+
+                const heading = document.createElement("h4");
+
+                heading.textContent = step.title;
+
+                const paragraph = document.createElement("p");
+
+                paragraph.textContent = step.text;
+
+
+                content.appendChild(heading);
+
+                content.appendChild(paragraph);
+
+                element.appendChild(number);
+
+                element.appendChild(content);
+
+                container.appendChild(element);
+
+            });
+
+        }
+
+
+        /* ==========================================
+           9. UPDATE DASHBOARD
+        ========================================== */
+
+        function updateDashboard(results) {
+
+            currentPrediction = results.prediction;
+
+            currentResults = results.distances;
+
+            document.getElementById("statK").textContent = currentK;
+
+            document.getElementById("statQuery").textContent = query;
+
+            document.getElementById("statPrediction").textContent =
+                results.prediction.toFixed(2);
+
+            document.getElementById("resultK").textContent = currentK;
+
+            document.getElementById("resultQuery").textContent = query;
+
+            document.getElementById("resultCount").textContent =
+                trainingData.length;
+
+            predictionElement.textContent =
+                "$" + (results.prediction * 1000).toLocaleString("en-US", {
+                    maximumFractionDigits: 2
+                });
+
+        }
+
+
+        /* ==========================================
+           10. COMPLETE UPDATE FUNCTION
+        ========================================== */
+
+        function updateAll() {
+
+            showError("");
+
+            query = Number(queryInput.value);
+
+            currentK = Number(kInput.value);
+
+            if (!Number.isFinite(query)) {
+
+                showError("Please enter a valid query value.");
+
+                return;
+
+            }
+
+            if (!Number.isInteger(currentK) ||
+                currentK < 1 ||
+                currentK > trainingData.length) {
+
+                showError("K must be between 1 and the number of training samples.");
+
+                return;
+
+            }
+
+            if (trainingData.length === 0) {
+
+                showError("Please provide training data.");
+
+                return;
+
+            }
+
+
+            // Run the actual KNN Regression algorithm
+
+            const results = knnRegression(
+                trainingData,
+                query,
+                currentK
+            );
+
+
+            // Update all dashboard sections
+
+            updateDashboard(results);
+
+            updateDistanceTable(results);
+
+            updateSteps(results);
+
+            updateChart(results);
+
+            document.getElementById("kValue").textContent = currentK;
+
+            document.getElementById("predictBtn").textContent =
+                "✓ Prediction Updated";
+
+            setTimeout(() => {
+
+                document.getElementById("predictBtn").textContent =
+                    "▶ Run Prediction";
+
+            }, 1200);
+
+        }
+
+
+        /* ==========================================
+           11. ERROR HANDLING
+        ========================================== */
+
+        function showError(message) {
+
+            errorMessage.textContent = message;
+
+        }
+
+
+        /* ==========================================
+           12. REFRESH DATASET TEXTAREA
+        ========================================== */
+
+        function refreshDatasetInput() {
+
+            document.getElementById("datasetInput").value =
+
+                trainingData.map(point => {
+
+                    return `${point.x},${point.y}`;
+
+                }).join("\n");
+
+        }
+
+
+        /* ==========================================
+           13. APPLY DATASET
+        ========================================== */
+
+        document.getElementById("applyDataset")
+            .addEventListener("click", () => {
+
+                const raw = document.getElementById("datasetInput").value.trim();
+
+                if (!raw) {
+
+                    showError("Dataset cannot be empty.");
+
+                    return;
+
+                }
+
+                const lines = raw.split(/\r?\n/);
+
+                const newData = [];
+
+                for (let i = 0; i < lines.length; i++) {
+
+                    const parts = lines[i].split(",");
+
+                    if (parts.length !== 2) {
+
+                        showError(`Invalid format at line ${i + 1}. Use X,Y.`);
+
+                        return;
+
+                    }
+
+                    const x = Number(parts[0].trim());
+
+                    const y = Number(parts[1].trim());
+
+                    if (
+                        parts.some(part => part.trim() === "") ||
+                        !Number.isFinite(x) ||
+                        !Number.isFinite(y)
+                    ) {
+
+                        showError(`Invalid numerical data at line ${i + 1}.`);
+
+                        return;
+
+                    }
+
+                    newData.push({ x, y });
+
+                }
+
+                if (newData.length === 0) {
+
+                    showError("At least one data point is required.");
+
+                    return;
+
+                }
+
+                trainingData = newData;
+
+                updateAll();
+
+                updateDatasetTable();
+
+                updateAll();
+
+            });
+
+
+        /* ==========================================
+           14. ADD NEW TRAINING POINT
+        ========================================== */
+
+        document.getElementById("addPoint")
+            .addEventListener("click", () => {
+
+                const x = Number(document.getElementById("newX").value);
+
+                const y = Number(document.getElementById("newY").value);
+
+                if (
+                    document.getElementById("newX").value.trim() === "" ||
+                    document.getElementById("newY").value.trim() === "" ||
+                    !Number.isFinite(x) ||
+                    !Number.isFinite(y)
+                ) {
+
+                    showError("Please enter valid numerical values for X and Y.");
+
+                    return;
+
+                }
+
+                trainingData.push({ x, y });
+
+                document.getElementById("newX").value = "";
+
+                document.getElementById("newY").value = "";
+
+                refreshDatasetInput();
+
+                updateDatasetTable();
+
+                updateAll();
+
+            });
+
+
+        /* ==========================================
+           15. LOAD SAMPLE DATASET
+        ========================================== */
+
+        document.getElementById("sampleDataset")
+            .addEventListener("click", () => {
+
+                trainingData = defaultData.map(point => ({ ...point }));
+
+                queryInput.value = 1600;
+
+                kInput.value = 3;
+
+                refreshDatasetInput();
+
+                updateDatasetTable();
+
+                updateAll();
+
+            });
+
+
+        /* ==========================================
+           16. REMOVE POINT
+        ========================================== */
+
+        // Individual remove functionality is implemented
+        // inside updateDatasetTable().
+
+
+        /* ==========================================
+           17. K VALUE COMPARISON
+        ========================================== */
+
+        document.getElementById("compareBtn")
+            .addEventListener("click", () => {
+
+                const table = document.getElementById("comparisonTable");
+
+                table.innerHTML = "";
+
+                const comparisonResults = [];
+
+                for (let k = 1; k <= trainingData.length; k++) {
+
+                    const result = knnRegression(
+                        trainingData,
+                        query,
+                        k
+                    );
+
+                    comparisonResults.push({
+                        k,
+                        prediction: result.prediction
+                    });
+
+                }
+
+
+                comparisonResults.forEach(result => {
+
+                    const row = document.createElement("tr");
+
+                    const values = [
+
+                        result.k,
+
+                        result.prediction.toFixed(2),
+
+                        "$" + (result.prediction * 1000).toLocaleString("en-US", {
+                            maximumFractionDigits: 2
+                        })
+
+                    ];
+
+                    values.forEach(value => {
+
+                        const cell = document.createElement("td");
+
+                        cell.textContent = value;
+
+                        row.appendChild(cell);
+
+                    });
+
+                    if (result.k === currentK) {
+
+                        row.className = "neighbor-row";
+
+                    }
+
+                    table.appendChild(row);
+
+                });
+
+            });
+
+
+        /* ==========================================
+           18. INPUT EVENTS
+        ========================================== */
+
+        queryInput.addEventListener("input", updateAll);
+
+        kInput.addEventListener("input", updateAll);
+
+        document.getElementById("predictBtn")
+            .addEventListener("click", updateAll);
+
+
+        /* ==========================================
+           19. RESET
+        ========================================== */
+
+        document.getElementById("resetBtn")
+            .addEventListener("click", () => {
+
+                trainingData = defaultData.map(point => ({ ...point }));
+
+                queryInput.value = 1600;
+
+                kInput.value = 3;
+
+                currentK = 3;
+
+                query = 1600;
+
+                document.getElementById("comparisonTable").innerHTML = "";
+
+                refreshDatasetInput();
+
+                updateDatasetTable();
+
+                updateAll();
+
+            });
+
+
+        /* ==========================================
+           20. NAVIGATION ACTIVE STATE
+        ========================================== */
+
+        document.querySelectorAll(".nav-link")
+            .forEach(link => {
+
+                link.addEventListener("click", () => {
+
+                    document.querySelectorAll(".nav-link")
+                        .forEach(item => item.classList.remove("active"));
+
+                    link.classList.add("active");
+
+                });
+
+            });
+
+
+        /* ==========================================
+           21. APPLICATION START
+        ========================================== */
+
+        initializeChart();
+
+        updateDatasetTable();
+
+        updateAll();
+
+    </script>
+
+</body>
+
+</html>
