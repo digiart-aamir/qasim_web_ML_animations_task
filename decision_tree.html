@@ -1,0 +1,2382 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Tree · Interactive Animated ML Lab &amp; Theory</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Cascadia Code', 'Consolas', 'monospace'],
+          },
+        }
+      }
+    };
+  </script>
+
+  <!-- GSAP Animation CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- KaTeX Math Rendering CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg-stage: #f8fafc;
+      --bg-doc: #ffffff;
+      --surface: #ffffff;
+      --surface-soft: #f1f5f9;
+      --text-main: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --indigo: #4f46e5;
+      --indigo-soft: #eef2ff;
+      --emerald: #059669;
+      --rose: #e11d48;
+      --sky: #0284c7;
+      --amber: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-stage);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ================================================================
+       TOP 100VH x 100% FULL-SCREEN INTERACTIVE STAGE (NO NAVBAR/SIDEBAR)
+       ================================================================ */
+    .stage-100vh {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 600px;
+      max-height: 100vh;
+      overflow: hidden;
+      background-color: #f8fafc;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(79, 70, 229, 0.07), transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(5, 150, 105, 0.06), transparent 42%),
+        radial-gradient(#cbd5e1 1.05px, transparent 1.05px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 18px 14px;
+      gap: 10px;
+    }
+
+    /* Floating Glassmorphic Pills (No Navbar / No Sidebar) */
+    .glass-hud {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      box-shadow:
+        0 10px 28px -8px rgba(15, 23, 42, 0.08),
+        0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    }
+
+    .stage-top-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 20;
+      flex-wrap: wrap;
+    }
+
+    .stage-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.14fr);
+      gap: 14px;
+      z-index: 10;
+    }
+
+    @media (max-width: 960px) {
+      .stage-100vh {
+        height: auto;
+        max-height: none;
+        min-height: 100vh;
+      }
+      .stage-grid {
+        grid-template-columns: 1fr;
+        min-height: 680px;
+      }
+    }
+
+    .visual-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #e2e8f0;
+      box-shadow:
+        0 14px 36px -12px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+    }
+
+    .panel-badge-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      background: rgba(248, 250, 252, 0.72);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #featureCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    #treeSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+    }
+
+    /* Animated SVG Path & Pulse */
+    .tree-edge {
+      fill: none;
+      stroke: #cbd5e1;
+      stroke-width: 2.2;
+      transition: stroke 0.25s ease, stroke-width 0.25s ease, opacity 0.3s ease;
+    }
+
+    .tree-edge.active-path {
+      stroke: #4f46e5;
+      stroke-width: 3.4;
+      filter: drop-shadow(0 0 6px rgba(79, 70, 229, 0.35));
+    }
+
+    .tree-edge-flow {
+      fill: none;
+      stroke: #a5b4fc;
+      stroke-width: 2.2;
+      stroke-dasharray: 6 10;
+      animation: edgeFlow 0.85s linear infinite;
+      pointer-events: none;
+    }
+
+    .tree-edge.scanning-edge {
+      stroke: #d97706;
+      stroke-width: 3;
+      stroke-dasharray: 6 4;
+      animation: edgeFlow 0.7s linear infinite;
+    }
+
+    @keyframes edgeFlow {
+      from { stroke-dashoffset: 20; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .tree-node-group {
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    }
+
+    .tree-node-card {
+      fill: #ffffff;
+      stroke: #cbd5e1;
+      stroke-width: 1.6;
+      filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.06));
+      transition: stroke 0.2s ease, stroke-width 0.2s ease, filter 0.2s ease;
+    }
+
+    .tree-node-group:hover .tree-node-card {
+      stroke: #6366f1;
+      stroke-width: 2.2;
+      filter: drop-shadow(0 8px 18px rgba(79, 70, 229, 0.14));
+    }
+
+    .tree-node-group.selected-node .tree-node-card {
+      stroke: #4f46e5;
+      stroke-width: 2.8;
+      filter: drop-shadow(0 0 12px rgba(79, 70, 229, 0.25));
+    }
+
+    .tree-node-group.active-trace .tree-node-card {
+      stroke: #4f46e5;
+      stroke-width: 2.8;
+      fill: #fafaff;
+      filter: drop-shadow(0 0 12px rgba(79, 70, 229, 0.26));
+    }
+
+    /* Query Pulse Dot */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.75; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Bottom Floating Dock */
+    .stage-bottom-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 20;
+      flex-wrap: wrap;
+    }
+
+    /* Custom Range Sliders (Light Theme) */
+    input[type="range"].hud-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].hud-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #4f46e5;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"].hud-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* ================================================================
+       CENTER-ALIGNED 60% WIDTH DOCUMENTATION & THEORY SECTION
+       ================================================================ */
+    .docs-wrapper {
+      width: 100%;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      padding: 64px 0 88px;
+    }
+
+    .docs-container-60 {
+      width: 60%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 960px) {
+      .docs-container-60 {
+        width: 90%;
+      }
+    }
+
+    .doc-section {
+      margin-bottom: 56px;
+    }
+
+    .doc-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .doc-h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      margin: 0 0 14px;
+      line-height: 1.25;
+    }
+
+    .doc-h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 24px 0 10px;
+    }
+
+    .doc-p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: #334155;
+      margin: 0 0 16px;
+    }
+
+    .math-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #4f46e5;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin: 16px 0;
+    }
+
+    .doc-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 4px 16px -6px rgba(15, 23, 42, 0.05);
+      margin: 18px 0 24px;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    .doc-table thead th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 13px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .doc-table tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .doc-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .doc-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .code-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 18px 0;
+    }
+
+    .code-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .code-panel pre {
+      margin: 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #1e293b;
+    }
+
+    /* Subtle floating bounce for scroll cue */
+    @keyframes gentleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+    .animate-gentle-bounce {
+      animation: gentleBounce 2s ease-in-out infinite;
+    }
+
+    /* Tooltip / Node Inspector inside SVG panel */
+    .node-inspector {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      max-width: 310px;
+      z-index: 15;
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================================
+       SECTION 1: FULL 100VH x 100% WIDTH ANIMATED INTERACTIVE LEARNING STAGE
+       (Strictly NO Navbar and NO Sidebar)
+       ===================================================================== -->
+  <section id="labStage" class="stage-100vh">
+
+    <!-- Floating Top HUD Pills -->
+    <div class="stage-top-hud">
+      <!-- Left: Compact Title + Live Model Metrics Pill -->
+      <div class="glass-hud rounded-2xl px-3.5 py-2 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/30">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="5" r="2.5"></circle>
+            <circle cx="6" cy="18" r="2.5"></circle>
+            <circle cx="18" cy="18" r="2.5"></circle>
+            <path d="M10.5 7.2 7.2 15.6"></path>
+            <path d="M13.5 7.2 16.8 15.6"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-extrabold tracking-tight text-slate-900 leading-none">Decision Tree Classifier</h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80">CART Live</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Recursive Binary Partitioning &amp; Impurity Minimization</p>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 pl-3 ml-1 border-l border-slate-200 text-xs">
+          <div class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200/70 text-emerald-700 font-semibold font-mono" id="statAccuracy">Acc: —</div>
+          <div class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-semibold font-mono" id="statNodes">Nodes: —</div>
+          <div class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-semibold font-mono" id="statDepth">Depth: —</div>
+        </div>
+      </div>
+
+      <!-- Right: Dataset Presets, Criterion Switch & Scroll-to-Theory Pill -->
+      <div class="glass-hud rounded-2xl px-3 py-1.5 flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200/80" id="datasetButtons">
+          <button data-preset="clusters" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-white text-indigo-700 shadow-sm">Clusters</button>
+          <button data-preset="moons" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900">Moons</button>
+          <button data-preset="xor" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900">XOR</button>
+          <button data-preset="triclass" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900">3-Class</button>
+        </div>
+
+        <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200/80" id="criterionButtons">
+          <button data-criterion="gini" class="crit-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-white text-indigo-700 shadow-sm">Gini</button>
+          <button data-criterion="entropy" class="crit-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900">Entropy</button>
+        </div>
+
+        <a href="#theorySection" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-semibold transition shadow-sm">
+          <span>Theory &amp; Tables</span>
+          <svg class="animate-gentle-bounce" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Dual-Canvas Animated Interactive Workspace -->
+    <div class="stage-grid">
+
+      <!-- LEFT PANEL: 2D Feature Space & Animated Orthogonal Partitions -->
+      <div class="visual-panel">
+        <div class="panel-badge-bar">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            <span class="text-xs font-bold text-slate-800 tracking-tight">2D Feature Space (X₁ vs X₂)</span>
+            <span id="scanStatusPill" class="hidden px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Scanning splits...</span>
+          </div>
+
+          <!-- Interactive Canvas Mode Toggle -->
+          <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs" id="canvasToolButtons">
+            <button data-tool="probe" class="tool-btn px-2 py-1 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white transition" title="Move cursor or drag star to trace decision path">★ Trace Path</button>
+            <button data-tool="add-0" class="tool-btn px-2 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 hover:bg-emerald-50 transition" title="Click canvas to add Class A">+ Class A</button>
+            <button data-tool="add-1" class="tool-btn px-2 py-1 rounded-lg text-[11px] font-semibold text-rose-700 hover:bg-rose-50 transition" title="Click canvas to add Class B">+ Class B</button>
+            <button data-tool="add-2" id="btnAddClass2" class="tool-btn hidden px-2 py-1 rounded-lg text-[11px] font-semibold text-sky-700 hover:bg-sky-50 transition" title="Click canvas to add Class C">+ Class C</button>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" id="featureCanvasWrap">
+          <canvas id="featureCanvas"></canvas>
+
+          <!-- Live Query Trace Breadcrumb Pill -->
+          <div id="traceBreadcrumb" class="glass-hud absolute top-3 left-3 right-3 rounded-xl px-3 py-1.5 text-[11px] font-mono text-slate-700 flex items-center justify-between gap-2 pointer-events-none">
+            <div class="flex items-center gap-1.5 truncate" id="tracePathText">
+              <span class="text-amber-500 font-bold">★</span>
+              <span>Hover or drag across the space to trace a live prediction path...</span>
+            </div>
+            <span id="tracePredBadge" class="px-2 py-0.5 rounded-md font-bold text-[11px] shrink-0 bg-slate-100 text-slate-700">Pred: —</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Animated Live Decision Tree Graph -->
+      <div class="visual-panel">
+        <div class="panel-badge-bar">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="text-xs font-bold text-slate-800 tracking-tight">Decision Tree Structure</span>
+            <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">· Click any node to highlight its region</span>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] font-semibold">
+            <span class="inline-flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>A</span>
+            <span class="inline-flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span>B</span>
+            <span id="legendClass2" class="hidden inline-flex items-center gap-1 text-sky-700"><span class="w-2 h-2 rounded-full bg-sky-500"></span>C</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap bg-gradient-to-b from-white to-slate-50/60" id="treeSvgWrap">
+          <svg id="treeSvg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"></svg>
+
+          <!-- Floating Node Inspector Card (Appears when clicking a tree node) -->
+          <div id="nodeInspector" class="node-inspector glass-hud rounded-2xl p-3.5 hidden">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-600" id="inspType">Internal Split Node</div>
+                <div class="text-xs font-bold text-slate-900 font-mono mt-0.5" id="inspRule">X₁ ≤ 5.00</div>
+              </div>
+              <button id="closeInspector" class="w-6 h-6 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs font-bold">✕</button>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-2">
+              <div class="bg-slate-50 rounded-lg px-2 py-1 border border-slate-200/70">
+                <div class="text-slate-400 text-[10px]">Samples</div>
+                <div class="font-bold font-mono text-slate-800" id="inspSamples">40</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg px-2 py-1 border border-slate-200/70">
+                <div class="text-slate-400 text-[10px]" id="inspCritLabel">Gini</div>
+                <div class="font-bold font-mono text-slate-800" id="inspImpurity">0.48</div>
+              </div>
+              <div class="bg-indigo-50 rounded-lg px-2 py-1 border border-indigo-200/70">
+                <div class="text-indigo-500 text-[10px]">Info Gain</div>
+                <div class="font-bold font-mono text-indigo-700" id="inspGain">+0.31</div>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 border border-slate-200/70 font-mono" id="inspAlt">
+              Runner-up: X₂ ≤ 4.20 (+0.19)
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating Bottom Control Dock -->
+    <div class="stage-bottom-hud">
+      <!-- Playback & Growth Animation Controls -->
+      <div class="glass-hud rounded-2xl px-3 py-1.5 flex items-center gap-2 flex-wrap">
+        <button id="btnAnimateBuild" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm shadow-indigo-500/25 transition active:scale-95">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span>Animate Build</span>
+        </button>
+
+        <button id="btnStepSplit" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold transition active:scale-95">
+          <span>⏭ Step Split</span>
+          <span id="stepCounter" class="font-mono text-[11px] text-indigo-600 font-bold">0/0</span>
+        </button>
+
+        <button id="btnShowFull" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold transition">
+          Full Tree
+        </button>
+
+        <div class="h-4 w-px bg-slate-200 mx-0.5"></div>
+
+        <button id="btnAddNoise" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-xs font-semibold transition">
+          + Noise
+        </button>
+        <button id="btnResetData" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 text-xs font-semibold transition">
+          Reset Points
+        </button>
+      </div>
+
+      <!-- Hyperparameters & Speed Sliders -->
+      <div class="glass-hud rounded-2xl px-4 py-1.5 flex items-center gap-5 flex-wrap">
+        <label class="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
+          <span>Max Depth</span>
+          <input id="sliderMaxDepth" type="range" min="1" max="5" value="3" class="hud-slider w-20">
+          <span id="valMaxDepth" class="font-mono text-indigo-700 font-bold w-3 text-center">3</span>
+        </label>
+
+        <label class="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
+          <span>Min Split</span>
+          <input id="sliderMinSplit" type="range" min="2" max="16" value="2" class="hud-slider w-20">
+          <span id="valMinSplit" class="font-mono text-indigo-700 font-bold w-4 text-center">2</span>
+        </label>
+
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+          <span>Speed</span>
+          <select id="selectSpeed" class="bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono font-semibold text-slate-800 outline-none focus:border-indigo-500">
+            <option value="950">0.7× Slow</option>
+            <option value="580" selected>1.0× Normal</option>
+            <option value="280">2.0× Fast</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- =====================================================================
+       SECTION 2: CENTER-ALIGNED 60% WIDTH DETAILED DOCUMENTATION, THEORY & TABLES
+       ===================================================================== -->
+  <main id="theorySection" class="docs-wrapper">
+    <div class="docs-container-60">
+
+      <!-- Document Header -->
+      <header class="pb-8 mb-10 border-b border-slate-200">
+        <div class="doc-kicker">Machine Learning Reference · Supervised Learning</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
+          Decision Trees: Theory, Mathematics &amp; Architecture
+        </h2>
+        <p class="text-base text-slate-600 leading-relaxed">
+          A complete analytical guide to the <strong>CART (Classification and Regression Trees)</strong> algorithm. Explore how recursive binary splits partition feature space into pure decision regions, how impurity metrics quantify disorder, and how pruning prevents overfitting.
+        </p>
+
+        <!-- Quick Metric Badges -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Model Family</div>
+            <div class="text-sm font-bold text-slate-900 mt-0.5">Non-Parametric</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Decision Boundary</div>
+            <div class="text-sm font-bold text-slate-900 mt-0.5">Axis-Aligned Splits</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Feature Scaling</div>
+            <div class="text-sm font-bold text-emerald-700 mt-0.5">Not Required</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Interpretability</div>
+            <div class="text-sm font-bold text-indigo-700 mt-0.5">White-Box Rules</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. Geometric Intuition & Anatomy -->
+      <article class="doc-section">
+        <div class="doc-kicker">01 · Core Intuition</div>
+        <h2 class="doc-h2">How a Decision Tree Partitions Space</h2>
+        <p class="doc-p">
+          Unlike linear models or support vector machines that separate classes using angled hyperplanes, a standard CART decision tree builds a hierarchy of simple <strong>axis-aligned threshold tests</strong> of the form $x_j \le t$. Geometrically, each split slices a rectangular region of the feature space perpendicular to a single coordinate axis, repeating recursively until every terminal region (leaf) is sufficiently pure.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <h4 class="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              Root &amp; Internal Nodes
+            </h4>
+            <p class="text-sm text-slate-600 leading-relaxed m-0">
+              Each internal node tests one feature $x_j$ against a learned threshold $t$. Samples satisfying $x_j \le t$ route to the <strong>Left Child</strong> (True branch); all others route to the <strong>Right Child</strong> (False branch).
+            </p>
+          </div>
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <h4 class="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              Terminal Leaf Nodes
+            </h4>
+            <p class="text-sm text-slate-600 leading-relaxed m-0">
+              When a stopping criterion triggers (purity achieved, <code>max_depth</code> reached, or too few samples), recursion stops. The leaf predicts the <strong>majority class</strong> (classification) or <strong>sample mean</strong> $\bar{y}$ (regression).
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2. Impurity Criteria & Mathematics -->
+      <article class="doc-section">
+        <div class="doc-kicker">02 · Mathematical Foundations</div>
+        <h2 class="doc-h2">Impurity Measures &amp; Information Gain</h2>
+        <p class="doc-p">
+          At every node $t$ containing $N_t$ training samples across $K$ classes, let $p_{t,k} = \frac{1}{N_t}\sum_{i \in t}\mathbb{I}(y_i = k)$ denote the empirical proportion of class $k$. A node is <strong>pure</strong> ($I(t) = 0$) when all samples belong to a single class, and maximally impure when classes are uniformly mixed.
+        </p>
+
+        <div class="math-card">
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-1">1. Gini Impurity (CART Default)</div>
+          <div class="py-1 text-slate-900 overflow-x-auto">
+            $$G(t) = 1 - \sum_{k=1}^{K} p_{t,k}^2$$
+          </div>
+          <p class="text-sm text-slate-600 m-0 mt-1">
+            Measures the probability of misclassifying a randomly chosen sample in node $t$ if it were randomly labeled according to the node's class distribution. Binary range: $[0, 0.5]$.
+          </p>
+        </div>
+
+        <div class="math-card">
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-1">2. Shannon Entropy (ID3 / C4.5)</div>
+          <div class="py-1 text-slate-900 overflow-x-auto">
+            $$H(t) = -\sum_{k=1}^{K} p_{t,k} \log_2\big(p_{t,k}\big)$$
+          </div>
+          <p class="text-sm text-slate-600 m-0 mt-1">
+            Measures average information content (in bits) required to identify a sample's class. Binary range: $[0, 1.0]$. Uses convention $0 \log_2 0 = 0$.
+          </p>
+        </div>
+
+        <div class="math-card">
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-1">3. Weighted Impurity Reduction (Objective Function)</div>
+          <div class="py-1 text-slate-900 overflow-x-auto">
+            $$\Delta I(t, j, s) = I(t) - \left( \frac{N_L}{N_t} I(t_L) + \frac{N_R}{N_t} I(t_R) \right)$$
+          </div>
+          <p class="text-sm text-slate-600 m-0 mt-1">
+            CART greedily selects the feature $j^*$ and threshold $s^*$ that <strong>maximize</strong> $\Delta I(t, j, s)$ at the current node. For Regression Trees, $I(t)$ is replaced by Mean Squared Error: $\text{MSE}(t) = \frac{1}{N_t}\sum_{i \in t}(y_i - \bar{y}_t)^2$.
+          </p>
+        </div>
+
+        <!-- Inline SVG Plot: Gini vs Entropy vs Misclassification Error -->
+        <div class="my-7 p-5 rounded-2xl border border-slate-200 bg-slate-50/70">
+          <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900 m-0">Binary Impurity Curves ($p \in [0, 1]$)</h4>
+              <p class="text-xs text-slate-500 m-0 mt-0.5">Comparison of scaled Gini ($2 \cdot G$), Shannon Entropy ($H$), and Misclassification Error ($1 - \max(p, 1-p)$)</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-semibold">
+              <span class="inline-flex items-center gap-1.5 text-indigo-700"><span class="w-3 h-1 rounded bg-indigo-600"></span>Entropy</span>
+              <span class="inline-flex items-center gap-1.5 text-emerald-700"><span class="w-3 h-1 rounded bg-emerald-600"></span>2× Gini</span>
+              <span class="inline-flex items-center gap-1.5 text-rose-700"><span class="w-3 h-1 rounded bg-rose-600"></span>Error</span>
+            </div>
+          </div>
+          <svg id="impurityChartSvg" viewBox="0 0 640 220" class="w-full h-auto bg-white rounded-xl border border-slate-200"></svg>
+        </div>
+      </article>
+
+      <!-- 3. Splitting Criteria Comparison Table -->
+      <article class="doc-section">
+        <div class="doc-kicker">03 · Criteria Comparison</div>
+        <h2 class="doc-h2">Splitting Criteria Reference Table</h2>
+        <p class="doc-p">
+          Different tree formulations use distinct impurity functions. While Gini and Entropy yield identical trees in roughly 98% of practical cases, their computational profiles and bias toward multi-valued splits differ.
+        </p>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Formula</th>
+                <th>Binary Max</th>
+                <th>Computational Cost</th>
+                <th>Primary Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-bold text-slate-900">Gini Impurity</td>
+                <td class="font-mono text-xs">$1 - \sum p_k^2$</td>
+                <td class="font-mono">0.50</td>
+                <td><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">Fast</span> (no logs)</td>
+                <td>Default in <code>scikit-learn</code> CART; fast on large datasets</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">Shannon Entropy</td>
+                <td class="font-mono text-xs">$-\sum p_k \log_2 p_k$</td>
+                <td class="font-mono">1.00</td>
+                <td><span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">Moderate</span> ($\log_2$)</td>
+                <td>Information-theoretic splits; slightly more balanced trees</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">Gain Ratio</td>
+                <td class="font-mono text-xs">$\Delta H / \text{SplitInfo}$</td>
+                <td class="font-mono">1.00</td>
+                <td><span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">Moderate</span></td>
+                <td>C4.5; penalizes high-cardinality categorical features</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">Variance / MSE</td>
+                <td class="font-mono text-xs">$\frac{1}{N}\sum (y_i - \bar{y})^2$</td>
+                <td class="font-mono">Unbounded</td>
+                <td><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">Fast</span></td>
+                <td>Continuous target prediction (Regression Trees)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- 4. Worked Numerical Walkthrough Table -->
+      <article class="doc-section">
+        <div class="doc-kicker">04 · Worked Example</div>
+        <h2 class="doc-h2">Step-by-Step Numerical Split Evaluation</h2>
+        <p class="doc-p">
+          Suppose we have $N = 8$ samples with two continuous features $(X_1, X_2)$ and binary labels $Y \in \{A, B\}$: <strong>4 Class A</strong> and <strong>4 Class B</strong>. The root node Gini impurity is:
+          $$G(\text{Root}) = 1 - \left(\frac{4}{8}\right)^2 - \left(\frac{4}{8}\right)^2 = 1 - 0.25 - 0.25 = 0.500$$
+          Below is the exact candidate evaluation table demonstrating how CART chooses the root split:
+        </p>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Candidate Split</th>
+                <th>Left Group ($N_L$)</th>
+                <th>Right Group ($N_R$)</th>
+                <th>$G(\text{Left})$</th>
+                <th>$G(\text{Right})$</th>
+                <th>Weighted Gini</th>
+                <th>Gain ($\Delta G$)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-mono font-semibold text-slate-900">X₁ ≤ 2.5</td>
+                <td class="font-mono text-xs">2A, 0B (n=2)</td>
+                <td class="font-mono text-xs">2A, 4B (n=6)</td>
+                <td class="font-mono">0.000</td>
+                <td class="font-mono">0.444</td>
+                <td class="font-mono">0.333</td>
+                <td class="font-mono text-slate-700">+0.167</td>
+              </tr>
+              <tr class="bg-indigo-50/60">
+                <td class="font-mono font-bold text-indigo-700">X₁ ≤ 4.5 ★</td>
+                <td class="font-mono text-xs font-semibold">4A, 1B (n=5)</td>
+                <td class="font-mono text-xs font-semibold">0A, 3B (n=3)</td>
+                <td class="font-mono">0.320</td>
+                <td class="font-mono">0.000</td>
+                <td class="font-mono font-bold text-indigo-700">0.200</td>
+                <td class="font-mono font-bold text-emerald-700">+0.300 (Best)</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-semibold text-slate-900">X₂ ≤ 3.0</td>
+                <td class="font-mono text-xs">3A, 2B (n=5)</td>
+                <td class="font-mono text-xs">1A, 2B (n=3)</td>
+                <td class="font-mono">0.480</td>
+                <td class="font-mono">0.444</td>
+                <td class="font-mono">0.467</td>
+                <td class="font-mono text-slate-700">+0.033</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-semibold text-slate-900">X₂ ≤ 6.0</td>
+                <td class="font-mono text-xs">3A, 3B (n=6)</td>
+                <td class="font-mono text-xs">1A, 1B (n=2)</td>
+                <td class="font-mono">0.500</td>
+                <td class="font-mono">0.500</td>
+                <td class="font-mono">0.500</td>
+                <td class="font-mono text-rose-600">+0.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="doc-p text-sm text-slate-600">
+          Because <code>X₁ ≤ 4.5</code> achieves the highest impurity reduction ($\Delta G = +0.300$), it becomes the root split. Its right branch ($0A, 3B$) is already pure ($G = 0.000$) and immediately forms a terminal leaf predicting <strong>Class B</strong>.
+        </p>
+      </article>
+
+      <!-- 5. Pseudocode -->
+      <article class="doc-section">
+        <div class="doc-kicker">05 · Algorithm</div>
+        <h2 class="doc-h2">CART Recursive Training Pseudocode</h2>
+        <p class="doc-p">
+          Finding the globally optimal decision tree is NP-complete. Therefore, CART uses a top-down greedy heuristic that evaluates every feature and every midpoint threshold at each node.
+        </p>
+
+        <div class="code-panel">
+          <div class="code-panel-head">
+            <span>build_tree(samples, depth)</span>
+            <button id="copyPseudoBtn" class="px-2.5 py-1 rounded-md bg-white border border-slate-300 text-xs font-semibold text-slate-700 hover:text-indigo-700 hover:border-indigo-300 transition">Copy</button>
+          </div>
+          <pre id="pseudoCodeBlock">function BUILD_TREE(D, depth):
+  if PURE(D) or depth == max_depth or |D| &lt; min_samples_split:
+    return Leaf(prediction = MAJORITY_CLASS(D))
+
+  best_gain = 0
+  best_split = null
+
+  for each feature j in {1 .. d}:
+    thresholds = MIDPOINTS(SORTED_UNIQUE(D[:, j]))
+    for each t in thresholds:
+      D_left  = { x in D | x[j] &lt;= t }
+      D_right = { x in D | x[j] &gt;  t }
+      if |D_left| &lt; min_samples_leaf or |D_right| &lt; min_samples_leaf:
+        continue
+
+      gain = IMPURITY(D) - (|D_left|/|D|)*IMPURITY(D_left)
+                         - (|D_right|/|D|)*IMPURITY(D_right)
+      if gain &gt; best_gain:
+        best_gain = gain
+        best_split = (j, t, D_left, D_right)
+
+  if best_split == null:
+    return Leaf(prediction = MAJORITY_CLASS(D))
+
+  left_child  = BUILD_TREE(best_split.D_left,  depth + 1)
+  right_child = BUILD_TREE(best_split.D_right, depth + 1)
+  return Node(feature=j, threshold=t, left=left_child, right=right_child)</pre>
+        </div>
+      </article>
+
+      <!-- 6. Hyperparameters & Pruning Table -->
+      <article class="doc-section">
+        <div class="doc-kicker">06 · Regularization &amp; Pruning</div>
+        <h2 class="doc-h2">Hyperparameters &amp; Overfitting Control</h2>
+        <p class="doc-p">
+          An unconstrained tree can grow until every training point sits inside its own pure leaf—achieving 100% training accuracy while memorizing noise (high variance). Regularization is applied either via <strong>pre-pruning</strong> (stopping growth early) or <strong>post-pruning</strong> via minimal cost-complexity pruning:
+          $$R_\alpha(T) = R(T) + \alpha |T|$$
+          where $R(T)$ is total leaf impurity, $|T|$ is the number of terminal leaves, and $\alpha \ge 0$ penalizes tree size.
+        </p>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Hyperparameter</th>
+                <th>Type</th>
+                <th>Effect When Tightened</th>
+                <th>Typical Tuning Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-mono font-bold text-slate-900">max_depth</td>
+                <td>Pre-pruning</td>
+                <td>Limits longest root-to-leaf path; prevents deep memorization</td>
+                <td class="font-mono text-xs">2 – 12 (or None in ensembles)</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-slate-900">min_samples_split</td>
+                <td>Pre-pruning</td>
+                <td>Requires more data before allowing an internal node to split</td>
+                <td class="font-mono text-xs">2 – 20</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-slate-900">min_samples_leaf</td>
+                <td>Pre-pruning</td>
+                <td>Ensures every terminal leaf represents a statistically stable region</td>
+                <td class="font-mono text-xs">1 – 15</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-slate-900">max_features</td>
+                <td>Subsampling</td>
+                <td>Restricts candidate features per split; decorrelates trees in Random Forests</td>
+                <td class="font-mono text-xs">$\sqrt{d}$ or $\log_2 d$</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-slate-900">ccp_alpha</td>
+                <td>Post-pruning</td>
+                <td>Collapses weak branches whose gain fails to justify extra leaves</td>
+                <td class="font-mono text-xs">0.0 – 0.05 (via CV)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- 7. Tree Algorithm Family & Tradeoffs -->
+      <article class="doc-section mb-8">
+        <div class="doc-kicker">07 · Model Comparison &amp; Complexity</div>
+        <h2 class="doc-h2">Evolution, Complexity &amp; Trade-Offs</h2>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Split Structure</th>
+                <th>Metric</th>
+                <th>Continuous Features</th>
+                <th>Pruning Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-bold text-slate-900">ID3 (1986)</td>
+                <td>Multi-way</td>
+                <td>Entropy / Info Gain</td>
+                <td>No (categorical only)</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">C4.5 (1993)</td>
+                <td>Multi-way / Binary</td>
+                <td>Gain Ratio</td>
+                <td>Yes (thresholding)</td>
+                <td>Error-based post-pruning</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">CART (1984)</td>
+                <td>Strictly Binary</td>
+                <td>Gini / MSE</td>
+                <td>Yes (axis-aligned)</td>
+                <td>Cost-Complexity ($R_\alpha$)</td>
+              </tr>
+              <tr>
+                <td class="font-bold text-slate-900">Ensembles (RF / XGBoost)</td>
+                <td>Aggregated Binary Trees</td>
+                <td>Gini / Second-Order Grad</td>
+                <td>Yes</td>
+                <td>Bagging / Shrinkage &amp; $\gamma$</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div class="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80">
+            <h4 class="text-sm font-bold text-emerald-900 mb-2">Key Strengths</h4>
+            <ul class="text-sm text-emerald-950/85 space-y-1.5 pl-4 m-0 list-disc">
+              <li><strong>Zero feature scaling needed:</strong> Monotonic transformations (log, z-score) leave splits unchanged.</li>
+              <li><strong>Ultra-fast inference:</strong> Predicts in $O(\text{depth})$ simple scalar comparisons.</li>
+              <li><strong>Native interpretability:</strong> Every prediction converts directly into human-readable <code>IF-ELSE</code> rules.</li>
+              <li><strong>Captures non-linear interactions:</strong> Naturally models XOR and hierarchical conditions.</li>
+            </ul>
+          </div>
+          <div class="p-5 rounded-2xl bg-rose-50/60 border border-rose-200/80">
+            <h4 class="text-sm font-bold text-rose-900 mb-2">Limitations</h4>
+            <ul class="text-sm text-rose-950/85 space-y-1.5 pl-4 m-0 list-disc">
+              <li><strong>High variance / instability:</strong> Small perturbations in training data can alter the root split and entire tree.</li>
+              <li><strong>Staircase boundaries:</strong> Diagonal boundaries require many axis-aligned steps to approximate.</li>
+              <li><strong>Greedy optimality:</strong> Locally optimal splits do not guarantee a globally minimal tree.</li>
+              <li><strong>Training cost:</strong> Exact split search scales as $O(d \cdot n \log n)$ per level.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- Footer -->
+      <footer class="pt-8 border-t border-slate-200 flex items-center justify-between flex-wrap gap-4 text-xs text-slate-500">
+        <div>Decision Tree Interactive Visual Lab · Single-file Light Theme Edition</div>
+        <a href="#labStage" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold transition">
+          <span>↑ Back to 100vh Interactive Lab</span>
+        </a>
+      </footer>
+
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      // =========================================================================
+      // 1. CONFIGURATION & CLASS PALETTE (LIGHT THEME)
+      // =========================================================================
+      const DOMAIN_MIN = 0;
+      const DOMAIN_MAX = 10;
+
+      const CLASSES = [
+        { name: 'Class A', short: 'A', color: '#059669', light: 'rgba(16, 185, 129, 0.14)', border: '#10b981', badgeBg: '#ecfdf5', badgeText: '#047857' },
+        { name: 'Class B', short: 'B', color: '#e11d48', light: 'rgba(244, 63, 94, 0.13)', border: '#f43f5e', badgeBg: '#fff1f2', badgeText: '#be123c' },
+        { name: 'Class C', short: 'C', color: '#0284c7', light: 'rgba(14, 165, 233, 0.14)', border: '#0ea5e9', badgeBg: '#f0f9ff', badgeText: '#0369a1' }
+      ];
+
+      // =========================================================================
+      // 2. APPLICATION STATE
+      // =========================================================================
+      const state = {
+        preset: 'clusters',
+        criterion: 'gini',
+        maxDepth: 3,
+        minSamplesSplit: 2,
+        points: [],
+        numClasses: 2,
+        tree: null,
+        splitOrderNodes: [],   // internal nodes ordered for step-by-step animation
+        visibleSplits: Infinity,
+        isAnimating: false,
+        animTimer: null,
+        scanAnim: null,        // { feature, threshold, bounds } during active scan sweep
+        activeTool: 'probe',
+        queryPoint: { x: 5.2, y: 4.8 },
+        selectedNodeId: null,
+        highlightedTraceIds: new Set(),
+        speedMs: 580
+      };
+
+      // =========================================================================
+      // 3. SEEDED PRNG & DATASET GENERATORS
+      // =========================================================================
+      function mulberry32(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function randNormal(rng) {
+        const u = Math.max(1e-7, rng());
+        const v = rng();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      }
+
+      function clampDomain(v) {
+        return Math.max(0.25, Math.min(9.75, v));
+      }
+
+      function generatePreset(name) {
+        const rng = mulberry32(name === 'clusters' ? 101 : name === 'moons' ? 202 : name === 'xor' ? 303 : 404);
+        const pts = [];
+
+        if (name === 'clusters') {
+          state.numClasses = 2;
+          for (let i = 0; i < 24; i++) {
+            pts.push({ x: clampDomain(3.0 + randNormal(rng) * 1.15), y: clampDomain(6.8 + randNormal(rng) * 1.1), cls: 0 });
+            pts.push({ x: clampDomain(7.1 + randNormal(rng) * 1.15), y: clampDomain(3.2 + randNormal(rng) * 1.1), cls: 1 });
+          }
+          // Add slight boundary bridge to make depth 2-3 interesting
+          for (let i = 0; i < 7; i++) {
+            pts.push({ x: clampDomain(6.8 + randNormal(rng) * 0.7), y: clampDomain(7.5 + randNormal(rng) * 0.65), cls: 0 });
+            pts.push({ x: clampDomain(3.2 + randNormal(rng) * 0.7), y: clampDomain(2.4 + randNormal(rng) * 0.65), cls: 1 });
+          }
+        } else if (name === 'moons') {
+          state.numClasses = 2;
+          for (let i = 0; i < 32; i++) {
+            const a1 = (i / 31) * Math.PI;
+            pts.push({
+              x: clampDomain(3.9 + Math.cos(a1) * 2.5 + randNormal(rng) * 0.35),
+              y: clampDomain(4.2 + Math.sin(a1) * 2.6 + randNormal(rng) * 0.35),
+              cls: 0
+            });
+            const a2 = (i / 31) * Math.PI;
+            pts.push({
+              x: clampDomain(6.1 - Math.cos(a2) * 2.5 + randNormal(rng) * 0.35),
+              y: clampDomain(5.6 - Math.sin(a2) * 2.6 + randNormal(rng) * 0.35),
+              cls: 1
+            });
+          }
+        } else if (name === 'xor') {
+          state.numClasses = 2;
+          const quads = [
+            { cx: 2.6, cy: 7.4, cls: 0 },
+            { cx: 7.4, cy: 2.6, cls: 0 },
+            { cx: 2.6, cy: 2.6, cls: 1 },
+            { cx: 7.4, cy: 7.4, cls: 1 }
+          ];
+          for (const q of quads) {
+            for (let i = 0; i < 14; i++) {
+              pts.push({
+                x: clampDomain(q.cx + randNormal(rng) * 0.9),
+                y: clampDomain(q.cy + randNormal(rng) * 0.9),
+                cls: q.cls
+              });
+            }
+          }
+        } else if (name === 'triclass') {
+          state.numClasses = 3;
+          const centers = [
+            { cx: 2.7, cy: 7.2, cls: 0 },
+            { cx: 7.4, cy: 7.0, cls: 1 },
+            { cx: 5.1, cy: 2.6, cls: 2 }
+          ];
+          for (const c of centers) {
+            for (let i = 0; i < 20; i++) {
+              pts.push({
+                x: clampDomain(c.cx + randNormal(rng) * 1.05),
+                y: clampDomain(c.cy + randNormal(rng) * 1.0),
+                cls: c.cls
+              });
+            }
+          }
+        }
+        return pts;
+      }
+
+      // =========================================================================
+      // 4. REAL CART DECISION TREE ENGINE (GINI & SHANNON ENTROPY)
+      // =========================================================================
+      function computeImpurity(counts, total, criterion) {
+        if (total === 0) return 0;
+        if (criterion === 'gini') {
+          let sumSq = 0;
+          for (let c = 0; c < counts.length; c++) {
+            const p = counts[c] / total;
+            sumSq += p * p;
+          }
+          return 1 - sumSq;
+        } else {
+          let ent = 0;
+          for (let c = 0; c < counts.length; c++) {
+            if (counts[c] > 0) {
+              const p = counts[c] / total;
+              ent -= p * Math.log2(p);
+            }
+          }
+          return ent;
+        }
+      }
+
+      function countClasses(indices, points, numClasses) {
+        const counts = new Array(numClasses).fill(0);
+        for (let i = 0; i < indices.length; i++) {
+          counts[points[indices[i]].cls]++;
+        }
+        return counts;
+      }
+
+      function argMax(arr) {
+        let bestIdx = 0;
+        for (let i = 1; i < arr.length; i++) {
+          if (arr[i] > arr[bestIdx]) bestIdx = i;
+        }
+        return bestIdx;
+      }
+
+      function findBestSplitForFeature(indices, points, feature, parentImpurity, criterion, numClasses) {
+        const n = indices.length;
+        const sorted = indices.slice().sort((a, b) => points[a][feature] - points[b][feature]);
+        const leftCounts = new Array(numClasses).fill(0);
+        const rightCounts = countClasses(sorted, points, numClasses);
+
+        let best = null;
+        for (let i = 0; i < n - 1; i++) {
+          const idx = sorted[i];
+          const cls = points[idx].cls;
+          leftCounts[cls]++;
+          rightCounts[cls]--;
+
+          const val = points[idx][feature];
+          const nextVal = points[sorted[i + 1]][feature];
+          if (Math.abs(nextVal - val) < 1e-9) continue;
+
+          const leftN = i + 1;
+          const rightN = n - leftN;
+          const leftImp = computeImpurity(leftCounts, leftN, criterion);
+          const rightImp = computeImpurity(rightCounts, rightN, criterion);
+          const weightedImp = (leftN / n) * leftImp + (rightN / n) * rightImp;
+          const gain = parentImpurity - weightedImp;
+
+          if (!best || gain > best.gain) {
+            best = {
+              feature,
+              threshold: (val + nextVal) / 2,
+              gain,
+              leftImpurity: leftImp,
+              rightImpurity: rightImp
+            };
+          }
+        }
+        return best;
+      }
+
+      function buildCartTree() {
+        let nextNodeId = 1;
+        const points = state.points;
+        const numClasses = state.numClasses;
+        const criterion = state.criterion;
+        const allIndices = points.map((_, i) => i);
+
+        function buildNode(indices, depth, bounds) {
+          const id = nextNodeId++;
+          const counts = countClasses(indices, points, numClasses);
+          const total = indices.length;
+          const impurity = computeImpurity(counts, total, criterion);
+          const predictedClass = argMax(counts);
+
+          const node = {
+            id,
+            depth,
+            bounds,
+            counts,
+            total,
+            impurity,
+            predictedClass,
+            isLeaf: true,
+            split: null,
+            left: null,
+            right: null,
+            splitOrder: null
+          };
+
+          if (impurity <= 1e-9 || depth >= state.maxDepth || total < state.minSamplesSplit) {
+            return node;
+          }
+
+          const bestX = findBestSplitForFeature(indices, points, 'x', impurity, criterion, numClasses);
+          const bestY = findBestSplitForFeature(indices, points, 'y', impurity, criterion, numClasses);
+
+          let winner = null;
+          let runnerUp = null;
+          if (bestX && bestY) {
+            if (bestX.gain >= bestY.gain) {
+              winner = bestX;
+              runnerUp = bestY;
+            } else {
+              winner = bestY;
+              runnerUp = bestX;
+            }
+          } else {
+            winner = bestX || bestY;
+          }
+
+          if (!winner || winner.gain <= 1e-7) {
+            return node;
+          }
+
+          const leftIndices = [];
+          const rightIndices = [];
+          for (let i = 0; i < indices.length; i++) {
+            const idx = indices[i];
+            if (points[idx][winner.feature] <= winner.threshold) {
+              leftIndices.push(idx);
+            } else {
+              rightIndices.push(idx);
+            }
+          }
+
+          if (leftIndices.length === 0 || rightIndices.length === 0) {
+            return node;
+          }
+
+          node.isLeaf = false;
+          node.split = {
+            feature: winner.feature,
+            threshold: winner.threshold,
+            gain: winner.gain,
+            leftImpurity: winner.leftImpurity,
+            rightImpurity: winner.rightImpurity,
+            altFeature: runnerUp ? runnerUp.feature : null,
+            altThreshold: runnerUp ? runnerUp.threshold : null,
+            altGain: runnerUp ? runnerUp.gain : 0
+          };
+
+          const leftBounds = { ...bounds };
+          const rightBounds = { ...bounds };
+          if (winner.feature === 'x') {
+            leftBounds.xMax = winner.threshold;
+            rightBounds.xMin = winner.threshold;
+          } else {
+            leftBounds.yMax = winner.threshold;
+            rightBounds.yMin = winner.threshold;
+          }
+
+          node.left = buildNode(leftIndices, depth + 1, leftBounds);
+          node.right = buildNode(rightIndices, depth + 1, rightBounds);
+          return node;
+        }
+
+        const root = buildNode(allIndices, 0, {
+          xMin: DOMAIN_MIN, xMax: DOMAIN_MAX,
+          yMin: DOMAIN_MIN, yMax: DOMAIN_MAX
+        });
+
+        // Assign BFS splitOrder to internal nodes for step-by-step growth animation
+        const queue = [root];
+        const internalOrder = [];
+        while (queue.length > 0) {
+          const cur = queue.shift();
+          if (!cur.isLeaf) {
+            cur.splitOrder = internalOrder.length + 1;
+            internalOrder.push(cur);
+            queue.push(cur.left, cur.right);
+          }
+        }
+
+        state.tree = root;
+        state.splitOrderNodes = internalOrder;
+        if (state.visibleSplits > internalOrder.length) {
+          state.visibleSplits = internalOrder.length;
+        }
+      }
+
+      // Check whether a node's children are currently visible given visibleSplits
+      function isNodeExpanded(node) {
+        return !node.isLeaf && node.splitOrder !== null && node.splitOrder <= state.visibleSplits;
+      }
+
+      // Predict & trace a point through the currently visible tree
+      function tracePoint(pt) {
+        const path = [];
+        let cur = state.tree;
+        if (!cur) return { path, leaf: null };
+        while (cur) {
+          path.push(cur);
+          if (!isNodeExpanded(cur)) {
+            break;
+          }
+          const val = pt[cur.split.feature];
+          cur = val <= cur.split.threshold ? cur.left : cur.right;
+        }
+        return { path, leaf: cur };
+      }
+
+      function computeAccuracy() {
+        if (!state.tree || state.points.length === 0) return 0;
+        let correct = 0;
+        for (const pt of state.points) {
+          const { leaf } = tracePoint(pt);
+          if (leaf && leaf.predictedClass === pt.cls) correct++;
+        }
+        return (correct / state.points.length) * 100;
+      }
+
+      function getTreeStats() {
+        let nodes = 0;
+        let maxD = 0;
+        function walk(n) {
+          if (!n) return;
+          nodes++;
+          if (n.depth > maxD) maxD = n.depth;
+          if (isNodeExpanded(n)) {
+            walk(n.left);
+            walk(n.right);
+          }
+        }
+        walk(state.tree);
+        return { nodes, maxD };
+      }
+
+      // =========================================================================
+      // 5. 2D FEATURE SPACE CANVAS RENDERER
+      // =========================================================================
+      const canvas = document.getElementById('featureCanvas');
+      const ctx = canvas.getContext('2d');
+      const canvasWrap = document.getElementById('featureCanvasWrap');
+
+      const PAD = { left: 42, right: 18, top: 48, bottom: 34 };
+
+      function resizeCanvas() {
+        const rect = canvasWrap.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(100, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(100, Math.floor(rect.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        renderAll();
+      }
+
+      function dataToPixel(x, y, w, h) {
+        const plotW = w - PAD.left - PAD.right;
+        const plotH = h - PAD.top - PAD.bottom;
+        return {
+          px: PAD.left + ((x - DOMAIN_MIN) / (DOMAIN_MAX - DOMAIN_MIN)) * plotW,
+          py: PAD.top + ((DOMAIN_MAX - y) / (DOMAIN_MAX - DOMAIN_MIN)) * plotH
+        };
+      }
+
+      function pixelToData(px, py, w, h) {
+        const plotW = w - PAD.left - PAD.right;
+        const plotH = h - PAD.top - PAD.bottom;
+        const x = DOMAIN_MIN + ((px - PAD.left) / plotW) * (DOMAIN_MAX - DOMAIN_MIN);
+        const y = DOMAIN_MAX - ((py - PAD.top) / plotH) * (DOMAIN_MAX - DOMAIN_MIN);
+        return { x, y };
+      }
+
+      function drawFeatureSpace() {
+        const rect = canvasWrap.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+        if (w <= 0 || h <= 0) return;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const plotW = w - PAD.left - PAD.right;
+        const plotH = h - PAD.top - PAD.bottom;
+
+        // 1. Collect visible leaf regions & draw shaded decision partitions
+        const visibleLeaves = [];
+        const visibleSplits = [];
+        function collectVisible(node) {
+          if (!node) return;
+          if (!isNodeExpanded(node)) {
+            visibleLeaves.push(node);
+          } else {
+            visibleSplits.push(node);
+            collectVisible(node.left);
+            collectVisible(node.right);
+          }
+        }
+        if (state.tree) collectVisible(state.tree);
+
+        for (const leaf of visibleLeaves) {
+          const tl = dataToPixel(leaf.bounds.xMin, leaf.bounds.yMax, w, h);
+          const br = dataToPixel(leaf.bounds.xMax, leaf.bounds.yMin, w, h);
+          const clsInfo = CLASSES[leaf.predictedClass];
+          ctx.fillStyle = clsInfo.light;
+          ctx.fillRect(tl.px, tl.py, br.px - tl.px, br.py - tl.py);
+        }
+
+        // 2. Subtle Coordinate Grid inside Plot Area
+        ctx.save();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+        ctx.lineWidth = 1;
+        ctx.font = '500 10px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#64748b';
+
+        for (let v = 0; v <= 10; v += 2) {
+          const pX = dataToPixel(v, 0, w, h);
+          ctx.beginPath();
+          ctx.moveTo(pX.px, PAD.top);
+          ctx.lineTo(pX.px, h - PAD.bottom);
+          ctx.stroke();
+          ctx.textAlign = 'center';
+          ctx.fillText(v.toString(), pX.px, h - PAD.bottom + 15);
+
+          const pY = dataToPixel(0, v, w, h);
+          ctx.beginPath();
+          ctx.moveTo(PAD.left, pY.py);
+          ctx.lineTo(w - PAD.right, pY.py);
+          ctx.stroke();
+          ctx.textAlign = 'right';
+          ctx.fillText(v.toString(), PAD.left - 8, pY.py + 3.5);
+        }
+
+        // Axis labels
+        ctx.font = '700 11px "Inter", sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.textAlign = 'center';
+        ctx.fillText('Feature X₁', PAD.left + plotW / 2, h - 6);
+
+        ctx.save();
+        ctx.translate(14, PAD.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Feature X₂', 0, 0);
+        ctx.restore();
+        ctx.restore();
+
+        // 3. Draw Orthogonal Split Lines
+        for (const node of visibleSplits) {
+          const { feature, threshold } = node.split;
+          const isSelected = state.selectedNodeId === node.id;
+          const isLatest = node.splitOrder === state.visibleSplits && state.visibleSplits > 0;
+
+          ctx.save();
+          ctx.strokeStyle = isSelected ? '#4f46e5' : isLatest ? '#4338ca' : '#334155';
+          ctx.lineWidth = isSelected ? 3 : isLatest ? 2.6 : 1.75;
+          if (!isSelected && !isLatest) ctx.setLineDash([5, 4]);
+
+          ctx.beginPath();
+          if (feature === 'x') {
+            const p1 = dataToPixel(threshold, node.bounds.yMax, w, h);
+            const p2 = dataToPixel(threshold, node.bounds.yMin, w, h);
+            ctx.moveTo(p1.px, p1.py);
+            ctx.lineTo(p2.px, p2.py);
+          } else {
+            const p1 = dataToPixel(node.bounds.xMin, threshold, w, h);
+            const p2 = dataToPixel(node.bounds.xMax, threshold, w, h);
+            ctx.moveTo(p1.px, p1.py);
+            ctx.lineTo(p2.px, p2.py);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 4. Active Split Scan Sweep Animation (when building step-by-step)
+        if (state.scanAnim) {
+          const { feature, threshold, bounds } = state.scanAnim;
+          ctx.save();
+          ctx.strokeStyle = '#d97706';
+          ctx.lineWidth = 2.6;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath();
+          if (feature === 'x') {
+            const p1 = dataToPixel(threshold, bounds.yMax, w, h);
+            const p2 = dataToPixel(threshold, bounds.yMin, w, h);
+            ctx.moveTo(p1.px, p1.py);
+            ctx.lineTo(p2.px, p2.py);
+          } else {
+            const p1 = dataToPixel(bounds.xMin, threshold, w, h);
+            const p2 = dataToPixel(bounds.xMax, threshold, w, h);
+            ctx.moveTo(p1.px, p1.py);
+            ctx.lineTo(p2.px, p2.py);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 5. Highlight Selected Tree Node's Bounding Box
+        if (state.selectedNodeId !== null) {
+          const sel = findNodeById(state.tree, state.selectedNodeId);
+          if (sel) {
+            const tl = dataToPixel(sel.bounds.xMin, sel.bounds.yMax, w, h);
+            const br = dataToPixel(sel.bounds.xMax, sel.bounds.yMin, w, h);
+            ctx.save();
+            ctx.strokeStyle = '#4f46e5';
+            ctx.lineWidth = 2.6;
+            ctx.fillStyle = 'rgba(79, 70, 229, 0.08)';
+            ctx.fillRect(tl.px, tl.py, br.px - tl.px, br.py - tl.py);
+            ctx.strokeRect(tl.px, tl.py, br.px - tl.px, br.py - tl.py);
+            ctx.restore();
+          }
+        }
+
+        // 6. Plot Border
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(PAD.left, PAD.top, plotW, plotH);
+
+        // 7. Data Points (Crisp Light-Theme Markers)
+        for (const pt of state.points) {
+          const { px, py } = dataToPixel(pt.x, pt.y, w, h);
+          const c = CLASSES[pt.cls];
+          ctx.save();
+          ctx.fillStyle = c.color;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.8;
+          ctx.shadowColor = 'rgba(15, 23, 42, 0.14)';
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetY = 1;
+
+          ctx.beginPath();
+          if (pt.cls === 0) {
+            ctx.arc(px, py, 5.4, 0, Math.PI * 2);
+          } else if (pt.cls === 1) {
+            // Diamond
+            ctx.moveTo(px, py - 6.3);
+            ctx.lineTo(px + 6.3, py);
+            ctx.lineTo(px, py + 6.3);
+            ctx.lineTo(px - 6.3, py);
+            ctx.closePath();
+          } else {
+            // Triangle
+            ctx.moveTo(px, py - 6.4);
+            ctx.lineTo(px + 6, py + 5);
+            ctx.lineTo(px - 6, py + 5);
+            ctx.closePath();
+          }
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 8. Query Point Star Marker (Probe Mode)
+        if (state.queryPoint) {
+          const { px, py } = dataToPixel(state.queryPoint.x, state.queryPoint.y, w, h);
+          ctx.save();
+          // Outer halo
+          ctx.beginPath();
+          ctx.arc(px, py, 13, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(79, 70, 229, 0.14)';
+          ctx.fill();
+          ctx.strokeStyle = '#4f46e5';
+          ctx.lineWidth = 1.6;
+          ctx.stroke();
+
+          // Star core
+          ctx.fillStyle = '#f59e0b';
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          drawStar(ctx, px, py, 5, 7.5, 3.4);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      function drawStar(c, cx, cy, spikes, outerR, innerR) {
+        let rot = (Math.PI / 2) * 3;
+        const step = Math.PI / spikes;
+        c.beginPath();
+        c.moveTo(cx, cy - outerR);
+        for (let i = 0; i < spikes; i++) {
+          c.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+          rot += step;
+          c.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+          rot += step;
+        }
+        c.closePath();
+      }
+
+      // =========================================================================
+      // 6. SVG DECISION TREE GRAPH RENDERER + LAYOUT ENGINE
+      // =========================================================================
+      const treeSvg = document.getElementById('treeSvg');
+
+      function computeVisibleTreeLayout() {
+        if (!state.tree) return { nodes: [], edges: [] };
+
+        // Determine max visible depth & count leaves for horizontal spacing
+        const leafList = [];
+        function collectLeaves(node) {
+          if (!isNodeExpanded(node)) {
+            leafList.push(node);
+            return;
+          }
+          collectLeaves(node.left);
+          collectLeaves(node.right);
+        }
+        collectLeaves(state.tree);
+
+        const viewW = 800;
+        const viewH = 520;
+        const padX = 56;
+        const padTop = 52;
+        const padBottom = 52;
+
+        let maxVisibleDepth = 0;
+        function findMaxD(node) {
+          if (node.depth > maxVisibleDepth) maxVisibleDepth = node.depth;
+          if (isNodeExpanded(node)) {
+            findMaxD(node.left);
+            findMaxD(node.right);
+          }
+        }
+        findMaxD(state.tree);
+
+        const levelGap = maxVisibleDepth === 0 ? 0 : (viewH - padTop - padBottom) / maxVisibleDepth;
+
+        const positions = new Map();
+        const nodes = [];
+        const edges = [];
+
+        let leafCursor = 0;
+        function assignPos(node) {
+          const y = padTop + node.depth * levelGap;
+          let x;
+          if (!isNodeExpanded(node)) {
+            x = leafList.length === 1
+              ? viewW / 2
+              : padX + (leafCursor / (leafList.length - 1)) * (viewW - padX * 2);
+            leafCursor++;
+          } else {
+            const leftPos = assignPos(node.left);
+            const rightPos = assignPos(node.right);
+            x = (leftPos.x + rightPos.x) / 2;
+            edges.push({ parent: node, child: node.left, branchLabel: '≤ True', isLeft: true });
+            edges.push({ parent: node, child: node.right, branchLabel: '> False', isLeft: false });
+          }
+          const pos = { x, y };
+          positions.set(node.id, pos);
+          nodes.push({ node, x, y, isExpanded: isNodeExpanded(node) });
+          return pos;
+        }
+
+        assignPos(state.tree);
+
+        // Adaptive card sizing based on leaf count
+        const cardW = leafList.length > 10 ? 94 : leafList.length > 6 ? 108 : 124;
+        const cardH = 52;
+
+        return { nodes, edges, positions, cardW, cardH };
+      }
+
+      function renderTreeSvg() {
+        const { nodes, edges, positions, cardW, cardH } = computeVisibleTreeLayout();
+        treeSvg.innerHTML = '';
+
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        treeSvg.appendChild(defs);
+
+        const edgeLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const nodeLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        treeSvg.appendChild(edgeLayer);
+        treeSvg.appendChild(nodeLayer);
+
+        // 1. Render Edges (Cubic Bezier Curves)
+        for (const edge of edges) {
+          const pPos = positions.get(edge.parent.id);
+          const cPos = positions.get(edge.child.id);
+          const x1 = pPos.x;
+          const y1 = pPos.y + cardH / 2;
+          const x2 = cPos.x;
+          const y2 = cPos.y - cardH / 2;
+          const midY = (y1 + y2) / 2;
+
+          const isActive = state.highlightedTraceIds.has(edge.parent.id) && state.highlightedTraceIds.has(edge.child.id);
+          const dStr = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', dStr);
+          path.setAttribute('class', `tree-edge ${isActive ? 'active-path' : ''}`);
+          edgeLayer.appendChild(path);
+
+          if (isActive) {
+            const flowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            flowPath.setAttribute('d', dStr);
+            flowPath.setAttribute('class', 'tree-edge-flow');
+            edgeLayer.appendChild(flowPath);
+          }
+
+          // Tiny Branch Label ('T' / 'F')
+          const lx = x1 * 0.35 + x2 * 0.65;
+          const ly = midY;
+          const pill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          pill.setAttribute('x', lx - 14);
+          pill.setAttribute('y', ly - 8);
+          pill.setAttribute('width', 28);
+          pill.setAttribute('height', 16);
+          pill.setAttribute('rx', 6);
+          pill.setAttribute('fill', isActive ? '#eef2ff' : '#ffffff');
+          pill.setAttribute('stroke', isActive ? '#6366f1' : '#e2e8f0');
+          pill.setAttribute('stroke-width', '1');
+          edgeLayer.appendChild(pill);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', lx);
+          txt.setAttribute('y', ly + 3.5);
+          txt.setAttribute('text-anchor', 'middle');
+          txt.setAttribute('font-size', '9.5');
+          txt.setAttribute('font-weight', '700');
+          txt.setAttribute('font-family', 'JetBrains Mono, monospace');
+          txt.setAttribute('fill', isActive ? '#4338ca' : (edge.isLeft ? '#059669' : '#e11d48'));
+          txt.textContent = edge.isLeft ? 'Yes' : 'No';
+          edgeLayer.appendChild(txt);
+        }
+
+        // 2. Render Node Cards
+        for (const item of nodes) {
+          const { node, x, y, isExpanded } = item;
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          const isTrace = state.highlightedTraceIds.has(node.id);
+          const isSelected = state.selectedNodeId === node.id;
+
+          g.setAttribute('transform', `translate(${x - cardW / 2}, ${y - cardH / 2})`);
+          g.setAttribute('class', `tree-node-group ${isTrace ? 'active-trace' : ''} ${isSelected ? 'selected-node' : ''}`);
+
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('width', cardW);
+          rect.setAttribute('height', cardH);
+          rect.setAttribute('rx', 11);
+          rect.setAttribute('class', 'tree-node-card');
+          g.appendChild(rect);
+
+          const predCls = CLASSES[node.predictedClass];
+
+          // Top Accent Strip
+          const strip = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          strip.setAttribute('x', 1);
+          strip.setAttribute('y', 1);
+          strip.setAttribute('width', cardW - 2);
+          strip.setAttribute('height', 5);
+          strip.setAttribute('rx', 4);
+          strip.setAttribute('fill', isExpanded ? '#4f46e5' : predCls.color);
+          g.appendChild(strip);
+
+          // Main Label (Split Condition or Leaf Prediction)
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          title.setAttribute('x', cardW / 2);
+          title.setAttribute('y', 22);
+          title.setAttribute('text-anchor', 'middle');
+          title.setAttribute('font-size', cardW < 105 ? '10.2' : '11.5');
+          title.setAttribute('font-weight', '700');
+          title.setAttribute('font-family', isExpanded ? 'JetBrains Mono, monospace' : 'Inter, sans-serif');
+          title.setAttribute('fill', '#0f172a');
+
+          if (isExpanded) {
+            const fname = node.split.feature === 'x' ? 'X₁' : 'X₂';
+            title.textContent = `${fname} ≤ ${node.split.threshold.toFixed(2)}`;
+          } else {
+            title.textContent = `Leaf: ${predCls.name}`;
+          }
+          g.appendChild(title);
+
+          // Subtitle (Impurity & Sample Count)
+          const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          sub.setAttribute('x', cardW / 2);
+          sub.setAttribute('y', 36);
+          sub.setAttribute('text-anchor', 'middle');
+          sub.setAttribute('font-size', '9.5');
+          sub.setAttribute('font-weight', '600');
+          sub.setAttribute('font-family', 'JetBrains Mono, monospace');
+          sub.setAttribute('fill', '#64748b');
+          const critShort = state.criterion === 'gini' ? 'G' : 'H';
+          sub.textContent = `n=${node.total} · ${critShort}=${node.impurity.toFixed(2)}`;
+          g.appendChild(sub);
+
+          // Mini Stacked Class Distribution Bar at bottom of node
+          const barW = cardW - 18;
+          const barX = 9;
+          const barY = cardH - 9;
+          let curX = barX;
+          for (let c = 0; c < node.counts.length; c++) {
+            if (node.counts[c] === 0) continue;
+            const segW = (node.counts[c] / Math.max(1, node.total)) * barW;
+            const seg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            seg.setAttribute('x', curX);
+            seg.setAttribute('y', barY);
+            seg.setAttribute('width', Math.max(1.5, segW));
+            seg.setAttribute('height', 4);
+            seg.setAttribute('rx', 1.5);
+            seg.setAttribute('fill', CLASSES[c].color);
+            g.appendChild(seg);
+            curX += segW;
+          }
+
+          g.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectNode(node.id);
+          });
+
+          nodeLayer.appendChild(g);
+        }
+
+        // Subtle GSAP entrance for newly revealed nodes
+        if (window.gsap && state.isAnimating) {
+          gsap.fromTo(nodeLayer.children,
+            { opacity: 0.55, scale: 0.94, transformOrigin: 'center center' },
+            { opacity: 1, scale: 1, duration: 0.28, ease: 'power2.out', stagger: 0.02 }
+          );
+        }
+      }
+
+      // =========================================================================
+      // 7. HELPERS, INSPECTOR, TRACE UI & STATS
+      // =========================================================================
+      function findNodeById(node, id) {
+        if (!node) return null;
+        if (node.id === id) return node;
+        return findNodeById(node.left, id) || findNodeById(node.right, id);
+      }
+
+      function selectNode(nodeId) {
+        state.selectedNodeId = state.selectedNodeId === nodeId ? null : nodeId;
+        updateInspector();
+        renderAll();
+      }
+
+      function updateInspector() {
+        const panel = document.getElementById('nodeInspector');
+        if (state.selectedNodeId === null) {
+          panel.classList.add('hidden');
+          return;
+        }
+        const node = findNodeById(state.tree, state.selectedNodeId);
+        if (!node) {
+          panel.classList.add('hidden');
+          return;
+        }
+        panel.classList.remove('hidden');
+
+        const isExp = isNodeExpanded(node);
+        document.getElementById('inspType').textContent = isExp ? `Internal Split (Depth ${node.depth})` : `Terminal Leaf (Depth ${node.depth})`;
+        if (node.split) {
+          const fname = node.split.feature === 'x' ? 'X₁' : 'X₂';
+          document.getElementById('inspRule').textContent = isExp
+            ? `${fname} ≤ ${node.split.threshold.toFixed(2)}`
+            : `Predict: ${CLASSES[node.predictedClass].name}`;
+          document.getElementById('inspGain').textContent = `+${node.split.gain.toFixed(3)}`;
+          if (node.split.altFeature) {
+            const af = node.split.altFeature === 'x' ? 'X₁' : 'X₂';
+            document.getElementById('inspAlt').textContent = `Runner-up: ${af} ≤ ${node.split.altThreshold.toFixed(2)} (+${node.split.altGain.toFixed(3)})`;
+          } else {
+            document.getElementById('inspAlt').textContent = `Counts: [${node.counts.join(', ')}]`;
+          }
+        } else {
+          document.getElementById('inspRule').textContent = `Predict: ${CLASSES[node.predictedClass].name}`;
+          document.getElementById('inspGain').textContent = 'Leaf';
+          document.getElementById('inspAlt').textContent = `Class counts: [${node.counts.join(', ')}]`;
+        }
+        document.getElementById('inspSamples').textContent = node.total;
+        document.getElementById('inspCritLabel').textContent = state.criterion === 'gini' ? 'Gini' : 'Entropy';
+        document.getElementById('inspImpurity').textContent = node.impurity.toFixed(3);
+      }
+
+      function updateTraceAndStats() {
+        // Trace queryPoint
+        state.highlightedTraceIds.clear();
+        const tracePathEl = document.getElementById('tracePathText');
+        const tracePredEl = document.getElementById('tracePredBadge');
+
+        if (state.queryPoint && state.tree) {
+          const { path, leaf } = tracePoint(state.queryPoint);
+          for (const n of path) state.highlightedTraceIds.add(n.id);
+
+          const crumbs = [];
+          for (let i = 0; i < path.length - 1; i++) {
+            const n = path[i];
+            const fname = n.split.feature === 'x' ? 'X₁' : 'X₂';
+            const goLeft = state.queryPoint[n.split.feature] <= n.split.threshold;
+            crumbs.push(`${fname}${goLeft ? '≤' : '>'}${n.split.threshold.toFixed(1)}`);
+          }
+
+          if (leaf) {
+            const cls = CLASSES[leaf.predictedClass];
+            const conf = leaf.total > 0 ? Math.round((leaf.counts[leaf.predictedClass] / leaf.total) * 100) : 100;
+            tracePathEl.innerHTML = `<span class="text-amber-500 font-bold">★</span><span>(${state.queryPoint.x.toFixed(1)}, ${state.queryPoint.y.toFixed(1)})</span><span class="text-slate-400">→</span><span class="truncate">${crumbs.length ? crumbs.join(' → ') : 'Root Leaf'}</span>`;
+            tracePredEl.textContent = `${cls.name} (${conf}%)`;
+            tracePredEl.style.backgroundColor = cls.badgeBg;
+            tracePredEl.style.color = cls.badgeText;
+          }
+        }
+
+        const acc = computeAccuracy();
+        const stats = getTreeStats();
+        document.getElementById('statAccuracy').textContent = `Acc: ${acc.toFixed(1)}%`;
+        document.getElementById('statNodes').textContent = `Nodes: ${stats.nodes}`;
+        document.getElementById('statDepth').textContent = `Depth: ${stats.maxD}`;
+        document.getElementById('stepCounter').textContent = `${Math.min(state.visibleSplits, state.splitOrderNodes.length)}/${state.splitOrderNodes.length}`;
+      }
+
+      function renderAll() {
+        updateTraceAndStats();
+        drawFeatureSpace();
+        renderTreeSvg();
+      }
+
+      // =========================================================================
+      // 8. ANIMATED STEP-BY-STEP TREE BUILDER
+      // =========================================================================
+      function stopAnimation() {
+        state.isAnimating = false;
+        state.scanAnim = null;
+        if (state.animTimer) {
+          clearTimeout(state.animTimer);
+          state.animTimer = null;
+        }
+        document.getElementById('scanStatusPill').classList.add('hidden');
+      }
+
+      function runAnimatedBuild() {
+        stopAnimation();
+        state.selectedNodeId = null;
+        updateInspector();
+        state.visibleSplits = 0;
+        state.isAnimating = true;
+        renderAll();
+
+        const totalSteps = state.splitOrderNodes.length;
+        if (totalSteps === 0) {
+          state.isAnimating = false;
+          return;
+        }
+
+        let currentIdx = 0;
+        const scanPill = document.getElementById('scanStatusPill');
+
+        function animateNextSplit() {
+          if (!state.isAnimating || currentIdx >= totalSteps) {
+            state.scanAnim = null;
+            state.isAnimating = false;
+            scanPill.classList.add('hidden');
+            renderAll();
+            return;
+          }
+
+          const node = state.splitOrderNodes[currentIdx];
+          const { feature, threshold } = node.split;
+          const b = node.bounds;
+          const startVal = feature === 'x' ? b.xMin : b.yMin;
+          const endVal = feature === 'x' ? b.xMax : b.yMax;
+
+          scanPill.classList.remove('hidden');
+          scanPill.textContent = `Step ${currentIdx + 1}/${totalSteps}: Scanning ${feature === 'x' ? 'X₁' : 'X₂'}...`;
+
+          // Smooth scan sweep across bounding box
+          const sweepDuration = Math.max(180, state.speedMs * 0.65);
+          const startTime = performance.now();
+
+          function frameSweep(now) {
+            if (!state.isAnimating) return;
+            const t = Math.min(1, (now - startTime) / sweepDuration);
+            // Ease sweep toward winning threshold
+            const sweepPos = t < 0.55
+              ? startVal + (endVal - startVal) * (t / 0.55)
+              : endVal + (threshold - endVal) * ((t - 0.55) / 0.45);
+
+            state.scanAnim = { feature, threshold: sweepPos, bounds: b };
+            drawFeatureSpace();
+
+            if (t < 1) {
+              requestAnimationFrame(frameSweep);
+            } else {
+              state.scanAnim = null;
+              currentIdx++;
+              state.visibleSplits = currentIdx;
+              renderAll();
+              state.animTimer = setTimeout(animateNextSplit, Math.max(140, state.speedMs * 0.45));
+            }
+          }
+
+          requestAnimationFrame(frameSweep);
+        }
+
+        state.animTimer = setTimeout(animateNextSplit, 180);
+      }
+
+      // =========================================================================
+      // 9. INTERACTIVE CANVAS & HUD EVENT WIRING
+      // =========================================================================
+      function handleCanvasPointer(e, isClick) {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const pt = pixelToData(px, py, rect.width, rect.height);
+        if (pt.x < DOMAIN_MIN || pt.x > DOMAIN_MAX || pt.y < DOMAIN_MIN || pt.y > DOMAIN_MAX) return;
+
+        if (state.activeTool === 'probe') {
+          state.queryPoint = { x: pt.x, y: pt.y };
+          renderAll();
+        } else if (isClick && state.activeTool.startsWith('add-')) {
+          stopAnimation();
+          const cls = parseInt(state.activeTool.split('-')[1], 10);
+          state.points.push({ x: clampDomain(pt.x), y: clampDomain(pt.y), cls });
+          buildCartTree();
+          state.visibleSplits = state.splitOrderNodes.length;
+          renderAll();
+        }
+      }
+
+      let isDragging = false;
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        handleCanvasPointer(e, true);
+      });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      canvas.addEventListener('mousemove', (e) => {
+        if (state.activeTool === 'probe' || isDragging) {
+          handleCanvasPointer(e, false);
+        }
+      });
+
+      // Dataset presets
+      document.querySelectorAll('.preset-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          stopAnimation();
+          state.preset = btn.dataset.preset;
+          state.selectedNodeId = null;
+          updateInspector();
+          document.querySelectorAll('.preset-btn').forEach((b) => {
+            b.className = 'preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+          });
+          btn.className = 'preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-white text-indigo-700 shadow-sm';
+
+          state.points = generatePreset(state.preset);
+          const c2Btn = document.getElementById('btnAddClass2');
+          const c2Leg = document.getElementById('legendClass2');
+          if (state.numClasses === 3) {
+            c2Btn.classList.remove('hidden');
+            c2Leg.classList.remove('hidden');
+          } else {
+            c2Btn.classList.add('hidden');
+            c2Leg.classList.add('hidden');
+            if (state.activeTool === 'add-2') setActiveTool('probe');
+          }
+
+          buildCartTree();
+          runAnimatedBuild();
+        });
+      });
+
+      // Criterion toggle
+      document.querySelectorAll('.crit-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          stopAnimation();
+          state.criterion = btn.dataset.criterion;
+          document.querySelectorAll('.crit-btn').forEach((b) => {
+            b.className = 'crit-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+          });
+          btn.className = 'crit-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-white text-indigo-700 shadow-sm';
+
+          buildCartTree();
+          state.visibleSplits = state.splitOrderNodes.length;
+          updateInspector();
+          renderAll();
+        });
+      });
+
+      // Tool buttons
+      function setActiveTool(tool) {
+        state.activeTool = tool;
+        document.querySelectorAll('.tool-btn').forEach((b) => {
+          if (b.dataset.tool === tool) {
+            b.classList.add('bg-indigo-600', 'text-white');
+            b.classList.remove('text-emerald-700', 'text-rose-700', 'text-sky-700');
+          } else {
+            b.classList.remove('bg-indigo-600', 'text-white');
+            if (b.dataset.tool === 'add-0') b.classList.add('text-emerald-700');
+            if (b.dataset.tool === 'add-1') b.classList.add('text-rose-700');
+            if (b.dataset.tool === 'add-2') b.classList.add('text-sky-700');
+          }
+        });
+        canvas.style.cursor = tool === 'probe' ? 'crosshair' : 'cell';
+      }
+
+      document.querySelectorAll('.tool-btn').forEach((btn) => {
+        btn.addEventListener('click', () => setActiveTool(btn.dataset.tool));
+      });
+
+      // Playback & Hyperparameters
+      document.getElementById('btnAnimateBuild').addEventListener('click', runAnimatedBuild);
+
+      document.getElementById('btnStepSplit').addEventListener('click', () => {
+        stopAnimation();
+        if (state.visibleSplits >= state.splitOrderNodes.length) {
+          state.visibleSplits = 0;
+        } else {
+          state.visibleSplits++;
+        }
+        updateInspector();
+        renderAll();
+      });
+
+      document.getElementById('btnShowFull').addEventListener('click', () => {
+        stopAnimation();
+        state.visibleSplits = state.splitOrderNodes.length;
+        updateInspector();
+        renderAll();
+      });
+
+      document.getElementById('btnAddNoise').addEventListener('click', () => {
+        stopAnimation();
+        for (let i = 0; i < 6; i++) {
+          state.points.push({
+            x: clampDomain(1 + Math.random() * 8),
+            y: clampDomain(1 + Math.random() * 8),
+            cls: Math.floor(Math.random() * state.numClasses)
+          });
+        }
+        buildCartTree();
+        state.visibleSplits = state.splitOrderNodes.length;
+        renderAll();
+      });
+
+      document.getElementById('btnResetData').addEventListener('click', () => {
+        stopAnimation();
+        state.points = generatePreset(state.preset);
+        state.selectedNodeId = null;
+        updateInspector();
+        buildCartTree();
+        runAnimatedBuild();
+      });
+
+      document.getElementById('sliderMaxDepth').addEventListener('input', (e) => {
+        stopAnimation();
+        state.maxDepth = parseInt(e.target.value, 10);
+        document.getElementById('valMaxDepth').textContent = state.maxDepth;
+        buildCartTree();
+        state.visibleSplits = state.splitOrderNodes.length;
+        updateInspector();
+        renderAll();
+      });
+
+      document.getElementById('sliderMinSplit').addEventListener('input', (e) => {
+        stopAnimation();
+        state.minSamplesSplit = parseInt(e.target.value, 10);
+        document.getElementById('valMinSplit').textContent = state.minSamplesSplit;
+        buildCartTree();
+        state.visibleSplits = state.splitOrderNodes.length;
+        updateInspector();
+        renderAll();
+      });
+
+      document.getElementById('selectSpeed').addEventListener('change', (e) => {
+        state.speedMs = parseInt(e.target.value, 10);
+      });
+
+      document.getElementById('closeInspector').addEventListener('click', () => {
+        state.selectedNodeId = null;
+        updateInspector();
+        renderAll();
+      });
+
+      // =========================================================================
+      // 10. DOCUMENTATION SVG CHART (GINI vs ENTROPY vs ERROR) & COPY BUTTON
+      // =========================================================================
+      function renderImpurityCurvesSvg() {
+        const svg = document.getElementById('impurityChartSvg');
+        if (!svg) return;
+        const W = 640, H = 220;
+        const pad = { l: 48, r: 24, t: 22, b: 36 };
+        const plotW = W - pad.l - pad.r;
+        const plotH = H - pad.t - pad.b;
+
+        const mapX = (p) => pad.l + p * plotW;
+        const mapY = (v) => pad.t + (1 - v) * plotH;
+
+        let html = '';
+        // Grid lines
+        for (const yv of [0, 0.25, 0.5, 0.75, 1.0]) {
+          const py = mapY(yv);
+          html += `<line x1="${pad.l}" y1="${py}" x2="${W - pad.r}" y2="${py}" stroke="#e2e8f0" stroke-width="1"/>`;
+          html += `<text x="${pad.l - 8}" y="${py + 4}" text-anchor="end" font-size="10" font-family="JetBrains Mono, monospace" fill="#64748b">${yv.toFixed(2)}</text>`;
+        }
+        for (const xv of [0, 0.25, 0.5, 0.75, 1.0]) {
+          const px = mapX(xv);
+          html += `<line x1="${px}" y1="${pad.t}" x2="${px}" y2="${H - pad.b}" stroke="#f1f5f9" stroke-width="1"/>`;
+          html += `<text x="${px}" y="${H - pad.b + 16}" text-anchor="middle" font-size="10" font-family="JetBrains Mono, monospace" fill="#64748b">${xv.toFixed(2)}</text>`;
+        }
+
+        // Build curve paths
+        let entD = '', giniD = '', errD = '';
+        const N = 100;
+        for (let i = 0; i <= N; i++) {
+          const p = i / N;
+          const ent = (p === 0 || p === 1) ? 0 : -(p * Math.log2(p) + (1 - p) * Math.log2(1 - p));
+          const gini2 = 2 * (1 - (p * p + (1 - p) * (1 - p)));
+          const err = 1 - Math.max(p, 1 - p);
+          const cmd = i === 0 ? 'M' : 'L';
+          entD += `${cmd}${mapX(p).toFixed(1)},${mapY(ent).toFixed(1)} `;
+          giniD += `${cmd}${mapX(p).toFixed(1)},${mapY(gini2).toFixed(1)} `;
+          errD += `${cmd}${mapX(p).toFixed(1)},${mapY(err).toFixed(1)} `;
+        }
+
+        html += `<path d="${entD}" fill="none" stroke="#4f46e5" stroke-width="2.6"/>`;
+        html += `<path d="${giniD}" fill="none" stroke="#059669" stroke-width="2.6"/>`;
+        html += `<path d="${errD}" fill="none" stroke="#e11d48" stroke-width="2.2" stroke-dasharray="5 4"/>`;
+        html += `<text x="${pad.l + plotW / 2}" y="${H - 5}" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">Class Probability p</text>`;
+        svg.innerHTML = html;
+      }
+
+      document.getElementById('copyPseudoBtn').addEventListener('click', () => {
+        const text = document.getElementById('pseudoCodeBlock').textContent;
+        navigator.clipboard?.writeText(text).then(() => {
+          const btn = document.getElementById('copyPseudoBtn');
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+        });
+      });
+
+      // =========================================================================
+      // 11. BOOTSTRAP
+      // =========================================================================
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.renderMathInElement) {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        }
+      });
+
+      // Fallback KaTeX render after deferred script load
+      window.addEventListener('load', () => {
+        if (window.renderMathInElement) {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        }
+      });
+
+      state.points = generatePreset(state.preset);
+      buildCartTree();
+      renderImpurityCurvesSvg();
+      resizeCanvas();
+      runAnimatedBuild();
+    })();
+  </script>
+</body>
+</html>
